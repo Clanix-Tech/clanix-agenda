@@ -26,3 +26,6 @@ $$;
 alter default privileges in schema public revoke all on tables from anon, authenticated;
 alter default privileges in schema public revoke all on sequences from anon, authenticated;
 alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+
+-- O EXECUTE para PUBLIC vem do default global do Postgres; só o revoke sem IN SCHEMA o remove.
+alter default privileges for role postgres revoke execute on functions from public;
