@@ -1,0 +1,7 @@
+node_modules
+dist
+package-lock.json
+.superpowers
+supabase/.temp
+*.png
+docs
