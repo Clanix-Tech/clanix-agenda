@@ -1,0 +1,10 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(5);
+select has_extension('btree_gist');
+select has_type('public'::name, 'appointment_status'::name);
+select enum_has_labels('public', 'appointment_status', array['agendado','concluido','cancelado','nao_compareceu']);
+select has_schema('app_private');
+select ok(tests.local_ts(0, '14:00') > now(), 'local_ts aponta para o futuro');
+select * from finish();
+rollback;
