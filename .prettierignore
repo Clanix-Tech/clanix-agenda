@@ -5,3 +5,4 @@ package-lock.json
 supabase/.temp
 *.png
 docs
+src/types/database.ts
