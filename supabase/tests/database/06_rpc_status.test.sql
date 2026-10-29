@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(53);
+select plan(59);
 
 select tests.create_user('a@x.com') as a \gset
 select tests.create_user('b@x.com') as b \gset
@@ -51,6 +51,23 @@ select ok((select starts_at = tests.local_ts(0, '10:00') and ends_at = tests.loc
     from public.appointments where id = :'d1'),
   'editar detalhes não altera horário nem status');
 
+-- Substituição completa: valores informados são gravados; null/'' limpam; omitir não é possível
+select lives_ok(
+  format($$select public.update_appointment_details(%L, 'Ana', 'Barba', '11988887777', 'nota')$$, :'d1'),
+  'substituição completa com telefone e notas');
+select is((select client_phone || '|' || notes from public.appointments where id = :'d1'),
+  '11988887777|nota', 'telefone e notas informados são gravados');
+select lives_ok(
+  format($$select public.update_appointment_details(%L, 'Ana', 'Barba', null, null)$$, :'d1'),
+  'null explícito aceito');
+select ok((select client_phone is null and notes is null from public.appointments where id = :'d1'),
+  'null explícito limpa telefone e notas');
+select throws_ok(
+  format($$select public.update_appointment_details(%L, 'Ana', 'Barba')$$, :'d1'),
+  '42883', null, 'chamada sem telefone/notas não existe (todos os parâmetros são obrigatórios)');
+
+select throws_ok(format($$select public.set_appointment_status(%L, null)$$, :'d1'),
+  'AE005', 'transicao_invalida', 'status nulo dá AE005');
 -- Detalhes: concluido e nao_compareceu (status preparado como postgres)
 select id as d2 from public.create_appointment('Cliente D2', 'Corte', tests.local_ts(0, '14:00'), tests.local_ts(0, '15:00')) \gset
 select id as d3 from public.create_appointment('Cliente D3', 'Corte', tests.local_ts(0, '15:00'), tests.local_ts(0, '16:00')) \gset
@@ -114,7 +131,7 @@ select throws_ok(format($$select public.cancel_appointment(%L)$$, :'k1'),
   'AE005', 'transicao_invalida', 'cancelar cancelado rejeitado');
 select throws_ok(format($$select public.set_appointment_status(%L, 'concluido')$$, :'k1'),
   'AE005', 'transicao_invalida', 'cancelado -> concluido rejeitado');
-select throws_ok(format($$select public.update_appointment_details(%L, 'X', 'Y')$$, :'k1'),
+select throws_ok(format($$select public.update_appointment_details(%L, 'X', 'Y', null, null)$$, :'k1'),
   'AE005', 'transicao_invalida', 'editar detalhes de cancelado rejeitado');
 select throws_ok(format($$select public.set_appointment_status(%L, 'agendado')$$, :'k1'),
   'AE005', 'transicao_invalida', 'cancelado -> agendado via set_appointment_status rejeitado');
@@ -170,7 +187,7 @@ select throws_ok(format($$select public.reactivate_appointment(%L)$$, :'h1'),
 
 -- Isolamento: B não mexe em agendamento de A
 select tests.authenticate_as(:'b'::uuid);
-select throws_ok(format($$select public.update_appointment_details(%L, 'Hack', 'Hack')$$, :'d1'),
+select throws_ok(format($$select public.update_appointment_details(%L, 'Hack', 'Hack', null, null)$$, :'d1'),
   'AE006', 'agendamento_nao_encontrado', 'B não edita detalhes de A');
 select throws_ok(format($$select public.set_appointment_status(%L, 'concluido')$$, :'d1'),
   'AE006', 'agendamento_nao_encontrado', 'B não altera status de A');

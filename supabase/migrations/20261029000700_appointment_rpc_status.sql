@@ -5,8 +5,8 @@ create function public.update_appointment_details(
   p_id uuid,
   p_client_name text,
   p_service_name text,
-  p_client_phone text default null,
-  p_notes text default null)
+  p_client_phone text,
+  p_notes text)
 returns public.appointments
 language plpgsql
 security definer
@@ -48,7 +48,7 @@ declare
 begin
   v_row := app_private.load_own_appointment(p_id, v_owner);
 
-  if not (
+  if p_status is null or not (
        (v_row.status = 'agendado' and p_status in ('concluido', 'nao_compareceu'))
     or (v_row.status = 'concluido' and p_status in ('nao_compareceu', 'agendado'))
     or (v_row.status = 'nao_compareceu' and p_status in ('concluido', 'agendado'))

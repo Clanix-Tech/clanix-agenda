@@ -297,7 +297,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: unknown
                            },
 "update_appointment_details":
-{ Args: { "p_client_name": string,"p_client_phone"?: string,"p_id": string,"p_notes"?: string,"p_service_name": string }; Returns: {
+{ Args: { "p_client_name": string,"p_client_phone": string,"p_id": string,"p_notes": string,"p_service_name": string }; Returns: {
               "canceled_at": string | null,
 "cancellation_reason": string | null,
 "client_name": string,

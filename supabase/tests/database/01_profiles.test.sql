@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(16);
 
 select tests.create_user('a@x.com', 'Camila') as a \gset
 select tests.create_user('b@x.com') as b \gset
@@ -30,6 +30,14 @@ select throws_ok($$select * from public.profiles$$, '42501', null, 'anon sem ace
 select tests.reset_role();
 delete from auth.users where id = :'a';
 select is((select count(*)::int from public.profiles where id = :'a'), 0, 'excluir usuário remove o perfil');
+
+-- Cadastro nunca pode abortar por causa do perfil
+select tests.create_user('long1@x.com', repeat('n', 81)) as l1 \gset
+select is((select char_length(display_name) from public.profiles where id = :'l1'), 80, 'display_name de 81 chars é cortado em 80');
+select tests.create_user(null) as l2 \gset
+select is((select display_name from public.profiles where id = :'l2'), 'Usuário', 'sem email e sem metadata usa Usuário');
+select tests.create_user(repeat('m', 90) || '@x.com') as l3 \gset
+select is((select char_length(display_name) from public.profiles where id = :'l3'), 80, 'parte local de 90 chars é cortada em 80');
 
 select * from finish();
 rollback;

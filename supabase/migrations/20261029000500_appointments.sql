@@ -20,10 +20,11 @@ create table public.appointments (
   canceled_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  check (ends_at > starts_at),
-  check (ends_at - starts_at <= interval '12 hours'),
-  check (starts_at = date_trunc('minute', starts_at) and ends_at = date_trunc('minute', ends_at)),
-  check ((status = 'cancelado') = (canceled_at is not null)),
+  constraint appointments_time_order check (ends_at > starts_at),
+  constraint appointments_max_duration check (ends_at - starts_at <= interval '12 hours'),
+  constraint appointments_minute_precision check (
+    starts_at = date_trunc('minute', starts_at, 'UTC') and ends_at = date_trunc('minute', ends_at, 'UTC')),
+  constraint appointments_canceled_consistency check ((status = 'cancelado') = (canceled_at is not null)),
   constraint appointments_no_overlap exclude using gist (
     owner_id with =,
     tstzrange(starts_at, ends_at, '[)') with &&
@@ -62,7 +63,7 @@ create function app_private.appointment_changes(
   out new_values jsonb
 )
 language plpgsql
-immutable
+stable
 set search_path = ''
 as $$
 declare

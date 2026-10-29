@@ -57,9 +57,11 @@ begin
   insert into public.profiles (id, display_name)
   values (
     new.id,
+    -- Nunca pode falhar: o cadastro em auth.users depende deste trigger.
     coalesce(
-      nullif(pg_catalog.btrim(new.raw_user_meta_data ->> 'display_name'), ''),
-      pg_catalog.split_part(new.email, '@', 1)
+      nullif(pg_catalog.btrim(pg_catalog.left(pg_catalog.btrim(new.raw_user_meta_data ->> 'display_name'), 80)), ''),
+      nullif(pg_catalog.btrim(pg_catalog.left(pg_catalog.split_part(coalesce(new.email, ''), '@', 1), 80)), ''),
+      'Usuário'
     )
   );
   return new;

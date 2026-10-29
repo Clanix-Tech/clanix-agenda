@@ -48,7 +48,11 @@ Qualquer outra transição responde `AE005`. Um agendamento cancelado não pode 
 
 ## Funções (RPC)
 
-`create_appointment`, `reschedule_appointment`, `update_appointment_details`, `set_appointment_status`, `cancel_appointment`, `reactivate_appointment` e `set_business_hours`. Todas são `SECURITY DEFINER` com `search_path` vazio e só têm `EXECUTE` para `authenticated`.
+`create_appointment`, `reschedule_appointment`, `update_appointment_details`, `set_appointment_status`, `cancel_appointment`, `reactivate_appointment` e `set_business_hours`. Todas são `SECURITY DEFINER` com `search_path` vazio e só têm `EXECUTE` para `authenticated` (e `service_role`, inofensivo: sem `auth.uid()` a função responde `42501`).
+
+`update_appointment_details(p_id, p_client_name, p_service_name, p_client_phone, p_notes)` faz substituição completa: os cinco parâmetros são obrigatórios; `null` ou `''` em telefone/observações limpa o campo, e os valores informados são gravados (aparados).
+
+Por causa do revoke global de privilégios padrão (`alter default privileges ... revoke execute on functions`), toda função nova, inclusive de extensões instaladas depois (ex.: `pg_net`, `pg_cron`), precisa de `GRANT EXECUTE` explícito para quem deve chamá-la.
 
 ## Códigos de erro
 
@@ -63,6 +67,8 @@ O erro chega ao supabase-js em `error.code`; `error.message` traz a chave.
 | `AE005` | `transicao_invalida` | Ação não permitida no status atual |
 | `AE006` | `agendamento_nao_encontrado` | Id inexistente ou de outro dono |
 | `42501` | `nao_autenticado` | Sem usuário autenticado (e acesso negado por privilégio) |
+
+Além desses, as RPCs podem devolver erros crus `23514` (check violation) e `23502` (not null) na validação de entrada: tamanhos de texto, formato de telefone, segundos no horário, duração maior que 12h, fim antes do início e nulos. O frontend deve mapeá-los para uma mensagem genérica de "dados inválidos" e nunca exibir `details`.
 
 ## Privilégios por papel
 

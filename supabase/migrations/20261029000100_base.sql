@@ -21,6 +21,7 @@ begin
   return new;
 end;
 $$;
+revoke all on function app_private.set_updated_at() from public;
 
 -- Nenhuma permissão implícita: tudo é concedido explicitamente nas migrações seguintes.
 alter default privileges in schema public revoke all on tables from anon, authenticated;
