@@ -1,20 +1,17 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import { AuthProvider } from '@/features/auth/AuthProvider';
-import { createQueryClient } from '@/lib/queryClient';
-import { handleSessionExpired } from '@/lib/sessionExpiry';
-import { supabase } from '@/lib/supabase';
+import { createQueryClient, type ExpireRef } from '@/lib/queryClient';
 import { routes } from '@/routes';
 
 const router = createBrowserRouter(routes);
-const queryClient = createQueryClient(() =>
-  handleSessionExpired(router, () => supabase.auth.signOut()),
-);
+const expireRef: ExpireRef = { current: () => {} };
+const queryClient = createQueryClient(expireRef);
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AuthProvider expireRef={expireRef}>
         <RouterProvider router={router} />
       </AuthProvider>
     </QueryClientProvider>

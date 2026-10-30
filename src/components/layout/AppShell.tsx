@@ -14,7 +14,9 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
     <NewAppointmentProvider renderForm={renderForm}>
       <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A]">
         {desktop && <SideRail />}
-        <main className={`min-w-0 flex-1 ${desktop ? '' : 'pb-[100px]'}`}>
+        <main
+          className={`min-w-0 flex-1 ${desktop ? '' : 'pb-[calc(100px+env(safe-area-inset-bottom))]'}`}
+        >
           <Outlet />
         </main>
         {!desktop && <BottomNav />}

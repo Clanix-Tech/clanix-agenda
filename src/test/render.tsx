@@ -5,8 +5,7 @@ import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-rout
 import { vi } from 'vitest';
 import type { Session } from '@supabase/supabase-js';
 import { AuthProvider } from '@/features/auth/AuthProvider';
-import { createQueryClient } from '@/lib/queryClient';
-import { handleSessionExpired } from '@/lib/sessionExpiry';
+import { createQueryClient, type ExpireRef } from '@/lib/queryClient';
 import { createFakeSupabase, makeSession, type FakeSupabase } from '@/test/fakeSupabase';
 
 // Qualquer módulo importado a partir daqui que use `@/lib/supabase` recebe o fake atual.
@@ -49,13 +48,12 @@ export function renderWithProviders(ui: ReactElement | null, options: RenderOpti
 
   const routes = options.routes ?? [{ path: '*', element: ui }];
   const router = createMemoryRouter(routes, { initialEntries: [options.route ?? '/'] });
-  const queryClient = createQueryClient(() =>
-    handleSessionExpired(router, () => fake.auth.signOut()),
-  );
+  const expireRef: ExpireRef = { current: () => {} };
+  const queryClient = createQueryClient(expireRef);
 
   const result = render(
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AuthProvider expireRef={expireRef}>
         <RouterProvider router={router} />
       </AuthProvider>
     </QueryClientProvider>,

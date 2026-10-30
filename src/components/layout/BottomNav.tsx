@@ -28,7 +28,7 @@ export function BottomNav() {
     <nav
       aria-label="Navegação principal"
       data-testid="bottom-nav"
-      className="fixed inset-x-0 bottom-0 z-40 grid h-[84px] grid-cols-5 items-start border-t border-[#E2E8F0] bg-white px-2 pt-2"
+      className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(84px+env(safe-area-inset-bottom))] grid-cols-5 items-start border-t border-[#E2E8F0] bg-white px-2 pt-2 pb-[env(safe-area-inset-bottom)]"
     >
       {before.map((item) => (
         <Item key={item.to} {...item} />

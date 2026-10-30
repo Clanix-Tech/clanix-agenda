@@ -1,32 +1,71 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import type { ExpireRef } from '@/lib/queryClient';
+
+export type SignOutReason = 'usuario' | 'sessao';
 
 type AuthValue = {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  /** Por que a sessão terminou (`null` enquanto há sessão ou antes de qualquer saída). */
+  signOutReason: SignOutReason | null;
+  /** Saída pedida pelo usuário (sem aviso de expiração). */
   signOut(): Promise<void>;
+  /** Sessão inválida (42501/401): sai só neste aparelho e mostra o aviso em "Entrar". */
+  expireSession(): Promise<void>;
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+  expireRef,
+}: {
+  children: ReactNode;
+  /** Se informado, recebe `expireSession` para o QueryClient global chamar. */
+  expireRef?: ExpireRef;
+}) {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signOutReason, setSignOutReason] = useState<SignOutReason | null>(null);
+  const pendingReason = useRef<SignOutReason | null>(null);
+  const inFlight = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     let active = true;
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    const applySignedOut = () => {
+      // SIGNED_OUT sem motivo pedido por nós (ex.: falha ao renovar o token) = sessão expirada
+      setSignOutReason(pendingReason.current ?? 'sessao');
+      pendingReason.current = null;
+      setSession(null);
+      queryClient.clear();
+    };
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
       if (!active) return;
-      setSession(next);
+      if (event === 'SIGNED_OUT') {
+        applySignedOut();
+      } else {
+        if (next) setSignOutReason(null);
+        setSession(next);
+      }
       setLoading(false);
     });
     supabase.auth
       .getSession()
       .then(({ data: res }) => {
-        if (!active) return;
-        setSession(res.session);
+        if (active) setSession(res.session);
       })
       .catch(() => {})
       .finally(() => {
@@ -36,19 +75,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
-  const value = useMemo<AuthValue>(
-    () => ({
+  const value = useMemo<AuthValue>(() => {
+    const run = (reason: SignOutReason, options?: { scope: 'local' }) => {
+      pendingReason.current = reason;
+      return supabase.auth.signOut(options).then(() => {});
+    };
+    return {
       session,
       user: session?.user ?? null,
       loading,
-      signOut: async () => {
-        await supabase.auth.signOut();
+      signOutReason,
+      signOut: () => run('usuario'),
+      expireSession: () => {
+        if (inFlight.current) return inFlight.current;
+        const p = run('sessao', { scope: 'local' })
+          .catch(() => {})
+          .finally(() => {
+            inFlight.current = null;
+          });
+        inFlight.current = p;
+        return p;
       },
-    }),
-    [session, loading],
-  );
+    };
+  }, [session, loading, signOutReason]);
+
+  useEffect(() => {
+    if (!expireRef) return;
+    expireRef.current = () => void value.expireSession();
+  }, [expireRef, value]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

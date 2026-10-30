@@ -2,13 +2,21 @@ import type { Session } from '@supabase/supabase-js';
 
 export type Row = Record<string, unknown>;
 type Result = { data: unknown; error: unknown };
-type RpcHandler = (args: unknown) => { data?: unknown; error?: unknown };
+type Handler = (args: unknown) => { data?: unknown; error?: unknown };
 type AuthListener = (event: string, session: Session | null) => void;
+type Operation = 'select' | 'insert' | 'update' | 'delete';
+
+type AuthMethod =
+  'signInWithPassword' | 'signUp' | 'resetPasswordForEmail' | 'updateUser' | 'signOut';
 
 export type FakeSupabaseOptions = {
-  rpc?: Record<string, RpcHandler>;
+  rpc?: Record<string, Handler>;
   tables?: Record<string, Row[]>;
   session?: Session | null;
+  /** Substitui o comportamento de um método de `auth` (ex.: devolver `{ error }`). */
+  auth?: Partial<Record<AuthMethod, Handler>>;
+  /** Erro devolvido por operação de tabela: `{ appointments: { insert: { code: 'AE001' } } }`. */
+  errors?: Record<string, Partial<Record<Operation, unknown>>>;
 };
 
 export function makeSession(email = 'camila@example.com'): Session {
@@ -28,19 +36,33 @@ export function makeSession(email = 'camila@example.com'): Session {
   } as Session;
 }
 
+const ISO_LIKE = /^\d{4}-\d{2}-\d{2}/;
+
+/** Datas ISO comparam por instante (offsets diferentes); o resto, como texto/número. */
+function compare(a: unknown, b: unknown): number {
+  if (typeof a === 'string' && typeof b === 'string' && ISO_LIKE.test(a) && ISO_LIKE.test(b)) {
+    const x = Date.parse(a);
+    const y = Date.parse(b);
+    if (!Number.isNaN(x) && !Number.isNaN(y)) return x - y;
+  }
+  return (a as string) < (b as string) ? -1 : (a as string) > (b as string) ? 1 : 0;
+}
+
 type Filter = (row: Row) => boolean;
 
 /** Construtor de consultas encadeável e "thenable" (como o do supabase-js). */
 class FakeQuery implements PromiseLike<Result> {
   private filters: Filter[] = [];
   private orderBy: { column: string; ascending: boolean } | null = null;
-  private mode: 'select' | 'update' | 'insert' | 'delete' = 'select';
+  private mode: Operation = 'select';
   private payload: Row | Row[] | null = null;
 
   private readonly rows: Row[];
+  private readonly errors: Partial<Record<Operation, unknown>>;
 
-  constructor(rows: Row[]) {
+  constructor(rows: Row[], errors: Partial<Record<Operation, unknown>>) {
     this.rows = rows;
+    this.errors = errors;
   }
 
   select() {
@@ -48,12 +70,12 @@ class FakeQuery implements PromiseLike<Result> {
   }
   update(values: Row) {
     this.mode = 'update';
-    this.payload = values;
+    this.payload = structuredClone(values);
     return this;
   }
   insert(values: Row | Row[]) {
     this.mode = 'insert';
-    this.payload = values;
+    this.payload = structuredClone(values);
     return this;
   }
   delete() {
@@ -65,11 +87,11 @@ class FakeQuery implements PromiseLike<Result> {
     return this;
   }
   gte(column: string, value: unknown) {
-    this.filters.push((r) => (r[column] as string) >= (value as string));
+    this.filters.push((r) => compare(r[column], value) >= 0);
     return this;
   }
   lt(column: string, value: unknown) {
-    this.filters.push((r) => (r[column] as string) < (value as string));
+    this.filters.push((r) => compare(r[column], value) < 0);
     return this;
   }
   order(column: string, opts?: { ascending?: boolean }) {
@@ -78,32 +100,36 @@ class FakeQuery implements PromiseLike<Result> {
   }
 
   private run(): Result {
+    const error = this.errors[this.mode];
+    if (error) return { data: null, error: structuredClone(error) };
     const match = (r: Row) => this.filters.every((f) => f(r));
     if (this.mode === 'insert') {
-      const items = Array.isArray(this.payload) ? this.payload : [this.payload as Row];
+      const items = (Array.isArray(this.payload) ? this.payload : [this.payload as Row]).map(
+        (it) => ({
+          ...it,
+          id: it.id ?? crypto.randomUUID(),
+          created_at: it.created_at ?? new Date().toISOString(),
+        }),
+      );
       this.rows.push(...items);
-      return { data: items, error: null };
+      return { data: structuredClone(items), error: null };
     }
     if (this.mode === 'update') {
       const hit = this.rows.filter(match);
       hit.forEach((r) => Object.assign(r, this.payload));
-      return { data: hit, error: null };
+      return { data: structuredClone(hit), error: null };
     }
     if (this.mode === 'delete') {
       const hit = this.rows.filter(match);
       for (const r of hit) this.rows.splice(this.rows.indexOf(r), 1);
-      return { data: hit, error: null };
+      return { data: structuredClone(hit), error: null };
     }
     const out = this.rows.filter(match);
     if (this.orderBy) {
       const { column, ascending } = this.orderBy;
-      out.sort((a, b) => {
-        const x = a[column] as string;
-        const y = b[column] as string;
-        return (x < y ? -1 : x > y ? 1 : 0) * (ascending ? 1 : -1);
-      });
+      out.sort((a, b) => compare(a[column], b[column]) * (ascending ? 1 : -1));
     }
-    return { data: out, error: null };
+    return { data: structuredClone(out), error: null };
   }
 
   then<R1 = Result, R2 = never>(
@@ -115,25 +141,34 @@ class FakeQuery implements PromiseLike<Result> {
 }
 
 export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
-  const tables: Record<string, Row[]> = options.tables ?? {};
+  const tables: Record<string, Row[]> = structuredClone(options.tables ?? {});
   const listeners = new Set<AuthListener>();
   let session: Session | null = options.session ?? null;
-  const calls: { rpc: Array<{ name: string; args: unknown }> } = { rpc: [] };
+  const calls: { rpc: Array<{ name: string; args: unknown }>; signOut: unknown[] } = {
+    rpc: [],
+    signOut: [],
+  };
 
   const emit = (event: string) => listeners.forEach((l) => l(event, session));
   const ok = <T>(data: T) => Promise.resolve({ data, error: null });
+  const override = (name: AuthMethod, args: unknown) => {
+    const h = options.auth?.[name];
+    if (!h) return null;
+    const res = h(args);
+    return Promise.resolve({ data: res.data ?? null, error: res.error ?? null });
+  };
 
   return {
     calls,
     tables,
     rpc(name: string, args?: unknown) {
       calls.rpc.push({ name, args });
-      const handler = options.rpc?.[name];
-      const res = handler ? handler(args) : {};
+      const res = options.rpc?.[name]?.(args) ?? {};
       return Promise.resolve({ data: res.data ?? null, error: res.error ?? null });
     },
     from(table: string) {
-      return new FakeQuery((tables[table] ??= []));
+      const rows = (tables[table] ??= []);
+      return new FakeQuery(rows, options.errors?.[table] ?? {});
     },
     auth: {
       getSession: () => ok({ session }),
@@ -141,20 +176,38 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
         listeners.add(cb);
         return { data: { subscription: { unsubscribe: () => listeners.delete(cb) } } };
       },
-      signInWithPassword: ({ email }: { email: string; password: string }) => {
-        session = makeSession(email);
+      signInWithPassword(args: { email: string; password: string }) {
+        const o = override('signInWithPassword', args);
+        if (o) return o;
+        session = makeSession(args.email);
         emit('SIGNED_IN');
         return ok({ session, user: session.user });
       },
-      signUp: ({ email }: { email: string; password: string }) =>
-        ok({ session: null, user: { id: 'user-new', email } }),
-      resetPasswordForEmail: () => ok({}),
-      updateUser: () => ok({ user: session?.user ?? null }),
-      signOut: () => {
+      signUp(args: { email: string; password: string }) {
+        return (
+          override('signUp', args) ??
+          ok({ session: null, user: { id: 'user-new', email: args.email } })
+        );
+      },
+      resetPasswordForEmail(args?: unknown) {
+        return override('resetPasswordForEmail', args) ?? ok({});
+      },
+      updateUser(args?: unknown) {
+        return override('updateUser', args) ?? ok({ user: session?.user ?? null });
+      },
+      signOut(args?: unknown) {
+        calls.signOut.push(args);
+        const o = override('signOut', args);
+        if (o) return o;
         session = null;
         emit('SIGNED_OUT');
         return Promise.resolve({ error: null });
       },
+    },
+    /** Teste: o supabase-js encerra a sessão sozinho (ex.: falha ao renovar o token). */
+    simulateExternalSignOut() {
+      session = null;
+      emit('SIGNED_OUT');
     },
   };
 }

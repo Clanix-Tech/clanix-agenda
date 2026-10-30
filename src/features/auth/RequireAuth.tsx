@@ -9,11 +9,18 @@ export const FIRST_ACCESS_PATH = '/primeiro-acesso';
  * ou não ligado) é tratado como `true`.
  */
 export function RequireAuth({ hasBusinessHours }: { hasBusinessHours?: boolean }) {
-  const { session, loading } = useAuth();
+  const { session, loading, signOutReason } = useAuth();
   const location = useLocation();
 
   if (loading) return <LoadingState label="Carregando…" />;
-  if (!session) return <Navigate to="/entrar" replace state={{ from: location }} />;
+  if (!session)
+    return (
+      <Navigate
+        to="/entrar"
+        replace
+        state={{ from: location, reason: signOutReason === 'sessao' ? 'sessao' : undefined }}
+      />
+    );
   if (hasBusinessHours === false && location.pathname !== FIRST_ACCESS_PATH) {
     return <Navigate to={FIRST_ACCESS_PATH} replace />;
   }
