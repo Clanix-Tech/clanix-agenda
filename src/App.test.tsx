@@ -1,6 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+
+vi.mock('@/lib/supabase', async () => {
+  const { createFakeSupabase } = await import('@/test/fakeSupabase');
+  return { supabase: createFakeSupabase() };
+});
+
 import App from './App';
-it('mostra o nome do produto', () => {
+
+it('sem sessão, o app abre na tela Entrar', async () => {
   render(<App />);
-  expect(screen.getByRole('heading', { name: 'Agenda em Ordem' })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
 });

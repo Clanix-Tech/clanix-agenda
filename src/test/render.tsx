@@ -1,0 +1,64 @@
+import { type ReactElement } from 'react';
+import { render } from '@testing-library/react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-router';
+import { vi } from 'vitest';
+import type { Session } from '@supabase/supabase-js';
+import { AuthProvider } from '@/features/auth/AuthProvider';
+import { createQueryClient } from '@/lib/queryClient';
+import { handleSessionExpired } from '@/lib/sessionExpiry';
+import { createFakeSupabase, makeSession, type FakeSupabase } from '@/test/fakeSupabase';
+
+// Qualquer módulo importado a partir daqui que use `@/lib/supabase` recebe o fake atual.
+const holder = vi.hoisted(() => ({ current: undefined as unknown }));
+vi.mock('@/lib/supabase', () => ({
+  supabase: new Proxy({}, { get: (_t, prop) => Reflect.get(holder.current as object, prop) }),
+}));
+
+/** Simula `window.matchMedia` para uma largura de janela (suporta `(min-width: Npx)`). */
+export function setViewportWidth(width: number) {
+  window.matchMedia = ((query: string) => {
+    const min = /min-width:\s*(\d+)px/.exec(query);
+    return {
+      matches: min ? width >= Number(min[1]) : false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    } as unknown as MediaQueryList;
+  }) as typeof window.matchMedia;
+}
+
+export type RenderOptions = {
+  route?: string;
+  /** `true` = sessão padrão de teste; `false`/ausente = sem sessão. */
+  session?: Session | boolean | null;
+  supabase?: FakeSupabase;
+  /** Tabela de rotas; padrão: `ui` em `*`. */
+  routes?: RouteObject[];
+};
+
+export function renderWithProviders(ui: ReactElement | null, options: RenderOptions = {}) {
+  const session =
+    options.session === true ? makeSession() : options.session ? options.session : null;
+  const fake = options.supabase ?? createFakeSupabase({ session });
+  holder.current = fake;
+
+  const routes = options.routes ?? [{ path: '*', element: ui }];
+  const router = createMemoryRouter(routes, { initialEntries: [options.route ?? '/'] });
+  const queryClient = createQueryClient(() =>
+    handleSessionExpired(router, () => fake.auth.signOut()),
+  );
+
+  const result = render(
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </QueryClientProvider>,
+  );
+  return { ...result, router, queryClient, supabase: fake };
+}
