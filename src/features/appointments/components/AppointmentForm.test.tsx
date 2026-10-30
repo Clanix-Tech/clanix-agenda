@@ -7,6 +7,19 @@ import { createFakeSupabase, makeSession, type Row } from '@/test/fakeSupabase';
 import type { Appointment } from '../api';
 import { AppointmentForm } from './AppointmentForm';
 
+// Permite simular uma falha inesperada ao montar o input no envio (horas diferentes de 00:00).
+const timeFlags = vi.hoisted(() => ({ throwOnBuild: false }));
+vi.mock('@/lib/time', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/lib/time')>();
+  return {
+    ...mod,
+    localToInstant: (date: string, time: string, tz: string) => {
+      if (timeFlags.throwOnBuild && time !== '00:00') throw new RangeError('Data ou hora inválida');
+      return mod.localToInstant(date, time, tz);
+    },
+  };
+});
+
 vi.mock('sonner', async (importOriginal) => {
   const mod = await importOriginal<typeof import('sonner')>();
   return { ...mod, toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) };
@@ -81,15 +94,11 @@ function setup(
   });
   function Harness() {
     const [open, setOpen] = useState(true);
-    return open ? (
-      <AppointmentForm
-        mode={opts.mode ?? 'create'}
-        appointment={opts.appointment}
-        prefill={opts.prefill}
-        onDone={() => setOpen(false)}
-      />
+    if (!open) return <p>fechado</p>;
+    return opts.mode === 'edit' ? (
+      <AppointmentForm mode="edit" appointment={opts.appointment!} onDone={() => setOpen(false)} />
     ) : (
-      <p>fechado</p>
+      <AppointmentForm mode="create" prefill={opts.prefill} onDone={() => setOpen(false)} />
     );
   }
   const r = renderWithProviders(<Harness />, { supabase: fake });
@@ -118,6 +127,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  timeFlags.throwOnBuild = false;
 });
 
 describe('AppointmentForm (novo)', () => {
@@ -206,17 +216,71 @@ describe('AppointmentForm (novo)', () => {
     });
     await ready();
     setField('Início', '14:30');
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Esse horário já está ocupado');
-    expect(alert).toHaveTextContent('Juliana Rocha (14:00–15:00)');
-    expect(alert).toHaveTextContent('Mariana Lima (15:00–16:00)');
-    expect(alert).not.toHaveTextContent('Bia');
+    await screen.findByText('Esse horário já está ocupado');
+    // Calculado pelo app: região educada (status), não alerta.
+    const box = screen.getByText('Esse horário já está ocupado').closest('[role]')!;
+    expect(box).toHaveAttribute('role', 'status');
+    expect(box).toHaveAttribute('aria-live', 'polite');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(box).toHaveTextContent('Juliana Rocha (14:00–15:00)');
+    expect(box).toHaveTextContent('Mariana Lima (15:00–16:00)');
+    expect(box).not.toHaveTextContent('Bia');
     expect(screen.getByText('Livres em 02/11 para 1 hora')).toBeInTheDocument();
     expect(saveButton()).toBeDisabled();
+    expect(saveButton()).toHaveAccessibleDescription(/Esse horário já está ocupado/);
     await user().click(screen.getByRole('button', { name: /^16:00/ }));
     expect(startInput()).toHaveValue('16:00');
+    expect(startInput()).toHaveFocus();
     expect(await screen.findByText('Horário livre, dentro do expediente')).toBeInTheDocument();
     expect(screen.queryByText('Esse horário já está ocupado')).not.toBeInTheDocument();
+  });
+
+  it('RN18: conflito vindo de cache velho é conferido de novo; sem conflito fresco, Salvar libera', async () => {
+    const { fake } = setup({
+      appointments: [
+        appt({
+          id: 'a1',
+          client_name: 'Juliana Rocha',
+          starts_at: '2026-11-02T17:00:00Z',
+          ends_at: '2026-11-02T18:00:00Z',
+        }),
+      ],
+    });
+    const name = await ready();
+    await user().type(name, 'Ana');
+    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await waitFor(() => expect(startInput()).toHaveValue('09:00'));
+    // Outro aparelho cancelou depois que o dia entrou no cache.
+    fake.tables.appointments![0]!.status = 'cancelado';
+
+    setField('Início', '14:30');
+    expect(screen.getByText(/Verificando…/)).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+    expect(await screen.findByText('Horário livre, dentro do expediente')).toBeInTheDocument();
+    expect(screen.queryByText('Esse horário já está ocupado')).not.toBeInTheDocument();
+    expect(saveButton()).toBeEnabled();
+    expect(saveButton()).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('"Verificar de novo" busca o dia outra vez e libera quando o conflito sumiu', async () => {
+    const { fake } = setup({
+      appointments: [
+        appt({
+          id: 'a1',
+          client_name: 'Juliana Rocha',
+          starts_at: '2026-11-02T17:00:00Z',
+          ends_at: '2026-11-02T18:00:00Z',
+        }),
+      ],
+    });
+    await ready();
+    setField('Início', '14:30');
+    expect(await screen.findByText('Esse horário já está ocupado')).toBeInTheDocument();
+    expect(saveButton()).toBeDisabled();
+    fake.tables.appointments![0]!.status = 'cancelado';
+    await user().click(screen.getByRole('button', { name: 'Verificar de novo' }));
+    expect(await screen.findByText('Horário livre, dentro do expediente')).toBeInTheDocument();
+    expect(saveButton()).toBeEnabled();
   });
 
   it('RPC devolve AE001 → ConflictPanel aparece e os campos continuam preenchidos', async () => {
@@ -226,7 +290,10 @@ describe('AppointmentForm (novo)', () => {
     await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
     setField('Início', '10:00');
     await user().click(saveButton());
-    expect(await screen.findByText('Esse horário já está ocupado')).toBeInTheDocument();
+    // Recusa do servidor (AE001): alerta.
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent('Esse horário já está ocupado'),
+    );
     expect(screen.getByText('Livres em 02/11 para 1 hora')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^09:30/ })).toBeInTheDocument();
     expect(screen.getByLabelText('Nome do cliente')).toHaveValue('Ana');
@@ -388,6 +455,47 @@ describe('AppointmentForm (novo)', () => {
       p_starts_at: '2026-11-02T08:00:00-03:00',
       p_confirm_past: true,
     });
+  });
+
+  it('RN13 no envio: o início passou entre a tela e o clique → não envia e pede a confirmação', async () => {
+    const { fake } = setup();
+    const name = await ready();
+    await user().type(name, 'Ana');
+    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    setField('Início', '09:30');
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(saveButton()).toBeEnabled();
+
+    // 09:31 em São Paulo: 09:30 já passou, mas a tela ainda não sabe.
+    vi.setSystemTime(new Date('2026-11-02T12:31:00Z'));
+    await user().click(saveButton());
+    const check = await screen.findByRole('checkbox', {
+      name: 'Este é um registro de atendimento que já aconteceu',
+    });
+    expect(fake.calls.rpc).toHaveLength(0);
+    expect(saveButton()).toBeDisabled();
+    expect(saveButton()).toHaveTextContent('Salvar agendamento');
+    expect(saveButton()).toHaveAccessibleDescription(/Esse horário já passou/);
+
+    await user().click(check);
+    await user().click(saveButton());
+    await screen.findByText('fechado');
+    expect(fake.calls.rpc[0]?.args).toMatchObject({ p_confirm_past: true });
+  });
+
+  it('falha inesperada ao montar o envio libera o botão e mostra "Algo deu errado"', async () => {
+    const { fake } = setup();
+    const name = await ready();
+    await user().type(name, 'Ana');
+    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    setField('Início', '10:00');
+    timeFlags.throwOnBuild = true;
+    await user().click(saveButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent('Algo deu errado. Tente novamente.');
+    expect(saveButton()).toHaveTextContent('Salvar agendamento');
+    expect(saveButton()).toBeEnabled();
+    expect(fake.calls.rpc).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument();
   });
 
   it('a caixa de confirmação some quando o início volta a ser futuro', async () => {

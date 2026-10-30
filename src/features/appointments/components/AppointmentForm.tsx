@@ -37,13 +37,9 @@ import { durationLabel, durationOptions, durationShort } from '../domain/duratio
 import { ConflictPanel, type ConflictItem, type SuggestedSlot } from './ConflictPanel';
 import type { NewAppointmentPrefill } from './NewAppointmentProvider';
 
-export type AppointmentFormProps = {
-  mode: 'create' | 'edit';
-  /** Obrigatório no modo `edit`. */
-  appointment?: Appointment;
-  prefill?: NewAppointmentPrefill;
-  onDone(): void;
-};
+export type AppointmentFormProps =
+  | { mode: 'create'; prefill?: NewAppointmentPrefill; appointment?: never; onDone(): void }
+  | { mode: 'edit'; appointment: Appointment; prefill?: never; onDone(): void };
 
 type FormInput = z.input<typeof appointmentFormSchema>;
 
@@ -118,15 +114,17 @@ function minutesBetween(fromIso: string, toIso: string): number {
   return Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 60_000);
 }
 
-/** Mantém "agora" atualizado para o aviso de horário passado (RN13). */
-function useNow(intervalMs = 30_000): number {
+/** Mantém "agora" atualizado para o aviso de horário passado (RN13); `refresh` força a leitura. */
+function useNow(intervalMs = 30_000): [number, () => void] {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), intervalMs);
     return () => clearInterval(t);
   }, [intervalMs]);
-  return now;
+  return [now, () => setNow(Date.now())];
 }
+
+const UNEXPECTED: AppError = { kind: 'desconhecido', message: 'Algo deu errado. Tente novamente.' };
 
 type Snapshot = string;
 const snapshotOf = (v: Partial<FormInput>): Snapshot =>
@@ -141,28 +139,23 @@ const snapshotOf = (v: Partial<FormInput>): Snapshot =>
     v.confirmPast,
   ]);
 
-function FormBody({
-  mode,
-  appointment,
-  prefill,
-  onDone,
-  title,
-  profile,
-  shifts,
-  favorites,
-}: BodyProps) {
+function FormBody(props: BodyProps) {
+  const { onDone, title, profile, shifts, favorites } = props;
+  // `appointment` só existe no modo edit (garantido pelo tipo das props).
+  const appointment = props.mode === 'edit' ? props.appointment : null;
+  const prefill = props.mode === 'create' ? props.prefill : undefined;
+  const isEdit = appointment !== null;
   const tz = profile.timezone;
   const step = profile.slot_interval_minutes as 15 | 30 | 60;
-  const isEdit = mode === 'edit';
   const ids = useId();
   const formId = `${ids}-form`;
-  const now = useNow();
+  const [now, refreshNow] = useNow();
   const [today] = useState(() => todayInTz(tz));
 
   const form = useForm<FormInput, unknown, AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
     defaultValues: (() => {
-      if (isEdit && appointment) {
+      if (appointment) {
         const local = instantToLocal(appointment.starts_at, tz);
         return {
           clientName: appointment.client_name,
@@ -195,7 +188,7 @@ function FormBody({
   const [otherOpen, setOtherOpen] = useState(
     () =>
       favorites.length === 0 ||
-      (isEdit && !!appointment && !favorites.some((f) => f.name === appointment.service_name)),
+      (!!appointment && !favorites.some((f) => f.name === appointment.service_name)),
   );
   const otherRef = useRef<HTMLInputElement | null>(null);
   const selectedFav = otherOpen ? undefined : favorites.find((f) => f.name === values.serviceName);
@@ -248,6 +241,30 @@ function FormBody({
   const showConflict = !isEdit && !!startIso && (conflicts.length > 0 || showServerConflict);
   const visibleFailure = failure && failure.snapshot === snapshot ? failure.error : null;
 
+  // RN18: o cache do dia pode ter até 30 s. Antes de bloquear o Salvar por um conflito
+  // calculado aqui, busca o dia de novo; só dados frescos sustentam o bloqueio.
+  const conflictKey = conflicts.length > 0 ? `${startIso}|${endIso}` : null;
+  const [verified, setVerified] = useState<{ key: string; ok: boolean } | null>(null);
+  const { refetch: refetchDay } = dayQuery;
+  const verifying = conflictKey !== null && verified?.key !== conflictKey;
+  useEffect(() => {
+    if (conflictKey === null || verified?.key === conflictKey) return;
+    let alive = true;
+    void refetchDay().then(
+      (res) => alive && setVerified({ key: conflictKey, ok: !res.isError }),
+      () => alive && setVerified({ key: conflictKey, ok: false }),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [conflictKey, verified, refetchDay]);
+  const conflictConfirmed = conflictKey !== null && verified?.key === conflictKey && verified.ok;
+  const checking = verifying || (showServerConflict && dayQuery.isFetching);
+  const recheck = () => {
+    if (conflictKey !== null) setVerified(null);
+    else void refetchDay();
+  };
+
   const suggestions: SuggestedSlot[] = useMemo(() => {
     if (!showConflict || !Number.isFinite(duration)) return [];
     const target = toMin(startTime);
@@ -280,7 +297,10 @@ function FormBody({
   const [pending, setPending] = useState(false);
   const lastJob = useRef<(() => Promise<void>) | null>(null);
 
-  const blocked = !isEdit && ((isPast && !confirmPast) || conflicts.length > 0);
+  const pastBlocked = !isEdit && isPast && !confirmPast;
+  // Bloqueia enquanto confere e quando dados frescos confirmam o conflito (T08).
+  const conflictBlocked = !isEdit && (verifying || conflictConfirmed);
+  const blocked = pastBlocked || conflictBlocked;
 
   const release = () => {
     busyRef.current = false;
@@ -293,13 +313,14 @@ function FormBody({
     onDone();
   };
 
-  const fail = async (err: unknown, snap: Snapshot) => {
+  const fail = async (err: unknown, snap: Snapshot, rangeKey?: string) => {
     const app = toAppError(err);
     if (app.kind === 'conflito') {
       setFailure(null);
       setServerConflict(snap);
-      // A lista de quem ocupa precisa estar atual.
-      await dayQuery.refetch().catch(() => {});
+      // A lista de quem ocupa precisa estar atual (e já conta como verificação).
+      const res = await refetchDay().catch(() => null);
+      if (rangeKey) setVerified({ key: rangeKey, ok: !!res && !res.isError });
     } else {
       setFailure({ error: app, snapshot: snap });
     }
@@ -312,7 +333,7 @@ function FormBody({
       await create.mutateAsync(input);
       succeed();
     } catch (e) {
-      await fail(e, snap);
+      await fail(e, snap, `${input.startsAt}|${input.endsAt}`);
     }
   };
 
@@ -335,38 +356,52 @@ function FormBody({
     const snap = snapshotOf(getValues());
     setFailure(null);
     setServerConflict(null);
-    if (isEdit && appointment) {
+    try {
+      if (appointment) {
+        run(
+          sendEdit(
+            {
+              id: appointment.id,
+              clientName: v.clientName,
+              serviceName: v.serviceName,
+              clientPhone: v.clientPhone,
+              notes: v.notes,
+            },
+            snap,
+          ),
+        );
+        return;
+      }
+      const end = addMinutesToTime(v.startTime, v.durationMinutes);
+      if (end === null) throw new RangeError('fim inválido');
+      const startsAt = localToInstant(v.date, v.startTime, tz);
+      const endsAt = localToInstant(v.date, end, tz);
+      // RN13 com o relógio de agora: o início pode ter passado desde a última renderização.
+      const past = Date.parse(startsAt) < Date.now();
+      if (past && !v.confirmPast) {
+        refreshNow();
+        release();
+        return;
+      }
       run(
-        sendEdit(
+        sendCreate(
           {
-            id: appointment.id,
             clientName: v.clientName,
-            serviceName: v.serviceName,
             clientPhone: v.clientPhone,
+            serviceName: v.serviceName,
+            startsAt,
+            endsAt,
             notes: v.notes,
+            confirmPast: past,
           },
           snap,
         ),
       );
-      return;
+    } catch {
+      // Nunca fica preso em "Salvando…".
+      setFailure({ error: UNEXPECTED, snapshot: snap });
+      release();
     }
-    const end = addMinutesToTime(v.startTime, v.durationMinutes)!;
-    const startsAt = localToInstant(v.date, v.startTime, tz);
-    const past = Date.parse(startsAt) < Date.now();
-    run(
-      sendCreate(
-        {
-          clientName: v.clientName,
-          clientPhone: v.clientPhone,
-          serviceName: v.serviceName,
-          startsAt,
-          endsAt: localToInstant(v.date, end, tz),
-          notes: v.notes,
-          confirmPast: past && v.confirmPast,
-        },
-        snap,
-      ),
-    );
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -402,8 +437,11 @@ function FormBody({
     requestAnimationFrame(() => otherRef.current?.focus());
   };
 
+  const startRef = useRef<HTMLInputElement | null>(null);
   const pickSuggestion = (start: string) => {
     setValue('startTime', start, { shouldDirty: true, shouldValidate: formState.isSubmitted });
+    // O botão clicado some com o conflito; o foco volta para o campo que mudou.
+    startRef.current?.focus();
   };
 
   const options = durationOptions(
@@ -416,7 +454,13 @@ function FormBody({
   const describe = (name: string, err?: FieldError, extra?: string) =>
     [err ? errId(name) : null, extra].filter(Boolean).join(' ') || undefined;
   const conflictId = `${ids}-conflict`;
+  const pastId = `${ids}-past`;
   const serviceInput = register('serviceName');
+  const startInput = register('startTime');
+  // O botão desabilitado aponta para o motivo visível.
+  const blockedReason =
+    [pastBlocked ? pastId : null, conflictBlocked ? conflictId : null].filter(Boolean).join(' ') ||
+    undefined;
 
   const submitLabel = isEdit ? 'Salvar alterações' : 'Salvar agendamento';
   const footer = (
@@ -433,6 +477,7 @@ function FormBody({
         type="submit"
         form={formId}
         disabled={pending || blocked}
+        aria-describedby={!pending ? blockedReason : undefined}
         className="h-[52px] flex-[2] rounded-[14px] bg-[#2563EB] text-[15px] font-bold text-white hover:bg-[#1D4ED8] lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
       >
         {pending ? 'Salvando…' : submitLabel}
@@ -578,7 +623,11 @@ function FormBody({
                     showConflict ? conflictId : undefined,
                   )}
                   className={cn(inputCls, showConflict && 'border-2 border-[#DC2626]')}
-                  {...register('startTime')}
+                  {...startInput}
+                  ref={(el) => {
+                    startInput.ref(el);
+                    startRef.current = el;
+                  }}
                 />
               </Field>
             </div>
@@ -622,7 +671,7 @@ function FormBody({
             {isPast && (
               <div className="flex flex-col gap-2 rounded-[14px] border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-sm text-[#92400E]">
                 {!confirmPast && (
-                  <p>
+                  <p id={pastId}>
                     Esse horário já passou. Para salvar, confirme que é o registro de um atendimento
                     que já aconteceu.
                   </p>
@@ -652,7 +701,16 @@ function FormBody({
                   suggestions={suggestions}
                   dayLabel={formatDateBR(date, tz).slice(0, 5)}
                   durationLabel={durationLabel(duration)}
+                  live={showServerConflict ? 'alert' : 'status'}
+                  checking={checking}
+                  unverified={
+                    !showServerConflict &&
+                    conflictKey !== null &&
+                    verified?.key === conflictKey &&
+                    !verified.ok
+                  }
                   onPick={pickSuggestion}
+                  onRecheck={recheck}
                 />
               </Availability>
             )}
