@@ -22,9 +22,22 @@ const row = (weekday: number) => ({
 });
 
 function setup(rpc?: FakeSupabaseOptions['rpc'], rows: Record<string, unknown>[] = []) {
-  const supabase = createFakeSupabase({
+  const supabase: ReturnType<typeof createFakeSupabase> = createFakeSupabase({
     session: makeSession(),
-    rpc,
+    // Como o banco real: set_business_hours grava as linhas recebidas.
+    rpc: {
+      set_business_hours: (args) => {
+        const custom = rpc?.set_business_hours?.(args);
+        if (custom?.error) return custom;
+        const { p_shifts } = args as { p_shifts: { start_time: string; end_time: string }[] };
+        supabase.tables.business_hours = p_shifts.map((x) => ({
+          ...x,
+          start_time: x.start_time + ':00',
+          end_time: x.end_time + ':00',
+        }));
+        return {};
+      },
+    },
     tables: { business_hours: rows },
   });
   return renderWithProviders(null, { routes, route: '/primeiro-acesso', session: true, supabase });
@@ -75,12 +88,45 @@ describe('FirstAccessPage', () => {
 
   it('não confirma com horários inválidos', async () => {
     const { supabase } = setup();
-    await userEvent.click(await screen.findByRole('button', { name: /Seg/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Seg/ }));
     const end = screen.getByLabelText('Fim do turno 1 de Segunda');
     await userEvent.clear(end);
     await userEvent.type(end, '08:00');
     expect(screen.getByText('O fim precisa ser depois do início')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar e começar' })).toBeDisabled();
     await waitFor(() => expect(supabase.calls.rpc).toHaveLength(0));
+  });
+
+  it('erro de um dia aparece na linha resumo mesmo com o dia recolhido, com dica no botão', async () => {
+    setup();
+    await userEvent.click(await screen.findByRole('button', { name: /^Seg/ }));
+    const end = screen.getByLabelText('Fim do turno 1 de Segunda');
+    await userEvent.clear(end);
+    await userEvent.type(end, '08:00');
+    await userEvent.click(screen.getByRole('button', { name: /^Seg/ }));
+    const row = screen.getByRole('button', { name: /^Seg/ });
+    expect(row).toHaveAttribute('aria-invalid', 'true');
+    expect(row).toHaveTextContent('O fim precisa ser depois do início');
+    expect(screen.getByText('Corrija os horários destacados.')).toBeInTheDocument();
+  });
+
+  it('sem nenhum dia de atendimento explica por que não dá para confirmar', async () => {
+    setup();
+    for (const d of ['Seg', 'Ter', 'Qua', 'Qui', 'Sex']) {
+      await userEvent.click(await screen.findByRole('button', { name: new RegExp('^' + d) }));
+      await userEvent.click(screen.getByRole('switch'));
+      await userEvent.click(screen.getByRole('button', { name: new RegExp('^' + d) }));
+    }
+    expect(screen.getByText('Escolha ao menos um dia de atendimento.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar e começar' })).toBeDisabled();
+  });
+
+  it('depois de salvar, o expediente é buscado de novo no servidor', async () => {
+    const { queryClient } = setup();
+    await userEvent.click(await screen.findByRole('button', { name: 'Confirmar e começar' }));
+    await screen.findByRole('heading', { name: 'Início' }, { timeout: 4000 });
+    await waitFor(() =>
+      expect(queryClient.getQueryState(['business-hours'])?.isInvalidated).toBe(false),
+    );
   });
 });

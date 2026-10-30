@@ -16,7 +16,8 @@ export default function FirstAccessPage() {
   const mutation = useSetBusinessHours();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const valid = isValid(shifts) && shifts.length > 0;
+  const empty = shifts.length === 0;
+  const valid = isValid(shifts) && !empty;
 
   const confirm = async () => {
     // A ref bloqueia o segundo clique antes de o React atualizar `isPending`.
@@ -27,6 +28,7 @@ export default function FirstAccessPage() {
       await mutation.mutateAsync(shifts);
       // Evita voltar a /primeiro-acesso com a lista vazia ainda em cache.
       qc.setQueryData(hoursKey, shifts);
+      void qc.invalidateQueries({ queryKey: hoursKey });
       // Sucesso: continua bloqueado, a página sai de cena.
       void navigate('/', { replace: true });
     } catch (e) {
@@ -50,6 +52,11 @@ export default function FirstAccessPage() {
         O intervalo entre os turnos (12:00–13:00) fica livre para o almoço. Você pode mudar tudo
         depois em Ajustes.
       </p>
+      {!valid && !mutation.isPending && (
+        <p role="status" className="text-sm text-[#64748B]">
+          {empty ? 'Escolha ao menos um dia de atendimento.' : 'Corrija os horários destacados.'}
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-sm font-medium text-[#B91C1C]">
           {error}
