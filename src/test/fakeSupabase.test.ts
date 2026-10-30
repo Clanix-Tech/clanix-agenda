@@ -101,3 +101,19 @@ describe('fakeSupabase: eq por instante', () => {
     expect((miss.data as unknown[]).length).toBe(0);
   });
 });
+
+describe('fakeSupabase: null com semantica SQL', () => {
+  it('eq, neq, gte, lt, lte e in nunca casam colunas null/ausentes', async () => {
+    const fake = createFakeSupabase({
+      tables: { t: [{ id: 'n', v: null }, { id: 'm' }, { id: 'a', v: 'Ana' }] },
+    });
+    const ids = async (q: PromiseLike<{ data: unknown }>) =>
+      ((await q).data as Array<{ id: string }>).map((r) => r.id);
+    expect(await ids(fake.from('t').select().eq('v', 'Ana'))).toEqual(['a']);
+    expect(await ids(fake.from('t').select().neq('v', 'cancelado'))).toEqual(['a']);
+    expect(await ids(fake.from('t').select().gte('v', 'A'))).toEqual(['a']);
+    expect(await ids(fake.from('t').select().lt('v', 'Z'))).toEqual(['a']);
+    expect(await ids(fake.from('t').select().lte('v', 'Z'))).toEqual(['a']);
+    expect(await ids(fake.from('t').select().in('v', ['Ana']))).toEqual(['a']);
+  });
+});

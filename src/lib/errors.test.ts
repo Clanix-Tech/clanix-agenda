@@ -77,4 +77,13 @@ describe('toAppError', () => {
     expect(toAppError(e)).toEqual(e);
     expect(toAppError({ kind: 'conflito', message: 'x' }).kind).toBe('conflito');
   });
+
+  it('PGRST116 (nenhuma linha) vira nao_encontrado', () => {
+    expect(toAppError({ code: 'PGRST116' }).kind).toBe('nao_encontrado');
+  });
+
+  it('nao confunde chaves do prototype com codigos ou kinds', () => {
+    expect(toAppError({ code: 'toString' }).kind).toBe('desconhecido');
+    expect(toAppError({ kind: 'toString', message: 'x' }).kind).toBe('desconhecido');
+  });
 });

@@ -67,6 +67,7 @@ export async function createWithReconcile(
         .eq('starts_at', input.startsAt)
         .eq('ends_at', input.endsAt)
         .eq('client_name', input.clientName.trim())
+        .eq('service_name', input.serviceName.trim())
         .neq('status', 'cancelado')
         .gte('created_at', since)
         .order('created_at', { ascending: false })

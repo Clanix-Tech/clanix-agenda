@@ -102,6 +102,7 @@ describe('useCreateAppointment', () => {
       tables: {
         appointments: [
           appt({ client_name: 'Outra' }),
+          appt({ id: 'ap-4', service_name: 'Barba' }),
           appt({ id: 'ap-2', status: 'cancelado' }),
           appt({ id: 'ap-3', created_at: new Date(Date.now() - 10 * 60_000).toISOString() }),
         ],

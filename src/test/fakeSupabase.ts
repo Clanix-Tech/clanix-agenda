@@ -48,6 +48,21 @@ function compare(a: unknown, b: unknown): number {
   return (a as string) < (b as string) ? -1 : (a as string) > (b as string) ? 1 : 0;
 }
 
+const isNil = (v: unknown) => v === null || v === undefined;
+
+/** Semântica SQL: com null/undefined nada é igual, diferente, maior nem menor. */
+function sqlCompare(a: unknown, b: unknown): number | null {
+  if (isNil(a) || isNil(b)) return null;
+  return compare(a, b);
+}
+
+function sqlEquals(a: unknown, b: unknown): boolean {
+  if (isNil(a) || isNil(b)) return false;
+  const isoA = typeof a === 'string' && ISO_LIKE.test(a);
+  const isoB = typeof b === 'string' && ISO_LIKE.test(b);
+  return isoA && isoB ? compare(a, b) === 0 : a === b;
+}
+
 type Filter = (row: Row) => boolean;
 
 /** Construtor de consultas encadeável e "thenable" (como o do supabase-js). */
@@ -85,27 +100,36 @@ class FakeQuery implements PromiseLike<Result> {
     return this;
   }
   eq(column: string, value: unknown) {
-    this.filters.push((r) => compare(r[column], value) === 0);
+    this.filters.push((r) => sqlEquals(r[column], value));
     return this;
   }
   gte(column: string, value: unknown) {
-    this.filters.push((r) => compare(r[column], value) >= 0);
+    this.filters.push((r) => {
+      const c = sqlCompare(r[column], value);
+      return c !== null && c >= 0;
+    });
     return this;
   }
   lt(column: string, value: unknown) {
-    this.filters.push((r) => compare(r[column], value) < 0);
+    this.filters.push((r) => {
+      const c = sqlCompare(r[column], value);
+      return c !== null && c < 0;
+    });
     return this;
   }
   lte(column: string, value: unknown) {
-    this.filters.push((r) => compare(r[column], value) <= 0);
+    this.filters.push((r) => {
+      const c = sqlCompare(r[column], value);
+      return c !== null && c <= 0;
+    });
     return this;
   }
   neq(column: string, value: unknown) {
-    this.filters.push((r) => compare(r[column], value) !== 0);
+    this.filters.push((r) => !isNil(r[column]) && !isNil(value) && !sqlEquals(r[column], value));
     return this;
   }
   in(column: string, values: unknown[]) {
-    this.filters.push((r) => values.includes(r[column]));
+    this.filters.push((r) => values.some((v) => sqlEquals(r[column], v)));
     return this;
   }
   limit(count: number) {

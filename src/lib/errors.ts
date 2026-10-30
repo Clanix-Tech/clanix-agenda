@@ -32,6 +32,7 @@ const BY_CODE: Record<string, AppErrorKind> = {
   AE004: 'passado',
   AE005: 'transicao',
   AE006: 'nao_encontrado',
+  PGRST116: 'nao_encontrado',
   '42501': 'sessao',
   PGRST301: 'sessao',
   '23514': 'dados_invalidos',
@@ -57,11 +58,15 @@ export function toAppError(err: unknown): AppError {
 
   if (obj) {
     // Idempotente: um AppError ja mapeado (ex.: langado por uma mutacao) passa intacto.
-    if (typeof obj.kind === 'string' && obj.kind in MESSAGES && typeof obj.message === 'string') {
+    if (
+      typeof obj.kind === 'string' &&
+      Object.hasOwn(MESSAGES, obj.kind) &&
+      typeof obj.message === 'string'
+    ) {
       return build(obj.kind as AppErrorKind);
     }
     const code = obj.code;
-    if (typeof code === 'string' && code in BY_CODE) {
+    if (typeof code === 'string' && Object.hasOwn(BY_CODE, code)) {
       const k = BY_CODE[code];
       if (k) return build(k);
     }
