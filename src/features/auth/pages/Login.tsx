@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { toAppError } from '@/lib/errors';
 import { useAuth } from '../AuthProvider';
 import { authErrorMessage } from '../authErrors';
+import { safeRedirectPath } from '../safeRedirect';
 import { loginSchema } from '../schemas';
 import {
   AuthInput,
@@ -27,7 +28,7 @@ export default function Login() {
   const { session } = useAuth();
   const state = location.state as { from?: From; reason?: string } | null;
   const expired = state?.reason === 'sessao';
-  const target = state?.from?.pathname ? `${state.from.pathname}${state.from.search ?? ''}` : '/';
+  const target = safeRedirectPath(state?.from);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
   const {

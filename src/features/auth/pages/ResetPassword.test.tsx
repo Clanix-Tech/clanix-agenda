@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/render';
 import { createFakeSupabase, makeSession } from '@/test/fakeSupabase';
@@ -73,5 +73,26 @@ describe('ResetPassword', () => {
     expect(
       await screen.findByText('A senha precisa ter pelo menos 8 caracteres.'),
     ).toBeInTheDocument();
+  });
+
+  it('sessão de recuperação que chega depois não mostra "expirou" no meio', async () => {
+    const session = makeSession();
+    type SessionResult = Awaited<
+      ReturnType<ReturnType<typeof createFakeSupabase>['auth']['getSession']>
+    >;
+    let resolve: (v: SessionResult) => void = () => {};
+    const supabase = createFakeSupabase();
+    supabase.auth.getSession = () =>
+      new Promise<SessionResult>((r) => {
+        resolve = r;
+      });
+    renderWithProviders(null, { routes, route: '/redefinir-senha', supabase });
+    expect(screen.getByRole('status')).toHaveTextContent('Carregando…');
+    expect(screen.queryByText(/Este link expirou/)).not.toBeInTheDocument();
+    await act(async () => {
+      resolve({ data: { session }, error: null });
+    });
+    expect(await screen.findByLabelText('Nova senha')).toBeInTheDocument();
+    expect(screen.queryByText(/Este link expirou/)).not.toBeInTheDocument();
   });
 });

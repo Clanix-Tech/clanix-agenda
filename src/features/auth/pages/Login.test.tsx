@@ -135,6 +135,14 @@ describe('Login', () => {
     expect(router.state.location.search).toBe('?v=semana');
   });
 
+  it('`from` externo (//evil.com) é ignorado e vai para /', async () => {
+    const { router } = renderWithProviders(null, { routes, route: '/entrar' });
+    await router.navigate('/entrar', { state: { from: { pathname: '//evil.com', search: '' } } });
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/'));
+  });
+
   it('sem `from` vai para /', async () => {
     const { router } = renderWithProviders(null, { routes, route: '/entrar' });
     await fill();
