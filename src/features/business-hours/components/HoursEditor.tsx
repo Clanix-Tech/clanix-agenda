@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ComponentProps } from 'react';
 import { Switch } from '@/components/ui/switch';
 import type { Shift } from '@/features/appointments/domain/freeSlots';
 import { MAX_SHIFTS, MAX_TIME, validateShifts } from '../domain/validateHours';
@@ -35,10 +36,19 @@ function summary(shifts: Shift[]) {
     .join(' · ');
 }
 
-// Área de toque >= 44 px sem mudar o tamanho visual do switch.
-const SWITCH_HIT = "relative after:absolute after:-inset-x-2 after:-inset-y-3.5 after:content-['']";
-
 const TIME_CLASS = 'h-11 rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A]';
+
+/**
+ * Switch dentro de uma caixa própria de 44x44 px (label): o toque na caixa aciona o switch e a
+ * área nunca invade controles vizinhos, porque faz parte do fluxo do layout.
+ */
+function DaySwitch(props: ComponentProps<typeof Switch>) {
+  return (
+    <label className="inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center">
+      <Switch {...props} />
+    </label>
+  );
+}
 
 export function HoursEditor({ value, onChange, variant }: Props) {
   const [open, setOpen] = useState<number | null>(null);
@@ -150,8 +160,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
               className="flex flex-col gap-3 rounded-xl border border-[#E2E8F0] bg-white p-4 sm:flex-row sm:items-start"
             >
               <div className="flex w-44 items-center gap-3">
-                <Switch
-                  className={SWITCH_HIT}
+                <DaySwitch
                   checked={has}
                   disabled={!has && atMax}
                   onCheckedChange={(on) => toggleDay(day.weekday, on)}
@@ -187,7 +196,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
             <button
               type="button"
               aria-expanded={expanded}
-              aria-invalid={dayError ? true : undefined}
+              aria-describedby={dayError && !expanded ? `day-error-${day.weekday}` : undefined}
               onClick={() => setOpen(expanded ? null : day.weekday)}
               className="flex min-h-12 w-full items-center gap-4 px-4 py-2 text-left"
             >
@@ -198,14 +207,18 @@ export function HoursEditor({ value, onChange, variant }: Props) {
                 {closed ? 'Fechado' : summary(dayShifts)}
               </span>
               {dayError && !expanded && (
-                <span className="ml-auto text-sm font-medium text-[#B91C1C]">{dayError}</span>
+                <span
+                  id={`day-error-${day.weekday}`}
+                  className="ml-auto text-sm font-medium text-[#B91C1C]"
+                >
+                  {dayError}
+                </span>
               )}
             </button>
             {expanded && (
               <div className="flex flex-col gap-3 border-t border-[#E2E8F0] p-4">
                 <div className="flex items-center gap-3">
-                  <Switch
-                    className={SWITCH_HIT}
+                  <DaySwitch
                     checked={!closed}
                     disabled={closed && atMax}
                     onCheckedChange={(on) => toggleDay(day.weekday, on)}

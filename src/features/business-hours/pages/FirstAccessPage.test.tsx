@@ -105,7 +105,7 @@ describe('FirstAccessPage', () => {
     await userEvent.type(end, '08:00');
     await userEvent.click(screen.getByRole('button', { name: /^Seg/ }));
     const row = screen.getByRole('button', { name: /^Seg/ });
-    expect(row).toHaveAttribute('aria-invalid', 'true');
+    expect(row).toHaveAccessibleDescription('O fim precisa ser depois do início');
     expect(row).toHaveTextContent('O fim precisa ser depois do início');
     expect(screen.getByText('Corrija os horários destacados.')).toBeInTheDocument();
   });
@@ -122,11 +122,13 @@ describe('FirstAccessPage', () => {
   });
 
   it('depois de salvar, o expediente é buscado de novo no servidor', async () => {
-    const { queryClient } = setup();
-    await userEvent.click(await screen.findByRole('button', { name: 'Confirmar e começar' }));
+    const { supabase } = setup();
+    const fromSpy = vi.spyOn(supabase, 'from');
+    await screen.findByRole('button', { name: 'Confirmar e começar' });
+    const reads = () => fromSpy.mock.calls.filter(([t]) => t === 'business_hours').length;
+    const before = reads();
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar e começar' }));
     await screen.findByRole('heading', { name: 'Início' }, { timeout: 4000 });
-    await waitFor(() =>
-      expect(queryClient.getQueryState(['business-hours'])?.isInvalidated).toBe(false),
-    );
+    await waitFor(() => expect(reads()).toBeGreaterThan(before));
   });
 });
