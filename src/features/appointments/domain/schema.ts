@@ -19,6 +19,7 @@ export const appointmentFormSchema = z
       .max(120, 'O nome pode ter no máximo 120 caracteres'),
     clientPhone: z
       .string()
+      .trim()
       .refine((v) => v === '' || (v.length >= 8 && v.length <= 20 && /^[0-9()+ -]+$/.test(v)), {
         message: 'Telefone inválido',
       }),
@@ -34,7 +35,7 @@ export const appointmentFormSchema = z
       .int('A duração deve ser em minutos inteiros')
       .min(5, 'A duração mínima é de 5 minutos')
       .max(720, 'A duração máxima é de 12 horas'),
-    notes: z.string().max(1000, 'As observações podem ter no máximo 1000 caracteres'),
+    notes: z.string().trim().max(1000, 'As observações podem ter no máximo 1000 caracteres'),
     confirmPast: z.boolean(),
   })
   .superRefine((v, ctx) => {

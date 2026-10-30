@@ -34,6 +34,17 @@ describe('appointmentFormSchema', () => {
     expect(msgs({ ...valid, clientPhone: '123' })).toContain('Telefone inválido');
     expect(msgs({ ...valid, clientPhone: '' })).toEqual([]);
   });
+  it('telefone validado após trim como no banco', () => {
+    expect(msgs({ ...valid, clientPhone: ' 1234567 ' })).toContain('Telefone inválido');
+    const r = appointmentFormSchema.safeParse({ ...valid, clientPhone: '   ' });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.clientPhone).toBe('');
+  });
+  it('notas aparadas antes do limite', () => {
+    const r = appointmentFormSchema.safeParse({ ...valid, notes: '   ' });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.notes).toBe('');
+  });
   it('fim no mesmo dia', () => {
     expect(msgs({ ...valid, startTime: '23:30' })).toContain(
       'O atendimento precisa terminar no mesmo dia',
