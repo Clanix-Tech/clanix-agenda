@@ -18,4 +18,9 @@ export default tseslint.config(
     ],
     languageOptions: { ecmaVersion: 2023, globals: globals.browser },
   },
+  {
+    // Componentes gerados pelo shadcn exportam variantes junto dos componentes.
+    files: ['src/components/ui/**'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 );
