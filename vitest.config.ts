@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   test: {
+    env: { TZ: 'Europe/Lisbon' },
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
