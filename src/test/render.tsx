@@ -1,5 +1,5 @@
-import { type ReactElement } from 'react';
-import { render } from '@testing-library/react';
+import { type ReactElement, type ReactNode } from 'react';
+import { render, renderHook } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-router';
 import { vi } from 'vitest';
@@ -59,4 +59,24 @@ export function renderWithProviders(ui: ReactElement | null, options: RenderOpti
     </QueryClientProvider>,
   );
   return { ...result, router, queryClient, supabase: fake };
+}
+
+/** `renderHook` com QueryClient, AuthProvider e o fake de Supabase (sem roteador). */
+export function renderHookWithProviders<T>(
+  hook: () => T,
+  options: { session?: Session | boolean | null; supabase?: FakeSupabase } = {},
+) {
+  const session =
+    options.session === true ? makeSession() : options.session ? options.session : null;
+  const fake = options.supabase ?? createFakeSupabase({ session });
+  holder.current = fake;
+  const expireRef: ExpireRef = { current: () => {} };
+  const queryClient = createQueryClient(expireRef);
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider expireRef={expireRef}>{children}</AuthProvider>
+    </QueryClientProvider>
+  );
+  const result = renderHook(hook, { wrapper });
+  return { ...result, queryClient, supabase: fake };
 }

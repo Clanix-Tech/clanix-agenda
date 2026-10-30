@@ -59,3 +59,45 @@ describe('fakeSupabase', () => {
     expect(res.error).toMatchObject({ code: 'invalid_credentials' });
   });
 });
+
+describe('fakeSupabase: consultas extras', () => {
+  const tables = {
+    t: [
+      { id: 'a', n: 1, s: 'x' },
+      { id: 'b', n: 2, s: 'y' },
+      { id: 'c', n: 3, s: 'x' },
+    ],
+  };
+
+  it('neq, in, lte e limit', async () => {
+    const fake = createFakeSupabase({ tables });
+    const ids = async (q: PromiseLike<{ data: unknown }>) =>
+      ((await q).data as Array<{ id: string }>).map((r) => r.id);
+    expect(await ids(fake.from('t').select().neq('s', 'x'))).toEqual(['b']);
+    expect(await ids(fake.from('t').select().in('id', ['a', 'c']))).toEqual(['a', 'c']);
+    expect(await ids(fake.from('t').select().lte('n', 2))).toEqual(['a', 'b']);
+    expect(await ids(fake.from('t').select().order('n').limit(2))).toEqual(['a', 'b']);
+  });
+
+  it('single e maybeSingle', async () => {
+    const fake = createFakeSupabase({ tables });
+    const one = await fake.from('t').select().eq('id', 'a').single();
+    expect(one).toEqual({ data: { id: 'a', n: 1, s: 'x' }, error: null });
+    const none = await fake.from('t').select().eq('id', 'z').maybeSingle();
+    expect(none).toEqual({ data: null, error: null });
+    const missing = await fake.from('t').select().eq('id', 'z').single();
+    expect((missing.error as { code: string }).code).toBe('PGRST116');
+  });
+});
+
+describe('fakeSupabase: eq por instante', () => {
+  it('eq e neq comparam datas ISO como instantes', async () => {
+    const fake = createFakeSupabase({
+      tables: { t: [{ id: 'a', at: '2026-11-02T12:00:00+00:00' }] },
+    });
+    const hit = await fake.from('t').select().eq('at', '2026-11-02T09:00:00-03:00');
+    expect((hit.data as unknown[]).length).toBe(1);
+    const miss = await fake.from('t').select().neq('at', '2026-11-02T09:00:00-03:00');
+    expect((miss.data as unknown[]).length).toBe(0);
+  });
+});

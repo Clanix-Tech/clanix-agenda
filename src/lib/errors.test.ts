@@ -71,4 +71,10 @@ describe('toAppError', () => {
     expect(toAppError({ code: 'XX999' }).kind).toBe('rede');
     spy.mockRestore();
   });
+
+  it('e idempotente para um AppError ja mapeado', () => {
+    const e = toAppError({ code: '42501' });
+    expect(toAppError(e)).toEqual(e);
+    expect(toAppError({ kind: 'conflito', message: 'x' }).kind).toBe('conflito');
+  });
 });

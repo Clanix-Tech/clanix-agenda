@@ -53,9 +53,11 @@ type Filter = (row: Row) => boolean;
 /** Construtor de consultas encadeável e "thenable" (como o do supabase-js). */
 class FakeQuery implements PromiseLike<Result> {
   private filters: Filter[] = [];
-  private orderBy: { column: string; ascending: boolean } | null = null;
+  private orderBy: Array<{ column: string; ascending: boolean }> = [];
   private mode: Operation = 'select';
   private payload: Row | Row[] | null = null;
+  private singleMode: 'one' | 'maybe' | null = null;
+  private max: number | null = null;
 
   private readonly rows: Row[];
   private readonly errors: Partial<Record<Operation, unknown>>;
@@ -83,7 +85,7 @@ class FakeQuery implements PromiseLike<Result> {
     return this;
   }
   eq(column: string, value: unknown) {
-    this.filters.push((r) => r[column] === value);
+    this.filters.push((r) => compare(r[column], value) === 0);
     return this;
   }
   gte(column: string, value: unknown) {
@@ -94,12 +96,48 @@ class FakeQuery implements PromiseLike<Result> {
     this.filters.push((r) => compare(r[column], value) < 0);
     return this;
   }
+  lte(column: string, value: unknown) {
+    this.filters.push((r) => compare(r[column], value) <= 0);
+    return this;
+  }
+  neq(column: string, value: unknown) {
+    this.filters.push((r) => compare(r[column], value) !== 0);
+    return this;
+  }
+  in(column: string, values: unknown[]) {
+    this.filters.push((r) => values.includes(r[column]));
+    return this;
+  }
+  limit(count: number) {
+    this.max = count;
+    return this;
+  }
+  single() {
+    this.singleMode = 'one';
+    return this;
+  }
+  maybeSingle() {
+    this.singleMode = 'maybe';
+    return this;
+  }
   order(column: string, opts?: { ascending?: boolean }) {
-    this.orderBy = { column, ascending: opts?.ascending ?? true };
+    this.orderBy.push({ column, ascending: opts?.ascending ?? true });
     return this;
   }
 
   private run(): Result {
+    const res = this.exec();
+    if (res.error || !this.singleMode) return res;
+    const list = res.data as Row[];
+    if (list.length === 1) return { data: list[0], error: null };
+    if (list.length === 0 && this.singleMode === 'maybe') return { data: null, error: null };
+    return {
+      data: null,
+      error: { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' },
+    };
+  }
+
+  private exec(): Result {
     const error = this.errors[this.mode];
     if (error) return { data: null, error: structuredClone(error) };
     const match = (r: Row) => this.filters.every((f) => f(r));
@@ -125,11 +163,15 @@ class FakeQuery implements PromiseLike<Result> {
       return { data: structuredClone(hit), error: null };
     }
     const out = this.rows.filter(match);
-    if (this.orderBy) {
-      const { column, ascending } = this.orderBy;
-      out.sort((a, b) => compare(a[column], b[column]) * (ascending ? 1 : -1));
-    }
-    return { data: structuredClone(out), error: null };
+    out.sort((a, b) => {
+      for (const { column, ascending } of this.orderBy) {
+        const c = compare(a[column], b[column]);
+        if (c !== 0) return c * (ascending ? 1 : -1);
+      }
+      return 0;
+    });
+    const limited = this.max === null ? out : out.slice(0, this.max);
+    return { data: structuredClone(limited), error: null };
   }
 
   then<R1 = Result, R2 = never>(

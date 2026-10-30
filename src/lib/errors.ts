@@ -56,6 +56,10 @@ export function toAppError(err: unknown): AppError {
     typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : undefined;
 
   if (obj) {
+    // Idempotente: um AppError ja mapeado (ex.: langado por uma mutacao) passa intacto.
+    if (typeof obj.kind === 'string' && obj.kind in MESSAGES && typeof obj.message === 'string') {
+      return build(obj.kind as AppErrorKind);
+    }
     const code = obj.code;
     if (typeof code === 'string' && code in BY_CODE) {
       const k = BY_CODE[code];
