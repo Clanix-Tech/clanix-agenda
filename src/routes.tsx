@@ -9,12 +9,18 @@ import ResetPassword from '@/features/auth/pages/ResetPassword';
 import DashboardPage from '@/features/dashboard/DashboardPage';
 import AgendaPage from '@/features/calendar/pages/AgendaPage';
 import ReschedulePage from '@/features/appointments/pages/ReschedulePage';
+import { AppointmentForm } from '@/features/appointments/components/AppointmentForm';
+import type { NewAppointmentProviderProps } from '@/features/appointments/components/NewAppointmentProvider';
 import HistoryPage from '@/features/history/HistoryPage';
 import SettingsPage from '@/features/settings/SettingsPage';
 import FirstAccessPage from '@/features/business-hours/pages/FirstAccessPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
-// A Task 8 liga `renderForm` ao AppShell.
+/** "+" e horários livres abrem o formulário real de novo agendamento (Task 8). */
+const renderNewAppointment: NewAppointmentProviderProps['renderForm'] = ({ prefill, close }) => (
+  <AppointmentForm mode="create" prefill={prefill} onDone={close} />
+);
+
 export const routes: RouteObject[] = [
   {
     element: <RootLayout />,
@@ -28,7 +34,7 @@ export const routes: RouteObject[] = [
         children: [
           { path: '/primeiro-acesso', element: <FirstAccessPage /> },
           {
-            element: <AppShell />,
+            element: <AppShell renderForm={renderNewAppointment} />,
             children: [
               { path: '/', element: <DashboardPage /> },
               { path: '/agenda', element: <AgendaPage /> },

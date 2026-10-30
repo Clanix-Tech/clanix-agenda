@@ -14,21 +14,28 @@ vi.mock('@/lib/supabase', () => ({
   supabase: new Proxy({}, { get: (_t, prop) => Reflect.get(holder.current as object, prop) }),
 }));
 
-/** Simula `window.matchMedia` para uma largura de janela (suporta `(min-width: Npx)`). */
+const mediaListeners = new Set<() => void>();
+
+/**
+ * Simula `window.matchMedia` para uma largura de janela (suporta `(min-width: Npx)`).
+ * Avisa os assinantes atuais, então mudar a largura com a tela montada simula um
+ * redimensionamento (envolva em `act`).
+ */
 export function setViewportWidth(width: number) {
   window.matchMedia = ((query: string) => {
     const min = /min-width:\s*(\d+)px/.exec(query);
     return {
       matches: min ? width >= Number(min[1]) : false,
       media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: (_type: string, l: () => void) => mediaListeners.add(l),
+      removeEventListener: (_type: string, l: () => void) => mediaListeners.delete(l),
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => false,
       onchange: null,
     } as unknown as MediaQueryList;
   }) as typeof window.matchMedia;
+  mediaListeners.forEach((l) => l());
 }
 
 export type RenderOptions = {

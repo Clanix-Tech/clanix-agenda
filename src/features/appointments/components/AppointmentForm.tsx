@@ -1,0 +1,781 @@
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useForm, useWatch, type FieldError } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleCheck, Plus, TriangleAlert } from 'lucide-react';
+import { toast } from 'sonner';
+import type { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ResponsiveSheet } from '@/components/layout/ResponsiveSheet';
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { LoadingState } from '@/components/feedback/LoadingState';
+import { toAppError, type AppError } from '@/lib/errors';
+import { cn } from '@/lib/utils';
+import {
+  addMinutesToTime,
+  formatDateBR,
+  formatTime,
+  instantToLocal,
+  localToInstant,
+  todayInTz,
+} from '@/lib/time';
+import { useProfile, type Profile } from '@/features/profile/api';
+import { useBusinessHours } from '@/features/business-hours/api';
+import { useFavorites, type FavoriteService } from '@/features/favorites/api';
+import {
+  useAppointmentsRange,
+  useCreateAppointment,
+  useUpdateDetails,
+  type Appointment,
+  type CreateAppointmentInput,
+} from '../api';
+import { appointmentFormSchema, type AppointmentFormValues } from '../domain/schema';
+import { freeIntervals, isWithinShifts, slotStarts, type Shift } from '../domain/freeSlots';
+import { durationLabel, durationOptions, durationShort } from '../domain/duration';
+import { ConflictPanel, type ConflictItem, type SuggestedSlot } from './ConflictPanel';
+import type { NewAppointmentPrefill } from './NewAppointmentProvider';
+
+export type AppointmentFormProps = {
+  mode: 'create' | 'edit';
+  /** Obrigatório no modo `edit`. */
+  appointment?: Appointment;
+  prefill?: NewAppointmentPrefill;
+  onDone(): void;
+};
+
+type FormInput = z.input<typeof appointmentFormSchema>;
+
+/**
+ * Formulário de novo agendamento (T05/T08) e de edição de detalhes. Abre dentro de
+ * `ResponsiveSheet`; todo o estado (react-hook-form, mutações, erros) vive aqui, acima da
+ * gaveta/janela, então trocar entre Drawer e Dialog ao cruzar 1024 px não perde o que foi digitado.
+ */
+export function AppointmentForm(props: AppointmentFormProps) {
+  const profile = useProfile();
+  const hours = useBusinessHours();
+  const favorites = useFavorites();
+  const title = props.mode === 'edit' ? 'Editar agendamento' : 'Novo agendamento';
+  // Sem favoritos (ou falha ao lê-los) o serviço vira texto livre; perfil e expediente são necessários.
+  const favs = favorites.data ?? (favorites.isError ? [] : undefined);
+
+  if (profile.data && hours.data && favs) {
+    return (
+      <FormBody
+        {...props}
+        title={title}
+        profile={profile.data}
+        shifts={hours.data}
+        favorites={favs}
+      />
+    );
+  }
+
+  const failed = profile.isError || hours.isError;
+  return (
+    <ResponsiveSheet open onOpenChange={(o) => !o && props.onDone()} title={title}>
+      {failed ? (
+        <ErrorState
+          message={toAppError(profile.error ?? hours.error).message}
+          onRetry={() => {
+            void profile.refetch();
+            void hours.refetch();
+          }}
+        />
+      ) : (
+        <LoadingState />
+      )}
+    </ResponsiveSheet>
+  );
+}
+
+type BodyProps = AppointmentFormProps & {
+  title: string;
+  profile: Profile;
+  shifts: Shift[];
+  favorites: FavoriteService[];
+};
+
+const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+
+function safeInstant(date: string, time: string, tz: string): string | null {
+  try {
+    return localToInstant(date, time, tz);
+  } catch {
+    return null;
+  }
+}
+
+function nextDay(date: string): string {
+  const d = new Date(
+    Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, Number(date.slice(8, 10)) + 1),
+  );
+  return d.toISOString().slice(0, 10);
+}
+
+function minutesBetween(fromIso: string, toIso: string): number {
+  return Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 60_000);
+}
+
+/** Mantém "agora" atualizado para o aviso de horário passado (RN13). */
+function useNow(intervalMs = 30_000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(t);
+  }, [intervalMs]);
+  return now;
+}
+
+type Snapshot = string;
+const snapshotOf = (v: Partial<FormInput>): Snapshot =>
+  JSON.stringify([
+    v.clientName,
+    v.clientPhone,
+    v.serviceName,
+    v.date,
+    v.startTime,
+    v.durationMinutes,
+    v.notes,
+    v.confirmPast,
+  ]);
+
+function FormBody({
+  mode,
+  appointment,
+  prefill,
+  onDone,
+  title,
+  profile,
+  shifts,
+  favorites,
+}: BodyProps) {
+  const tz = profile.timezone;
+  const step = profile.slot_interval_minutes as 15 | 30 | 60;
+  const isEdit = mode === 'edit';
+  const ids = useId();
+  const formId = `${ids}-form`;
+  const now = useNow();
+  const [today] = useState(() => todayInTz(tz));
+
+  const form = useForm<FormInput, unknown, AppointmentFormValues>({
+    resolver: zodResolver(appointmentFormSchema),
+    defaultValues: (() => {
+      if (isEdit && appointment) {
+        const local = instantToLocal(appointment.starts_at, tz);
+        return {
+          clientName: appointment.client_name,
+          clientPhone: appointment.client_phone ?? '',
+          serviceName: appointment.service_name,
+          date: local.date,
+          startTime: local.time,
+          durationMinutes: minutesBetween(appointment.starts_at, appointment.ends_at),
+          notes: appointment.notes ?? '',
+          confirmPast: false,
+        };
+      }
+      return {
+        clientName: '',
+        clientPhone: '',
+        serviceName: '',
+        date: prefill?.date ?? today,
+        startTime: prefill?.startTime ?? '',
+        durationMinutes: profile.default_duration_minutes,
+        notes: '',
+        confirmPast: false,
+      };
+    })(),
+  });
+  const { register, setValue, getValues, formState } = form;
+  const errors = formState.errors;
+  const values = useWatch({ control: form.control }) as FormInput;
+  const snapshot = snapshotOf(values);
+
+  const [otherOpen, setOtherOpen] = useState(
+    () =>
+      favorites.length === 0 ||
+      (isEdit && !!appointment && !favorites.some((f) => f.name === appointment.service_name)),
+  );
+  const otherRef = useRef<HTMLInputElement | null>(null);
+  const selectedFav = otherOpen ? undefined : favorites.find((f) => f.name === values.serviceName);
+
+  // --- Disponibilidade (só no modo create) -------------------------------------------------
+  const date = values.date ?? '';
+  const startTime = values.startTime ?? '';
+  const duration = Number(values.durationMinutes);
+  const dayStartIso = safeInstant(date, '00:00', tz);
+  const rangeDate = dayStartIso ? date : today;
+  const dayQuery = useAppointmentsRange(
+    localToInstant(rangeDate, '00:00', tz),
+    localToInstant(nextDay(rangeDate), '00:00', tz),
+  );
+  const busyAppts = useMemo(
+    () => (dayQuery.data ?? []).filter((a) => a.status !== 'cancelado'),
+    [dayQuery.data],
+  );
+  const busy = useMemo(
+    () => busyAppts.map((a) => ({ startsAt: a.starts_at, endsAt: a.ends_at })),
+    [busyAppts],
+  );
+
+  const endTime = Number.isFinite(duration) ? addMinutesToTime(startTime, duration) : null;
+  const startIso = dayStartIso && endTime ? safeInstant(date, startTime, tz) : null;
+  const endIso = startIso && endTime ? safeInstant(date, endTime, tz) : null;
+  const isPast = !isEdit && !!startIso && Date.parse(startIso) < now;
+  const confirmPast = !!values.confirmPast;
+
+  const conflicts: ConflictItem[] =
+    !isEdit && startIso && endIso
+      ? busyAppts
+          .filter(
+            (a) =>
+              Date.parse(a.starts_at) < Date.parse(endIso) &&
+              Date.parse(a.ends_at) > Date.parse(startIso),
+          )
+          .map((a) => ({
+            id: a.id,
+            name: a.client_name,
+            start: formatTime(a.starts_at, tz),
+            end: formatTime(a.ends_at, tz),
+          }))
+      : [];
+
+  // Erros do servidor valem só enquanto os campos continuam iguais aos enviados.
+  const [failure, setFailure] = useState<{ error: AppError; snapshot: Snapshot } | null>(null);
+  const [serverConflict, setServerConflict] = useState<Snapshot | null>(null);
+  const showServerConflict = serverConflict === snapshot;
+  const showConflict = !isEdit && !!startIso && (conflicts.length > 0 || showServerConflict);
+  const visibleFailure = failure && failure.snapshot === snapshot ? failure.error : null;
+
+  const suggestions: SuggestedSlot[] = useMemo(() => {
+    if (!showConflict || !Number.isFinite(duration)) return [];
+    const target = toMin(startTime);
+    const starts = slotStarts(freeIntervals(date, tz, shifts, busy, new Date(now)), duration, step)
+      .filter((s) => s !== startTime)
+      .sort(
+        (a, b) => Math.abs(toMin(a) - target) - Math.abs(toMin(b) - target) || a.localeCompare(b),
+      )
+      .slice(0, 3)
+      .sort();
+    return starts.map((s) => ({ start: s, end: addMinutesToTime(s, duration) ?? '' }));
+  }, [showConflict, duration, startTime, date, tz, shifts, busy, now, step]);
+
+  // Início padrão: o próximo horário livre do dia (quando nada foi informado).
+  const defaultedStart = useRef(isEdit || !!prefill?.startTime);
+  useEffect(() => {
+    if (defaultedStart.current || !dayQuery.data) return;
+    defaultedStart.current = true;
+    const v = getValues();
+    if (v.startTime !== '' || !safeInstant(v.date, '00:00', tz)) return;
+    const free = freeIntervals(v.date, tz, shifts, busy, new Date());
+    const first = slotStarts(free, Number(v.durationMinutes), step)[0];
+    if (first) setValue('startTime', first);
+  }, [dayQuery.data, busy, getValues, setValue, shifts, step, tz]);
+
+  // --- Envio --------------------------------------------------------------------------------
+  const create = useCreateAppointment();
+  const update = useUpdateDetails();
+  const busyRef = useRef(false);
+  const [pending, setPending] = useState(false);
+  const lastJob = useRef<(() => Promise<void>) | null>(null);
+
+  const blocked = !isEdit && ((isPast && !confirmPast) || conflicts.length > 0);
+
+  const release = () => {
+    busyRef.current = false;
+    setPending(false);
+  };
+
+  const succeed = () => {
+    toast.success('Agendamento salvo');
+    // Continua travado: o formulário sai de cena.
+    onDone();
+  };
+
+  const fail = async (err: unknown, snap: Snapshot) => {
+    const app = toAppError(err);
+    if (app.kind === 'conflito') {
+      setFailure(null);
+      setServerConflict(snap);
+      // A lista de quem ocupa precisa estar atual.
+      await dayQuery.refetch().catch(() => {});
+    } else {
+      setFailure({ error: app, snapshot: snap });
+    }
+    release();
+  };
+
+  const sendCreate = (input: CreateAppointmentInput, snap: Snapshot) => async () => {
+    try {
+      // Mesma instância do hook em todas as tentativas: RN17 reconhece o próprio agendamento.
+      await create.mutateAsync(input);
+      succeed();
+    } catch (e) {
+      await fail(e, snap);
+    }
+  };
+
+  const sendEdit =
+    (input: Parameters<typeof update.mutateAsync>[0], snap: Snapshot) => async () => {
+      try {
+        await update.mutateAsync(input);
+        succeed();
+      } catch (e) {
+        await fail(e, snap);
+      }
+    };
+
+  const run = (job: () => Promise<void>) => {
+    lastJob.current = job;
+    void job();
+  };
+
+  const onValid = (v: AppointmentFormValues) => {
+    const snap = snapshotOf(getValues());
+    setFailure(null);
+    setServerConflict(null);
+    if (isEdit && appointment) {
+      run(
+        sendEdit(
+          {
+            id: appointment.id,
+            clientName: v.clientName,
+            serviceName: v.serviceName,
+            clientPhone: v.clientPhone,
+            notes: v.notes,
+          },
+          snap,
+        ),
+      );
+      return;
+    }
+    const end = addMinutesToTime(v.startTime, v.durationMinutes)!;
+    const startsAt = localToInstant(v.date, v.startTime, tz);
+    const past = Date.parse(startsAt) < Date.now();
+    run(
+      sendCreate(
+        {
+          clientName: v.clientName,
+          clientPhone: v.clientPhone,
+          serviceName: v.serviceName,
+          startsAt,
+          endsAt: localToInstant(v.date, end, tz),
+          notes: v.notes,
+          confirmPast: past && v.confirmPast,
+        },
+        snap,
+      ),
+    );
+  };
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    // A ref bloqueia o 2º clique/Enter antes de o React re-renderizar o botão desabilitado.
+    if (busyRef.current || blocked) return;
+    busyRef.current = true;
+    setPending(true);
+    void form.handleSubmit(onValid, release)();
+  };
+
+  const retry = () => {
+    const job = lastJob.current;
+    if (busyRef.current || !job) return;
+    busyRef.current = true;
+    setPending(true);
+    setFailure(null);
+    void job();
+  };
+
+  // --- Serviço ------------------------------------------------------------------------------
+  const pickFavorite = (f: FavoriteService) => {
+    setOtherOpen(false);
+    setValue('serviceName', f.name, { shouldDirty: true, shouldValidate: formState.isSubmitted });
+    if (!isEdit) setValue('durationMinutes', f.duration_minutes, { shouldDirty: true });
+  };
+
+  const pickOther = () => {
+    if (!otherOpen) {
+      setOtherOpen(true);
+      setValue('serviceName', '', { shouldDirty: true });
+    }
+    requestAnimationFrame(() => otherRef.current?.focus());
+  };
+
+  const pickSuggestion = (start: string) => {
+    setValue('startTime', start, { shouldDirty: true, shouldValidate: formState.isSubmitted });
+  };
+
+  const options = durationOptions(
+    profile.default_duration_minutes,
+    selectedFav?.duration_minutes,
+    Number.isFinite(duration) ? duration : undefined,
+  );
+
+  const errId = (name: string) => `${ids}-${name}-err`;
+  const describe = (name: string, err?: FieldError, extra?: string) =>
+    [err ? errId(name) : null, extra].filter(Boolean).join(' ') || undefined;
+  const conflictId = `${ids}-conflict`;
+  const serviceInput = register('serviceName');
+
+  const submitLabel = isEdit ? 'Salvar alterações' : 'Salvar agendamento';
+  const footer = (
+    <div className="flex w-full gap-2.5 lg:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onDone}
+        className="h-[52px] flex-1 rounded-[14px] border-[#E2E8F0] text-[15px] font-semibold text-[#0F2D5B] lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="submit"
+        form={formId}
+        disabled={pending || blocked}
+        className="h-[52px] flex-[2] rounded-[14px] bg-[#2563EB] text-[15px] font-bold text-white hover:bg-[#1D4ED8] lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
+      >
+        {pending ? 'Salvando…' : submitLabel}
+      </Button>
+    </div>
+  );
+
+  return (
+    <ResponsiveSheet open onOpenChange={(o) => !o && onDone()} title={title} footer={footer}>
+      <form id={formId} noValidate onSubmit={onSubmit} className="flex flex-col gap-4 pt-1">
+        <div className="grid gap-4 lg:grid-cols-2 lg:gap-3">
+          <Field id={`${ids}-name`} label="Nome do cliente" error={errors.clientName} errId={errId}>
+            <Input
+              id={`${ids}-name`}
+              autoComplete="off"
+              aria-invalid={!!errors.clientName}
+              aria-describedby={describe('name', errors.clientName)}
+              className={inputCls}
+              {...register('clientName')}
+            />
+          </Field>
+          <Field
+            id={`${ids}-phone`}
+            label={
+              <>
+                Telefone <small className="font-medium text-[#64748B]">(opcional)</small>
+              </>
+            }
+            error={errors.clientPhone}
+            errId={errId}
+            errKey="phone"
+          >
+            <Input
+              id={`${ids}-phone`}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 90000-0000"
+              aria-invalid={!!errors.clientPhone}
+              aria-describedby={describe('phone', errors.clientPhone)}
+              className={inputCls}
+              {...register('clientPhone')}
+            />
+          </Field>
+        </div>
+
+        <fieldset
+          className="flex flex-col gap-2"
+          aria-describedby={!otherOpen ? describe('service', errors.serviceName) : undefined}
+        >
+          <legend className={labelCls}>Serviço</legend>
+          {favorites.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {favorites.map((f) => {
+                const on = selectedFav?.id === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => pickFavorite(f)}
+                    className={cn(chipCls, on && 'border-[#0F2D5B] bg-[#0F2D5B] text-white')}
+                  >
+                    {f.name}{' '}
+                    <span className={cn('font-medium', on ? 'text-[#CBD5E1]' : 'text-[#64748B]')}>
+                      {durationShort(f.duration_minutes)}
+                    </span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                aria-pressed={otherOpen}
+                onClick={pickOther}
+                className={cn(
+                  chipCls,
+                  'border-dashed text-[#1D4ED8]',
+                  otherOpen && 'border-solid border-[#0F2D5B] bg-[#0F2D5B] text-white',
+                )}
+              >
+                <Plus aria-hidden="true" className="size-3.5" />
+                Outro
+              </button>
+            </div>
+          )}
+          {otherOpen ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${ids}-service`} className={favorites.length ? 'sr-only' : labelCls}>
+                Nome do serviço
+              </Label>
+              <Input
+                id={`${ids}-service`}
+                autoComplete="off"
+                placeholder="Ex.: Corte, Consulta…"
+                aria-invalid={!!errors.serviceName}
+                aria-describedby={describe('service', errors.serviceName)}
+                className={inputCls}
+                {...serviceInput}
+                ref={(el) => {
+                  serviceInput.ref(el);
+                  otherRef.current = el;
+                }}
+              />
+            </div>
+          ) : null}
+          <FieldErrorText id={errId('service')} error={errors.serviceName} />
+        </fieldset>
+
+        {!isEdit && (
+          <>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Field
+                id={`${ids}-date`}
+                label="Data"
+                error={errors.date}
+                errId={errId}
+                errKey="date"
+              >
+                <Input
+                  id={`${ids}-date`}
+                  type="date"
+                  aria-invalid={!!errors.date}
+                  aria-describedby={describe('date', errors.date)}
+                  className={inputCls}
+                  {...register('date')}
+                />
+              </Field>
+              <Field
+                id={`${ids}-start`}
+                label="Início"
+                error={errors.startTime}
+                errId={errId}
+                errKey="start"
+              >
+                <Input
+                  id={`${ids}-start`}
+                  type="time"
+                  step={step * 60}
+                  aria-invalid={!!errors.startTime || showConflict}
+                  aria-describedby={describe(
+                    'start',
+                    errors.startTime,
+                    showConflict ? conflictId : undefined,
+                  )}
+                  className={cn(inputCls, showConflict && 'border-2 border-[#DC2626]')}
+                  {...register('startTime')}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 items-end gap-2.5">
+              <Field
+                id={`${ids}-duration`}
+                label="Duração"
+                error={errors.durationMinutes}
+                errId={errId}
+                errKey="duration"
+              >
+                <select
+                  id={`${ids}-duration`}
+                  aria-invalid={!!errors.durationMinutes}
+                  aria-describedby={describe('duration', errors.durationMinutes)}
+                  className={cn(
+                    inputCls,
+                    'w-full border border-[#CBD5E1] bg-white px-3.5 text-[#0F172A] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50',
+                  )}
+                  {...register('durationMinutes', { valueAsNumber: true })}
+                >
+                  {options.map((m) => (
+                    <option key={m} value={m}>
+                      {durationLabel(m)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <div className="flex h-12 flex-col justify-center rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 lg:h-11">
+                <span className="text-[11px] font-semibold text-[#64748B]">Termina às</span>
+                <output
+                  htmlFor={`${ids}-start ${ids}-duration`}
+                  className="font-[Manrope,sans-serif] text-[17px] leading-tight font-extrabold text-[#0F2D5B]"
+                >
+                  {endTime ?? '--:--'}
+                </output>
+              </div>
+            </div>
+
+            {isPast && (
+              <div className="flex flex-col gap-2 rounded-[14px] border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-sm text-[#92400E]">
+                {!confirmPast && (
+                  <p>
+                    Esse horário já passou. Para salvar, confirme que é o registro de um atendimento
+                    que já aconteceu.
+                  </p>
+                )}
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 font-semibold">
+                  <input
+                    type="checkbox"
+                    className="size-5 accent-[#2563EB]"
+                    {...register('confirmPast')}
+                  />
+                  Este é um registro de atendimento que já aconteceu
+                </label>
+              </div>
+            )}
+
+            {startIso && endTime && dayQuery.data && (
+              <Availability
+                showConflict={showConflict}
+                isPast={isPast}
+                within={isWithinShifts(date, tz, shifts, startTime, duration)}
+              >
+                <ConflictPanel
+                  id={conflictId}
+                  start={startTime}
+                  end={endTime}
+                  conflicts={conflicts}
+                  suggestions={suggestions}
+                  dayLabel={formatDateBR(date, tz).slice(0, 5)}
+                  durationLabel={durationLabel(duration)}
+                  onPick={pickSuggestion}
+                />
+              </Availability>
+            )}
+          </>
+        )}
+
+        <Field
+          id={`${ids}-notes`}
+          label={
+            <>
+              Observações <small className="font-medium text-[#64748B]">(opcional)</small>
+            </>
+          }
+          error={errors.notes}
+          errId={errId}
+          errKey="notes"
+        >
+          <Textarea
+            id={`${ids}-notes`}
+            placeholder="Alguma preferência ou cuidado?"
+            aria-invalid={!!errors.notes}
+            aria-describedby={describe('notes', errors.notes)}
+            className="min-h-[76px] resize-none rounded-xl border-[#CBD5E1] bg-white px-3.5 py-3 text-base md:text-base lg:text-[15px]"
+            {...register('notes')}
+          />
+        </Field>
+
+        {visibleFailure && (
+          <div
+            role="alert"
+            className="flex flex-col gap-3 rounded-[14px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3.5 text-sm font-medium text-[#991B1B]"
+          >
+            <p>{visibleFailure.message}</p>
+            {visibleFailure.kind === 'rede' && (
+              <Button
+                type="button"
+                onClick={retry}
+                disabled={pending}
+                className="h-11 self-start rounded-xl bg-[#2563EB] px-5 text-white hover:bg-[#1D4ED8]"
+              >
+                Tentar novamente
+              </Button>
+            )}
+          </div>
+        )}
+      </form>
+    </ResponsiveSheet>
+  );
+}
+
+const labelCls = 'block text-[13px] font-semibold text-[#334155]';
+const inputCls =
+  'h-12 rounded-xl border-[#CBD5E1] bg-white px-3.5 text-base md:text-base lg:h-11 lg:text-[15px]';
+const chipCls =
+  'inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 text-[13px] font-semibold whitespace-nowrap text-[#334155] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50';
+
+function Field({
+  id,
+  label,
+  error,
+  errId,
+  errKey,
+  children,
+}: {
+  id: string;
+  label: ReactNode;
+  error?: FieldError;
+  errId(name: string): string;
+  errKey?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <Label htmlFor={id} className={labelCls}>
+        {label}
+      </Label>
+      {children}
+      <FieldErrorText id={errId(errKey ?? 'name')} error={error} />
+    </div>
+  );
+}
+
+function FieldErrorText({ id, error }: { id: string; error?: FieldError }) {
+  if (!error?.message) return null;
+  return (
+    <p id={id} className="text-sm font-medium text-[#B91C1C]">
+      {error.message}
+    </p>
+  );
+}
+
+function Availability({
+  showConflict,
+  isPast,
+  within,
+  children,
+}: {
+  showConflict: boolean;
+  isPast: boolean;
+  within: boolean;
+  children: ReactNode;
+}) {
+  if (showConflict) return <>{children}</>;
+  // RN13: registro de atendimento passado não recebe aviso de expediente.
+  if (isPast) return null;
+  if (!within) {
+    return (
+      <div
+        role="status"
+        className="flex items-center gap-2.5 rounded-[14px] border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-sm font-semibold text-[#92400E]"
+      >
+        <TriangleAlert aria-hidden="true" className="size-5 shrink-0" />
+        Fora do seu expediente
+      </div>
+    );
+  }
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2.5 rounded-[14px] border border-[#BBF7D0] bg-[#F0FDF4] px-3.5 py-3 text-sm font-semibold text-[#166534]"
+    >
+      <CircleCheck aria-hidden="true" className="size-5 shrink-0" />
+      Horário livre, dentro do expediente
+    </div>
+  );
+}

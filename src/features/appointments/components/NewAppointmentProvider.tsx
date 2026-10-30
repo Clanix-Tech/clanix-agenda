@@ -8,7 +8,7 @@ const NewAppointmentContext = createContext<Ctx | null>(null);
 
 export type NewAppointmentProviderProps = {
   children: ReactNode;
-  /** A Task 8 liga o formulário real; sem ela, nada é renderizado. */
+  /** O formulário real (AppointmentForm) é ligado em `routes.tsx`; sem ela, nada é renderizado. */
   renderForm?: (args: { prefill: NewAppointmentPrefill | undefined; close(): void }) => ReactNode;
 };
 
