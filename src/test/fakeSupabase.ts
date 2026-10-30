@@ -189,8 +189,8 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
           ok({ session: null, user: { id: 'user-new', email: args.email } })
         );
       },
-      resetPasswordForEmail(args?: unknown) {
-        return override('resetPasswordForEmail', args) ?? ok({});
+      resetPasswordForEmail(email: string, options?: unknown) {
+        return override('resetPasswordForEmail', { email, options }) ?? ok({});
       },
       updateUser(args?: unknown) {
         return override('updateUser', args) ?? ok({ user: session?.user ?? null });
