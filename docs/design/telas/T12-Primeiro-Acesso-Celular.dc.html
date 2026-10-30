@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Primeiro acesso, seu expediente — celular</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #EEF2F6;width:100%;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;color:#0F172A}
+.row:last-child{border-bottom:0}
+.sw{width:44px;height:26px;border-radius:99px;position:relative;flex-shrink:0;display:inline-block}
+.sw span{position:absolute;top:3px;width:20px;height:20px;border-radius:99px;background:#fff}
+.d{width:44px;font-size:15px;font-weight:700}
+.t{flex:1;font-size:14px;color:#334155}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A;display:flex;flex-direction:column;overflow:hidden;position:relative">
+  <div style="flex:1;overflow:hidden;padding:28px 20px 120px;display:flex;flex-direction:column;gap:18px">
+    <svg width="52" height="52" viewBox="0 0 64 64" role="img" aria-label="Agenda em Ordem"><rect width="64" height="64" rx="16" fill="#0F2D5B"></rect><rect x="12" y="16" width="40" height="34" rx="7" fill="#fff"></rect><rect x="20" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="30" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="40" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="17" y="25" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="27" y="25" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="17" y="35" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="27" y="35" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="37" y="29" width="11" height="11" rx="3" fill="#0F2D5B"></rect><path d="m39.5 34.5 2.2 2.2 4-4.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <div>
+      <h1 class="m" style="margin:0;font-size:26px;font-weight:800;color:#0F2D5B;line-height:1.2">Quando você atende?</h1>
+      <p style="margin:8px 0 0;font-size:15px;color:#475569;line-height:1.5">Já deixamos um horário comum preenchido. Ajuste o que for diferente e toque em confirmar.</p>
+    </div>
+
+    <section aria-label="Dias e horários" style="background:#fff;border:1px solid #E2E8F0;border-radius:18px;padding:2px 14px">
+      <button class="row"><span class="sw" aria-hidden="true" data-on="true" aria-label="Segunda" style="background:#2563EB"><span style="right:3px"></span></span><span class="d">Seg</span><span class="t">09:00–12:00 · 13:00–18:00</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="true" aria-label="Terça" style="background:#2563EB"><span style="right:3px"></span></span><span class="d">Ter</span><span class="t">09:00–12:00 · 13:00–18:00</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="true" aria-label="Quarta" style="background:#2563EB"><span style="right:3px"></span></span><span class="d">Qua</span><span class="t">09:00–12:00 · 13:00–18:00</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="true" aria-label="Quinta" style="background:#2563EB"><span style="right:3px"></span></span><span class="d">Qui</span><span class="t">09:00–12:00 · 13:00–18:00</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="true" aria-label="Sexta" style="background:#2563EB"><span style="right:3px"></span></span><span class="d">Sex</span><span class="t">09:00–12:00 · 13:00–18:00</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="false" aria-label="Sábado" style="background:#CBD5E1"><span style="left:3px"></span></span><span class="d" style="color:#64748B">Sáb</span><span class="t" style="color:#64748B">Fechado</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="row"><span class="sw" aria-hidden="true" data-on="false" aria-label="Domingo" style="background:#CBD5E1"><span style="left:3px"></span></span><span class="d" style="color:#64748B">Dom</span><span class="t" style="color:#64748B">Fechado</span><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#94A3B8"><path d="m9 18 6-6-6-6"></path></svg></button>
+    </section>
+
+    <p style="margin:0;display:flex;gap:8px;font-size:13px;color:#475569;line-height:1.5"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="color:#1D4ED8;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 16v-4M12 8h.01"></path></svg>O intervalo entre os turnos (12:00–13:00) fica livre para o almoço. Você pode mudar tudo depois em Ajustes.</p>
+  </div>
+
+  <footer style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 28px;background:#fff;border-top:1px solid #E2E8F0">
+    <button style="width:100%;height:54px;border-radius:14px;border:0;background:#2563EB;color:#fff;font-size:16px;font-weight:700">Confirmar e começar</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Novo agendamento — celular</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a,input,textarea,select{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.lb{display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:6px}
+.lb small{font-weight:500;color:#64748B}
+.in{width:100%;height:48px;border:1px solid #CBD5E1;border-radius:12px;padding:0 14px;font-size:16px;color:#0F172A;background:#fff}
+.sv{height:40px;padding:0 12px;border-radius:12px;border:1px solid #E2E8F0;background:#fff;color:#334155;font-size:13px;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.sv span{font-weight:500;color:#64748B}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A;position:relative;overflow:hidden">
+  <div aria-hidden="true" style="padding:20px 16px;display:flex;flex-direction:column;gap:12px">
+    <div style="height:28px;width:120px;border-radius:8px;background:#E2E8F0"></div>
+    <div style="height:64px;border-radius:18px;background:#fff;border:1px solid #E2E8F0"></div>
+    <div style="height:70px;border-radius:18px;background:#fff;border:1px solid #E2E8F0"></div>
+    <div style="height:70px;border-radius:18px;background:#0F2D5B"></div>
+  </div>
+  <div aria-hidden="true" style="position:absolute;inset:0;background:rgba(15,23,42,.45)"></div>
+
+  <section role="dialog" aria-modal="true" aria-labelledby="t5h" style="position:absolute;left:0;right:0;bottom:0;height:790px;background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:center;padding-top:10px"><span style="width:40px;height:5px;border-radius:9px;background:#CBD5E1"></span></div>
+    <header style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px 6px">
+      <h2 id="t5h" class="m" style="margin:0;font-size:20px;font-weight:800;color:#0F2D5B">Novo agendamento</h2>
+      <button aria-label="Fechar" style="width:44px;height:44px;border:0;border-radius:12px;background:#F1F5F9;color:#475569;display:grid;place-items:center"><svg class="i" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    </header>
+
+    <form style="flex:1;overflow:hidden;padding:10px 20px 0;display:flex;flex-direction:column;gap:16px">
+      <label><span class="lb">Nome do cliente</span><input class="in" value="Patrícia Alves" autocomplete="off"></label>
+      <label><span class="lb">Telefone <small>(opcional)</small></span><input class="in" type="tel" inputmode="tel" placeholder="(11) 90000-0000"></label>
+
+      <fieldset style="border:0;margin:0;padding:0">
+        <legend class="lb">Serviço</legend>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="sv" aria-pressed="true" style="background:#0F2D5B;border-color:#0F2D5B;color:#fff">Manicure <span style="color:#CBD5E1">45 min</span></button>
+          <button type="button" class="sv">Pedicure <span>45 min</span></button>
+          <button type="button" class="sv">Escova <span>1h</span></button>
+          <button type="button" class="sv">Coloração <span>1h30</span></button>
+          <button type="button" class="sv" style="border-style:dashed;color:#1D4ED8"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Outro</button>
+        </div>
+      </fieldset>
+
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <label><span class="lb">Data</span><input class="in" value="29/10/2026" inputmode="numeric"></label>
+        <label><span class="lb">Início</span><input class="in" value="13:00" inputmode="numeric"></label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end">
+        <label><span class="lb">Duração</span>
+          <select class="in"><option>45 min</option><option>1 hora</option><option>1h30</option></select>
+        </label>
+        <div style="height:48px;border-radius:12px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;flex-direction:column;justify-content:center;padding:0 14px">
+          <span style="font-size:11px;color:#64748B;font-weight:600">Termina às</span>
+          <span class="m" style="font-size:17px;font-weight:800;color:#0F2D5B">13:45</span>
+        </div>
+      </div>
+
+      <div role="status" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;font-size:14px;font-weight:600">
+        <svg class="i" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>
+        Horário livre, dentro do expediente
+      </div>
+
+      <label><span class="lb">Observações <small>(opcional)</small></span><textarea placeholder="Alguma preferência ou cuidado?" style="width:100%;height:76px;border:1px solid #CBD5E1;border-radius:12px;padding:12px 14px;font-size:16px;resize:none"></textarea></label>
+    </form>
+
+    <footer style="display:flex;gap:10px;padding:14px 20px 28px;border-top:1px solid #EEF2F6">
+      <button style="flex:1;height:52px;border-radius:14px;border:1px solid #E2E8F0;background:#fff;color:#0F2D5B;font-size:15px;font-weight:600">Cancelar</button>
+      <button style="flex:2;height:52px;border-radius:14px;border:0;background:#2563EB;color:#fff;font-size:15px;font-weight:700">Salvar agendamento</button>
+    </footer>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Configurações, expediente — computador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a,input{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.rl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:64px;height:60px;border-radius:14px;color:#64748B;text-decoration:none;font-size:11px;font-weight:600}
+.rl:hover{background:#F1F5F9;color:#0F2D5B}
+.btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid #E2E8F0;background:#fff;color:#0F2D5B;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:18px}
+.tab{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border-radius:10px;color:#475569;text-decoration:none;font-size:14px;font-weight:500}
+.tab:hover{background:#F1F5F9;color:#0F2D5B}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #EEF2F6}
+.sw{width:44px;height:26px;border-radius:99px;border:0;position:relative;flex-shrink:0}
+.sw span{position:absolute;top:3px;width:20px;height:20px;border-radius:99px;background:#fff}
+.day{width:110px;font-size:15px;font-weight:600}
+.sh{display:inline-flex;align-items:center;gap:6px;padding:4px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0}
+.sh input{width:64px;height:34px;border:1px solid #CBD5E1;border-radius:8px;text-align:center;font-size:14px;background:#fff}
+.x{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#64748B;display:grid;place-items:center}
+.add{height:34px;padding:0 10px;border-radius:8px;border:1px dashed #93C5FD;background:#fff;color:#1D4ED8;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="min-height:900px;display:flex;flex-wrap:wrap;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A">
+
+  <aside style="flex:1 1 96px;background:#fff;border-right:1px solid #E2E8F0;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <svg width="44" height="44" viewBox="0 0 64 64" role="img" aria-label="Agenda em Ordem"><rect width="64" height="64" rx="16" fill="#0F2D5B"></rect><rect x="12" y="16" width="40" height="34" rx="7" fill="#fff"></rect><rect x="20" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="30" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="40" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="17" y="25" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="27" y="25" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="17" y="35" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="27" y="35" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="37" y="29" width="11" height="11" rx="3" fill="#0F2D5B"></rect><path d="m39.5 34.5 2.2 2.2 4-4.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <button aria-label="Novo agendamento" style="width:52px;height:52px;border-radius:16px;border:0;background:#2563EB;color:#fff;display:grid;place-items:center"><svg class="i" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <nav aria-label="Navegação principal" style="display:flex;flex-direction:column;gap:6px">
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>Início</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Agenda</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+      <a href="#" class="rl" aria-current="page" style="background:#E7F1FF;color:#0F2D5B"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Ajustes</a>
+    </nav>
+    <button aria-label="Perfil de Camila Santos" class="m" style="margin-top:auto;width:44px;height:44px;border-radius:14px;border:0;background:#E7F1FF;color:#0F2D5B;font-weight:800">CS</button>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:32px 36px;display:flex;flex-direction:column;gap:20px">
+    <header>
+      <p style="margin:0;font-size:14px;color:#64748B">Ajustes</p>
+      <h1 class="m" style="margin:4px 0 0;font-size:30px;font-weight:800;color:#0F2D5B">Configurações</h1>
+    </header>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+      <nav aria-label="Seções de configuração" class="card" style="flex:1 1 220px;max-width:280px;padding:10px;display:flex;flex-direction:column;gap:2px">
+        <a href="#" class="tab">Perfil</a>
+        <a href="#" class="tab" aria-current="page" style="background:#E7F1FF;color:#0F2D5B;font-weight:600">Expediente</a>
+        <a href="#" class="tab">Agenda</a>
+        <a href="#" class="tab">Serviços favoritos</a>
+        <a href="#" class="tab">Notificações</a>
+        <a href="#" class="tab">Conta e privacidade</a>
+      </nav>
+
+      <section class="card" style="flex:999 1 560px;min-width:0;padding:24px">
+        <h2 class="m" style="margin:0;font-size:20px;font-weight:800;color:#0F2D5B">Expediente</h2>
+        <p style="margin:6px 0 10px;font-size:14px;color:#475569">Novos agendamentos só podem ser marcados dentro destes horários. Use dois turnos para deixar o almoço livre.</p>
+
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender na segunda-feira" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Segunda</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="09:00"></label>–<label><span class="sr">Fim</span><input value="12:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <span class="sh"><label><span class="sr">Início</span><input value="13:00"></label>–<label><span class="sr">Fim</span><input value="18:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender na terça-feira" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Terça</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="09:00"></label>–<label><span class="sr">Fim</span><input value="12:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <span class="sh"><label><span class="sr">Início</span><input value="13:00"></label>–<label><span class="sr">Fim</span><input value="18:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender na quarta-feira" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Quarta</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="09:00"></label>–<label><span class="sr">Fim</span><input value="12:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <span class="sh"><label><span class="sr">Início</span><input value="13:00"></label>–<label><span class="sr">Fim</span><input value="18:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender na quinta-feira" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Quinta</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="08:00"></label>–<label><span class="sr">Fim</span><input value="12:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <span class="sh"><label><span class="sr">Início</span><input value="13:00"></label>–<label><span class="sr">Fim</span><input value="19:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender na sexta-feira" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Sexta</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="09:00"></label>–<label><span class="sr">Fim</span><input value="12:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <span class="sh"><label><span class="sr">Início</span><input value="13:00"></label>–<label><span class="sr">Fim</span><input value="18:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row"><button class="sw" role="switch" aria-checked="true" aria-label="Atender no sábado" style="background:#2563EB"><span style="right:3px"></span></button><span class="day">Sábado</span>
+          <span class="sh"><label><span class="sr">Início</span><input value="08:00"></label>–<label><span class="sr">Fim</span><input value="14:00"></label><button class="x" aria-label="Remover turno"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+          <button class="add">+ Turno</button></div>
+        <div class="row" style="border-bottom:0"><button class="sw" role="switch" aria-checked="false" aria-label="Atender no domingo" style="background:#CBD5E1"><span style="left:3px"></span></button><span class="day" style="color:#64748B">Domingo</span><span style="font-size:14px;color:#64748B">Fechado</span></div>
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #EEF2F6">
+          <button class="btn">Descartar</button>
+          <button class="btn" style="background:#2563EB;border-color:#2563EB;color:#fff">Salvar expediente</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

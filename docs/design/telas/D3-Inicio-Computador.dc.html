@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Painel em Blocos — Computador, Dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a,input{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.rl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:64px;height:60px;border-radius:14px;color:#64748B;text-decoration:none;font-size:11px;font-weight:600}
+.rl:hover{background:#F1F5F9;color:#0F2D5B}
+.btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid #E2E8F0;background:#fff;color:#0F2D5B;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.card{background:#fff;border:1px solid #E2E8F0;border-radius:18px}
+.kpi{padding:18px;display:flex;flex-direction:column;gap:10px}
+.kpi .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;font-weight:600;color:#64748B;padding:10px 16px;border-bottom:1px solid #E2E8F0;background:#F8FAFC}
+td{padding:12px 16px;border-bottom:1px solid #EEF2F6;vertical-align:middle}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.cal button{height:36px;border:0;border-radius:10px;background:transparent;color:#334155;font-size:13px;font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.cal .o{color:#94A3B8}
+.cal i{width:4px;height:4px;border-radius:9px;background:#3B82F6;display:block}
+.slot{height:44px;padding:0 14px;border-radius:12px;border:1.5px dashed #93C5FD;background:#F5F9FF;color:#1D4ED8;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;width:100%}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="min-height:900px;display:flex;flex-wrap:wrap;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A">
+
+  <aside style="flex:1 1 96px;background:#fff;border-right:1px solid #E2E8F0;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <svg width="44" height="44" viewBox="0 0 64 64" role="img" aria-label="Agenda em Ordem"><rect width="64" height="64" rx="16" fill="#0F2D5B"></rect><rect x="12" y="16" width="40" height="34" rx="7" fill="#fff"></rect><rect x="20" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="30" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="40" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="17" y="25" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="27" y="25" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="17" y="35" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="27" y="35" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="37" y="29" width="11" height="11" rx="3" fill="#0F2D5B"></rect><path d="m39.5 34.5 2.2 2.2 4-4.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <button aria-label="Novo agendamento" style="width:52px;height:52px;border-radius:16px;border:0;background:#2563EB;color:#fff;display:grid;place-items:center"><svg class="i" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <nav aria-label="Navegação principal" style="display:flex;flex-direction:column;gap:6px">
+      <a href="#" class="rl" aria-current="page" style="background:#E7F1FF;color:#0F2D5B"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>Início</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Agenda</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Ajustes</a>
+    </nav>
+    <button aria-label="Perfil de Camila Santos" class="m" style="margin-top:auto;width:44px;height:44px;border-radius:14px;border:0;background:#E7F1FF;color:#0F2D5B;font-weight:800">CS</button>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:32px 36px;display:flex;flex-direction:column;gap:24px">
+    <header style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between">
+      <div>
+        <p style="margin:0;font-size:14px;color:#64748B">Quinta-feira, 29 de outubro de 2026</p>
+        <h1 class="m" style="margin:4px 0 0;font-size:30px;font-weight:800;color:#0F2D5B">Boa tarde, Camila</h1>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <label style="position:relative;display:flex;align-items:center">
+          <span class="sr">Buscar cliente</span>
+          <svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="position:absolute;left:12px;color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input type="search" placeholder="Buscar cliente…" style="height:44px;width:260px;padding:0 12px 0 38px;border:1px solid #E2E8F0;border-radius:12px;font-size:14px;background:#fff">
+        </label>
+        <button class="btn" style="height:44px;padding:0 18px;font-size:14px;background:#2563EB;border-color:#2563EB;color:#fff"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Novo agendamento</button>
+      </div>
+    </header>
+
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+      <div style="flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:24px">
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+          <div class="card kpi">
+            <span class="ic" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></span>
+            <span style="font-size:13px;color:#475569;font-weight:500">Atendimentos de hoje</span>
+            <span class="m" style="font-size:32px;font-weight:800;color:#0F2D5B;line-height:1">7</span>
+            <span style="font-size:12px;color:#64748B">3 a seguir · 1 falta</span>
+          </div>
+          <div class="card kpi" style="background:#0F2D5B;border-color:#0F2D5B;color:#fff">
+            <span class="ic" style="background:rgba(255,255,255,.14);color:#fff"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+            <span style="font-size:13px;color:#CBD5E1;font-weight:500">Próximo atendimento</span>
+            <span class="m" style="font-size:32px;font-weight:800;line-height:1">14:00</span>
+            <span style="font-size:12px;color:#CBD5E1">Juliana Rocha · em 20 min</span>
+          </div>
+          <div class="card kpi">
+            <span class="ic" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M3 12h18M3 19h18"></path></svg></span>
+            <span style="font-size:13px;color:#475569;font-weight:500">Atendimentos da semana</span>
+            <span class="m" style="font-size:32px;font-weight:800;color:#0F2D5B;line-height:1">31</span>
+            <span style="font-size:12px;color:#64748B">26/10 a 31/10</span>
+          </div>
+          <div class="card kpi">
+            <span class="ic" style="background:#F1F5F9;color:#475569"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m15 9-6 6M9 9l6 6"></path></svg></span>
+            <span style="font-size:13px;color:#475569;font-weight:500">Cancelamentos do mês</span>
+            <span class="m" style="font-size:32px;font-weight:800;color:#0F2D5B;line-height:1">3</span>
+            <span style="font-size:12px;color:#64748B">Outubro de 2026</span>
+          </div>
+        </div>
+
+        <section class="card" style="overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px">
+            <h2 class="m" style="margin:0;font-size:17px;font-weight:700;color:#0F2D5B">Próximos atendimentos</h2>
+            <a href="#" style="font-size:14px;font-weight:600;text-decoration:none">Abrir agenda</a>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Horário</th><th>Cliente</th><th>Serviço</th><th>Status</th><th><span class="sr">Ações</span></th></tr></thead>
+              <tbody>
+                <tr style="background:#F5F9FF">
+                  <td><span class="m" style="font-weight:800;color:#0F2D5B">14:00 – 15:00</span><div style="font-size:12px;color:#1D4ED8;font-weight:600">Hoje · Próximo</div></td>
+                  <td style="font-weight:600">Juliana Rocha</td><td style="color:#475569">Escova e hidratação</td>
+                  <td><span class="chip" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendado</span></td>
+                  <td style="text-align:right;white-space:nowrap"><button class="btn" style="height:36px">Ver</button> <button class="btn" style="height:36px">Remarcar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="m" style="font-weight:800;color:#0F2D5B">15:00 – 16:00</span><div style="font-size:12px;color:#64748B">Hoje</div></td>
+                  <td style="font-weight:600">Mariana Lima</td><td style="color:#475569">Unhas em gel</td>
+                  <td><span class="chip" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendado</span></td>
+                  <td style="text-align:right;white-space:nowrap"><button class="btn" style="height:36px">Ver</button> <button class="btn" style="height:36px">Remarcar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="m" style="font-weight:800;color:#0F2D5B">17:00 – 18:00</span><div style="font-size:12px;color:#64748B">Hoje</div></td>
+                  <td style="font-weight:600">Fernanda Costa</td><td style="color:#475569">Coloração</td>
+                  <td><span class="chip" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendado</span></td>
+                  <td style="text-align:right;white-space:nowrap"><button class="btn" style="height:36px">Ver</button> <button class="btn" style="height:36px">Remarcar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="m" style="font-weight:800;color:#0F2D5B">09:00 – 10:00</span><div style="font-size:12px;color:#64748B">Sex, 30/10</div></td>
+                  <td style="font-weight:600">Vanessa Torres</td><td style="color:#475569">Manicure</td>
+                  <td><span class="chip" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendado</span></td>
+                  <td style="text-align:right;white-space:nowrap"><button class="btn" style="height:36px">Ver</button> <button class="btn" style="height:36px">Remarcar</button></td>
+                </tr>
+                <tr>
+                  <td style="border-bottom:0"><span class="m" style="font-weight:800;color:#0F2D5B">14:00 – 16:00</span><div style="font-size:12px;color:#64748B">Sex, 30/10</div></td>
+                  <td style="font-weight:600;border-bottom:0">Larissa Campos</td><td style="color:#475569;border-bottom:0">Mechas e corte</td>
+                  <td style="border-bottom:0"><span class="chip" style="background:#E7F1FF;color:#1D4ED8"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendado</span></td>
+                  <td style="text-align:right;white-space:nowrap;border-bottom:0"><button class="btn" style="height:36px">Ver</button> <button class="btn" style="height:36px">Remarcar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:24px">
+        <section class="card" style="padding:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <h2 class="m" style="margin:0;font-size:16px;font-weight:700;color:#0F2D5B">Outubro 2026</h2>
+            <span style="display:flex;gap:2px">
+              <button aria-label="Mês anterior" style="width:36px;height:36px;border:0;background:transparent;color:#475569;border-radius:8px;display:grid;place-items:center"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+              <button aria-label="Próximo mês" style="width:36px;height:36px;border:0;background:transparent;color:#475569;border-radius:8px;display:grid;place-items:center"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+            </span>
+          </div>
+          <div class="cal" style="font-size:12px;color:#64748B;font-weight:600;margin-bottom:4px"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+          <div class="cal">
+            <button class="o">28</button><button class="o">29</button><button class="o">30</button><button>1<i></i></button><button>2<i></i></button><button>3<i></i></button><button class="o">4</button>
+            <button>5<i></i></button><button>6<i></i></button><button>7<i></i></button><button>8<i></i></button><button>9<i></i></button><button>10<i></i></button><button class="o">11</button>
+            <button>12</button><button>13<i></i></button><button>14<i></i></button><button>15<i></i></button><button>16<i></i></button><button>17<i></i></button><button class="o">18</button>
+            <button>19<i></i></button><button>20<i></i></button><button>21<i></i></button><button>22<i></i></button><button>23<i></i></button><button>24<i></i></button><button class="o">25</button>
+            <button>26<i></i></button><button>27<i></i></button><button>28<i></i></button><button aria-current="date" style="background:#0F2D5B;color:#fff;font-weight:700">29<i style="background:#93C5FD"></i></button><button>30<i></i></button><button>31<i></i></button><button class="o">1</button>
+          </div>
+        </section>
+
+        <section class="card" style="padding:18px;display:flex;flex-direction:column;gap:10px">
+          <h2 class="m" style="margin:0 0 4px;font-size:16px;font-weight:700;color:#0F2D5B">Horários livres hoje</h2>
+          <button class="slot"><svg class="i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>13:00 – 14:00<span style="margin-left:auto;font-weight:500;color:#475569;font-size:13px">1h</span></button>
+          <button class="slot"><svg class="i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>16:00 – 17:00<span style="margin-left:auto;font-weight:500;color:#475569;font-size:13px">1h</span></button>
+          <button class="slot"><svg class="i" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>18:00 – 19:00<span style="margin-left:auto;font-weight:500;color:#475569;font-size:13px">1h</span></button>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

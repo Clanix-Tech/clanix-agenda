@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Agenda, mês — computador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a,input{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.rl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:64px;height:60px;border-radius:14px;color:#64748B;text-decoration:none;font-size:11px;font-weight:600}
+.rl:hover{background:#F1F5F9;color:#0F2D5B}
+.btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid #E2E8F0;background:#fff;color:#0F2D5B;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.seg{height:34px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#475569;font-size:13px;font-weight:600}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.wh{padding:10px;font-size:12px;font-weight:600;color:#64748B;border-bottom:1px solid #E2E8F0}
+.dc{min-height:112px;padding:8px;border-right:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;display:flex;flex-direction:column;gap:4px;background:#fff}
+.dn{font-family:Manrope,Inter,sans-serif;font-size:14px;font-weight:700;color:#334155;margin-bottom:2px}
+.o{background:#FAFBFC}
+.o .dn{color:#94A3B8}
+.cl{background:repeating-linear-gradient(135deg,#F8FAFC 0 6px,#F1F5F9 6px 12px)}
+.e{display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 6px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;text-align:left;width:100%}
+.e b{font-weight:600}
+.p{background:#F1F5F9;color:#475569}
+.f{background:#E7F1FF;color:#0F2D5B}
+.x{background:transparent;color:#64748B;text-decoration:line-through}
+.mr{font-size:12px;font-weight:600;color:#1D4ED8;padding:0 6px;text-decoration:none}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="min-height:900px;display:flex;flex-wrap:wrap;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A">
+
+  <aside style="flex:1 1 96px;background:#fff;border-right:1px solid #E2E8F0;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <svg width="44" height="44" viewBox="0 0 64 64" role="img" aria-label="Agenda em Ordem"><rect width="64" height="64" rx="16" fill="#0F2D5B"></rect><rect x="12" y="16" width="40" height="34" rx="7" fill="#fff"></rect><rect x="20" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="30" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="40" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="17" y="25" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="27" y="25" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="17" y="35" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="27" y="35" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="37" y="29" width="11" height="11" rx="3" fill="#0F2D5B"></rect><path d="m39.5 34.5 2.2 2.2 4-4.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <button aria-label="Novo agendamento" style="width:52px;height:52px;border-radius:16px;border:0;background:#2563EB;color:#fff;display:grid;place-items:center"><svg class="i" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <nav aria-label="Navegação principal" style="display:flex;flex-direction:column;gap:6px">
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>Início</a>
+      <a href="#" class="rl" aria-current="page" style="background:#E7F1FF;color:#0F2D5B"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Agenda</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Ajustes</a>
+    </nav>
+    <button aria-label="Perfil de Camila Santos" class="m" style="margin-top:auto;width:44px;height:44px;border-radius:14px;border:0;background:#E7F1FF;color:#0F2D5B;font-weight:800">CS</button>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:32px 36px;display:flex;flex-direction:column;gap:20px">
+    <header style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between">
+      <div>
+        <p style="margin:0;font-size:14px;color:#64748B">Visão mensal</p>
+        <h1 class="m" style="margin:4px 0 0;font-size:30px;font-weight:800;color:#0F2D5B">Outubro de 2026</h1>
+      </div>
+      <button class="btn" style="height:44px;padding:0 18px;background:#2563EB;border-color:#2563EB;color:#fff"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Novo agendamento</button>
+    </header>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #E2E8F0;border-radius:18px;padding:12px 14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn">Hoje</button>
+        <button class="btn" aria-label="Mês anterior" style="width:40px;padding:0"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+        <button class="btn" aria-label="Próximo mês" style="width:40px;padding:0"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#475569">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:#E7F1FF;border:1px solid #BFDBFE"></span>Agendado</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:#F1F5F9;border:1px solid #E2E8F0"></span>Realizado</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="text-decoration:line-through">Nome</span>Cancelado</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:10px;border-radius:3px;background:repeating-linear-gradient(135deg,#F8FAFC 0 3px,#E2E8F0 3px 6px)"></span>Fechado</span>
+      </div>
+      <div role="group" aria-label="Modo de visualização" style="display:flex;gap:2px;padding:3px;border-radius:10px;background:#EEF2F6">
+        <button class="seg">Dia</button>
+        <button class="seg">Semana</button>
+        <button class="seg" aria-pressed="true" style="background:#fff;color:#0F2D5B;box-shadow:0 1px 2px rgba(15,45,91,.12)">Mês</button>
+        <button class="seg">Lista</button>
+      </div>
+    </div>
+
+    <section aria-label="Calendário de outubro de 2026" style="background:#fff;border:1px solid #E2E8F0;border-radius:18px;overflow:hidden">
+      <div style="overflow-x:auto">
+        <div style="min-width:840px">
+          <div class="wk"><div class="wh">Seg</div><div class="wh">Ter</div><div class="wh">Qua</div><div class="wh">Qui</div><div class="wh">Sex</div><div class="wh">Sáb</div><div class="wh">Dom</div></div>
+          <div class="wk">
+            <div class="dc o"><span class="dn">28</span></div>
+            <div class="dc o"><span class="dn">29</span></div>
+            <div class="dc o"><span class="dn">30</span></div>
+            <div class="dc"><span class="dn">1</span><button class="e p"><b>09:00</b>Helena</button><button class="e p"><b>14:00</b>Márcia</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc"><span class="dn">2</span><button class="e p"><b>10:00</b>Joana</button><button class="e p"><b>15:30</b>Sílvia</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc"><span class="dn">3</span><button class="e p"><b>08:00</b>Kátia</button><button class="e p"><b>09:30</b>Lívia</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc cl" style="border-right:0"><span class="dn" style="color:#94A3B8">4</span><span style="font-size:12px;color:#64748B">Fechado</span></div>
+          </div>
+          <div class="wk">
+            <div class="dc"><span class="dn">5</span><button class="e p"><b>09:00</b>Mônica</button><button class="e p"><b>13:00</b>Flávia</button><a href="#" class="mr">+1 mais</a></div>
+            <div class="dc"><span class="dn">6</span><button class="e p"><b>10:00</b>Elisa</button><button class="e x"><b>16:00</b>Rui</button></div>
+            <div class="dc"><span class="dn">7</span><button class="e p"><b>09:00</b>Regina</button><button class="e p"><b>11:00</b>Bianca</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc"><span class="dn">8</span><button class="e p"><b>08:30</b>Paula</button><button class="e p"><b>14:00</b>Vera</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc"><span class="dn">9</span><button class="e p"><b>10:00</b>Sandra</button><button class="e p"><b>15:00</b>Nathália</button><a href="#" class="mr">+4 mais</a></div>
+            <div class="dc"><span class="dn">10</span><button class="e p"><b>08:00</b>Alice</button><button class="e p"><b>10:00</b>Laura</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc cl" style="border-right:0"><span class="dn" style="color:#94A3B8">11</span><span style="font-size:12px;color:#64748B">Fechado</span></div>
+          </div>
+          <div class="wk">
+            <div class="dc"><span class="dn">12</span><span style="font-size:12px;color:#64748B">Sem atendimentos</span></div>
+            <div class="dc"><span class="dn">13</span><button class="e p"><b>09:00</b>Cecília</button><button class="e p"><b>14:30</b>Marta</button><a href="#" class="mr">+1 mais</a></div>
+            <div class="dc"><span class="dn">14</span><button class="e p"><b>10:00</b>Ivone</button><button class="e p"><b>15:00</b>Raquel</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc"><span class="dn">15</span><button class="e p"><b>09:00</b>Luana</button><button class="e p"><b>13:00</b>Denise</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc"><span class="dn">16</span><button class="e p"><b>08:30</b>Eliane</button><button class="e p"><b>11:00</b>Rita</button><a href="#" class="mr">+4 mais</a></div>
+            <div class="dc"><span class="dn">17</span><button class="e p"><b>08:00</b>Olga</button><button class="e p"><b>09:00</b>Yasmin</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc cl" style="border-right:0"><span class="dn" style="color:#94A3B8">18</span><span style="font-size:12px;color:#64748B">Fechado</span></div>
+          </div>
+          <div class="wk">
+            <div class="dc"><span class="dn">19</span><button class="e p"><b>09:00</b>Pietra</button><button class="e p"><b>14:00</b>Sueli</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc"><span class="dn">20</span><button class="e p"><b>10:30</b>Ingrid</button><button class="e p"><b>16:00</b>Lara</button><a href="#" class="mr">+1 mais</a></div>
+            <div class="dc"><span class="dn">21</span><button class="e p"><b>09:00</b>Mirela</button><button class="e p"><b>13:30</b>Kelly</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc"><span class="dn">22</span><button class="e p"><b>08:30</b>Noemi</button><button class="e p"><b>10:00</b>Talita</button><a href="#" class="mr">+4 mais</a></div>
+            <div class="dc"><span class="dn">23</span><button class="e p"><b>09:00</b>Úrsula</button><button class="e p"><b>14:00</b>Viviane</button><a href="#" class="mr">+3 mais</a></div>
+            <div class="dc"><span class="dn">24</span><button class="e p"><b>08:00</b>Zilda</button><button class="e p"><b>09:30</b>Nádia</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc cl" style="border-right:0"><span class="dn" style="color:#94A3B8">25</span><span style="font-size:12px;color:#64748B">Fechado</span></div>
+          </div>
+          <div class="wk">
+            <div class="dc" style="border-bottom:0"><span class="dn">26</span><button class="e p"><b>09:00</b>Beatriz</button><button class="e p"><b>10:30</b>Lucas</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc" style="border-bottom:0"><span class="dn">27</span><button class="e p"><b>08:30</b>Cíntia</button><button class="e p"><b>11:00</b>Diego</button><a href="#" class="mr">+1 mais</a></div>
+            <div class="dc" style="border-bottom:0"><span class="dn">28</span><button class="e p"><b>09:00</b>Aline</button><button class="e p"><b>13:00</b>Tatiane</button><a href="#" class="mr">+1 mais</a></div>
+            <div class="dc" aria-current="date" style="border-bottom:0;background:#F5F9FF;box-shadow:inset 0 0 0 2px #3B82F6"><span class="dn" style="display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#0F2D5B;color:#fff">29</span><button class="e" style="background:#0F2D5B;color:#fff"><b>14:00</b>Juliana · próximo</button><button class="e f"><b>15:00</b>Mariana</button><a href="#" class="mr">+5 mais</a></div>
+            <div class="dc" style="border-bottom:0"><span class="dn" style="color:#0F172A">30</span><button class="e f"><b>09:00</b>Vanessa</button><button class="e f"><b>10:00</b>Rafael</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc" style="border-bottom:0"><span class="dn" style="color:#0F172A">31</span><button class="e f"><b>08:00</b>Cláudia</button><button class="e f"><b>09:00</b>Débora</button><a href="#" class="mr">+2 mais</a></div>
+            <div class="dc o cl" style="border-right:0;border-bottom:0"><span class="dn">1</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

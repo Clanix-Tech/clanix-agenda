@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Agenda, semana — computador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+button,a,input{font-family:inherit}
+.m{font-family:Manrope,Inter,sans-serif}
+.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.rl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:64px;height:60px;border-radius:14px;color:#64748B;text-decoration:none;font-size:11px;font-weight:600}
+.rl:hover{background:#F1F5F9;color:#0F2D5B}
+.btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid #E2E8F0;background:#fff;color:#0F2D5B;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.seg{height:34px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#475569;font-size:13px;font-weight:600}
+.flt{height:32px;padding:0 10px;border-radius:999px;border:1px solid #E2E8F0;background:#fff;color:#334155;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.col{position:relative;height:572px;border-left:1px solid #E2E8F0;background-image:repeating-linear-gradient(to bottom,#EEF2F6 0 1px,transparent 1px 52px)}
+.hr{position:absolute;right:8px;font-size:11px;color:#64748B}
+.ev{position:absolute;left:4px;right:4px;border-radius:10px;padding:5px 8px;text-align:left;font-size:12px;line-height:1.3;overflow:hidden;display:flex;flex-direction:column;gap:1px;cursor:pointer;border:1px solid transparent}
+.ev b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev span{display:flex;align-items:center;gap:4px}
+.e1{flex-direction:row;align-items:center;gap:6px;padding:2px 8px}
+.ag{background:#E7F1FF;color:#0F2D5B;border-color:#BFDBFE}
+.ok{background:#F0FDF4;color:#14532D;border-color:#BBF7D0}
+.nc{background:#FFFBEB;color:#78350F;border-color:#FDE68A}
+.cx{background:#fff;color:#64748B;border:1px dashed #CBD5E1}
+.cx b{text-decoration:line-through}
+.nx{background:#0F2D5B;color:#fff;border-color:#0F2D5B}
+.blk{position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg,#F1F5F9 0 6px,#F8FAFC 6px 12px);color:#64748B;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.dh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0;border-left:1px solid #E2E8F0;font-size:12px;color:#64748B}
+a{color:#1D4ED8}a:hover{color:#0F2D5B}
+</style>
+</helmet>
+<div style="min-height:900px;display:flex;flex-wrap:wrap;background:#F8FAFC;font-family:Inter,sans-serif;color:#0F172A">
+
+  <aside style="flex:1 1 96px;background:#fff;border-right:1px solid #E2E8F0;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:20px">
+    <svg width="44" height="44" viewBox="0 0 64 64" role="img" aria-label="Agenda em Ordem"><rect width="64" height="64" rx="16" fill="#0F2D5B"></rect><rect x="12" y="16" width="40" height="34" rx="7" fill="#fff"></rect><rect x="20" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="30" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="40" y="11" width="4" height="10" rx="2" fill="#fff"></rect><rect x="17" y="25" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="27" y="25" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="17" y="35" width="8" height="8" rx="2" fill="#93C5FD"></rect><rect x="27" y="35" width="8" height="8" rx="2" fill="#3B82F6"></rect><rect x="37" y="29" width="11" height="11" rx="3" fill="#0F2D5B"></rect><path d="m39.5 34.5 2.2 2.2 4-4.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <button aria-label="Novo agendamento" style="width:52px;height:52px;border-radius:16px;border:0;background:#2563EB;color:#fff;display:grid;place-items:center"><svg class="i" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <nav aria-label="Navegação principal" style="display:flex;flex-direction:column;gap:6px">
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>Início</a>
+      <a href="#" class="rl" aria-current="page" style="background:#E7F1FF;color:#0F2D5B"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Agenda</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>Histórico</a>
+      <a href="#" class="rl"><svg class="i" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>Ajustes</a>
+    </nav>
+    <button aria-label="Perfil de Camila Santos" class="m" style="margin-top:auto;width:44px;height:44px;border-radius:14px;border:0;background:#E7F1FF;color:#0F2D5B;font-weight:800">CS</button>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:32px 36px;display:flex;flex-direction:column;gap:20px">
+    <header style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between">
+      <div>
+        <p style="margin:0;font-size:14px;color:#64748B">26 a 31 de outubro de 2026 · 31 atendimentos</p>
+        <h1 class="m" style="margin:4px 0 0;font-size:30px;font-weight:800;color:#0F2D5B">Agenda</h1>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <label style="position:relative;display:flex;align-items:center">
+          <span class="sr">Buscar cliente</span>
+          <svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="position:absolute;left:12px;color:#64748B"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <input type="search" placeholder="Buscar cliente…" style="height:44px;width:240px;padding:0 12px 0 38px;border:1px solid #E2E8F0;border-radius:12px;font-size:14px;background:#fff">
+        </label>
+        <button class="btn" style="height:44px;padding:0 18px;background:#2563EB;border-color:#2563EB;color:#fff"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Novo agendamento</button>
+      </div>
+    </header>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #E2E8F0;border-radius:18px;padding:12px 14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn">Hoje</button>
+        <button class="btn" aria-label="Semana anterior" style="width:40px;padding:0"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+        <button class="btn" aria-label="Próxima semana" style="width:40px;padding:0"><svg class="i" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <span class="m" style="font-size:17px;font-weight:700;color:#0F2D5B;margin-left:6px">Outubro 2026</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="flt" aria-pressed="true" style="background:#0F2D5B;color:#fff;border-color:#0F2D5B">Todos</button>
+        <button class="flt"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="color:#1D4ED8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Agendados</button>
+        <button class="flt"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="color:#166534"><path d="m5 12 5 5 9-10"></path></svg>Concluídos</button>
+        <button class="flt"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="color:#92400E"><circle cx="9" cy="8" r="4"></circle><path d="m16 15 5 5M21 15l-5 5"></path></svg>Faltas</button>
+        <button class="flt"><svg class="i" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="color:#475569"><path d="M18 6 6 18M6 6l12 12"></path></svg>Cancelados</button>
+      </div>
+      <div role="group" aria-label="Modo de visualização" style="display:flex;gap:2px;padding:3px;border-radius:10px;background:#EEF2F6">
+        <button class="seg">Dia</button>
+        <button class="seg" aria-pressed="true" style="background:#fff;color:#0F2D5B;box-shadow:0 1px 2px rgba(15,45,91,.12)">Semana</button>
+        <button class="seg">Mês</button>
+        <button class="seg">Lista</button>
+      </div>
+    </div>
+
+    <section aria-label="Semana de 26 a 31 de outubro" style="background:#fff;border:1px solid #E2E8F0;border-radius:18px;overflow-x:auto">
+      <div style="min-width:860px">
+        <div style="display:grid;grid-template-columns:56px repeat(6,minmax(0,1fr));border-bottom:1px solid #E2E8F0">
+          <div></div>
+          <div class="dh">Seg<span class="m" style="font-size:18px;font-weight:700;color:#334155">26</span></div>
+          <div class="dh">Ter<span class="m" style="font-size:18px;font-weight:700;color:#334155">27</span></div>
+          <div class="dh">Qua<span class="m" style="font-size:18px;font-weight:700;color:#334155">28</span></div>
+          <div class="dh" aria-current="date" style="background:#F5F9FF;color:#1D4ED8;font-weight:600">Qui<span class="m" style="font-size:16px;font-weight:800;color:#fff;background:#0F2D5B;width:32px;height:32px;border-radius:10px;display:grid;place-items:center">29</span></div>
+          <div class="dh">Sex<span class="m" style="font-size:18px;font-weight:700;color:#0F172A">30</span></div>
+          <div class="dh">Sáb<span class="m" style="font-size:18px;font-weight:700;color:#0F172A">31</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:56px repeat(6,minmax(0,1fr));padding:10px 0 12px">
+          <div style="position:relative;height:572px">
+            <span class="hr" style="top:-7px">08:00</span><span class="hr" style="top:45px">09:00</span><span class="hr" style="top:97px">10:00</span><span class="hr" style="top:149px">11:00</span><span class="hr" style="top:201px">12:00</span><span class="hr" style="top:253px">13:00</span><span class="hr" style="top:305px">14:00</span><span class="hr" style="top:357px">15:00</span><span class="hr" style="top:409px">16:00</span><span class="hr" style="top:461px">17:00</span><span class="hr" style="top:513px">18:00</span><span class="hr" style="top:565px">19:00</span>
+          </div>
+
+          <div class="col">
+            <div class="blk" style="top:208px;height:52px">Almoço</div>
+            <button class="ev ok" style="top:53px;height:50px"><b>Beatriz Nunes</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>09:00–10:00</span></button>
+            <button class="ev ok" style="top:131px;height:50px"><b>Lucas Prado</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>10:30–11:30</span></button>
+            <button class="ev ok" style="top:313px;height:76px"><b>Patrícia Gomes</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>14:00–15:30</span><span style="opacity:.8">Coloração</span></button>
+            <button class="ev cx" style="top:417px;height:50px"><b>Renata Dias</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>Cancelado</span></button>
+          </div>
+
+          <div class="col">
+            <div class="blk" style="top:208px;height:52px">Almoço</div>
+            <button class="ev ok" style="top:27px;height:50px"><b>Cíntia Moraes</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>08:30–09:30</span></button>
+            <button class="ev ok" style="top:157px;height:50px"><b>Diego Martins</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>11:00–12:00</span></button>
+            <button class="ev nc" style="top:365px;height:50px"><b>Sônia Ribeiro</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="m16 15 5 5M21 15l-5 5"></path></svg>Faltou · 15:00</span></button>
+          </div>
+
+          <div class="col">
+            <div class="blk" style="top:208px;height:52px">Almoço</div>
+            <button class="ev ok" style="top:53px;height:76px"><b>Aline Freitas</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>09:00–10:30</span><span style="opacity:.8">Alongamento</span></button>
+            <button class="ev ok" style="top:261px;height:50px"><b>Tatiane Lopes</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>13:00–14:00</span></button>
+            <button class="ev ok" style="top:417px;height:76px"><b>Gabriela Pires</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>16:00–17:30</span><span style="opacity:.8">Mechas</span></button>
+          </div>
+
+          <div class="col" style="background-color:#F5F9FF">
+            <div class="blk" style="top:208px;height:52px">Almoço</div>
+            <button class="ev ok" style="top:27px;height:50px"><b>Ana Souza</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>08:30–09:30</span></button>
+            <button class="ev ok" style="top:105px;height:50px"><b>Carla Mendes</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>10:00–11:00</span></button>
+            <button class="ev nc e1" style="top:183px;height:24px"><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="m16 15 5 5M21 15l-5 5"></path></svg><b>Paulo H. · 11:30</b></button>
+            <button class="ev nx" style="top:313px;height:50px"><b>Juliana Rocha</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>14:00 · Próximo</span></button>
+            <button class="ev ag" style="top:365px;height:50px"><b>Mariana Lima</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>15:00–16:00</span></button>
+            <button class="ev cx e1" style="top:443px;height:24px"><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg><b>Roberto A.</b></button>
+            <button class="ev ag" style="top:469px;height:50px"><b>Fernanda Costa</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>17:00–18:00</span></button>
+            <div aria-label="Agora, 13:40" style="position:absolute;left:-5px;right:0;top:294px;height:2px;background:#2563EB"><span style="position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:9px;background:#2563EB"></span></div>
+          </div>
+
+          <div class="col">
+            <div class="blk" style="top:208px;height:52px">Almoço</div>
+            <button class="ev ag" style="top:53px;height:50px"><b>Vanessa Torres</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>09:00–10:00</span></button>
+            <button class="ev ag" style="top:105px;height:50px"><b>Rafael Lima</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>10:00–11:00</span></button>
+            <button class="ev" style="top:157px;height:50px;border:1.5px dashed #3B82F6;background:#fff;color:#1D4ED8;justify-content:center;align-items:center;flex-direction:row;gap:4px;font-weight:600"><svg class="i" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Agendar 11:00</button>
+            <button class="ev ag" style="top:313px;height:102px"><b>Larissa Campos</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>14:00–16:00</span><span style="opacity:.8">Mechas e corte</span></button>
+            <button class="ev ag" style="top:469px;height:50px"><b>Bruna Teixeira</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>17:00–18:00</span></button>
+          </div>
+
+          <div class="col">
+            <button class="ev ag" style="top:1px;height:50px"><b>Cláudia Reis</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>08:00–09:00</span></button>
+            <button class="ev ag" style="top:53px;height:76px"><b>Débora Melo</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>09:00–10:30</span></button>
+            <button class="ev ag" style="top:131px;height:50px"><b>Thiago Costa</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>10:30–11:30</span></button>
+            <button class="ev ag" style="top:261px;height:50px"><b>Priscila Araújo</b><span><svg class="i" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>13:00–14:00</span></button>
+            <div class="blk" style="top:312px;height:260px">Fora do expediente</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
