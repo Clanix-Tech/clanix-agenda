@@ -1,14 +1,13 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { LoadingState } from '@/components/feedback/LoadingState';
+import { ErrorState } from '@/components/feedback/ErrorState';
+import { useBusinessHours } from '@/features/business-hours/api';
 
 export const FIRST_ACCESS_PATH = '/primeiro-acesso';
 
-/**
- * Protege rotas. `hasBusinessHours` vem do hook da Task 7; `undefined` (ainda carregando
- * ou não ligado) é tratado como `true`.
- */
-export function RequireAuth({ hasBusinessHours }: { hasBusinessHours?: boolean }) {
+/** Protege rotas e leva quem ainda não tem expediente ao primeiro acesso. */
+export function RequireAuth() {
   const { session, loading, signOutReason } = useAuth();
   const location = useLocation();
 
@@ -21,8 +20,18 @@ export function RequireAuth({ hasBusinessHours }: { hasBusinessHours?: boolean }
         state={{ from: location, reason: signOutReason === 'sessao' ? 'sessao' : undefined }}
       />
     );
-  if (hasBusinessHours === false && location.pathname !== FIRST_ACCESS_PATH) {
-    return <Navigate to={FIRST_ACCESS_PATH} replace />;
-  }
+  return <BusinessHoursGate />;
+}
+
+function BusinessHoursGate() {
+  const location = useLocation();
+  const { data, isPending, refetch } = useBusinessHours();
+  const onFirstAccess = location.pathname === FIRST_ACCESS_PATH;
+
+  if (isPending) return <LoadingState label="Carregando…" />;
+  // Erro sem dado: não dá para saber se há expediente — nunca redireciona às cegas.
+  if (!data) return <ErrorState onRetry={() => void refetch()} />;
+  if (data.length === 0 && !onFirstAccess) return <Navigate to={FIRST_ACCESS_PATH} replace />;
+  if (data.length > 0 && onFirstAccess) return <Navigate to="/" replace />;
   return <Outlet />;
 }

@@ -14,7 +14,7 @@ import SettingsPage from '@/features/settings/SettingsPage';
 import FirstAccessPage from '@/features/business-hours/pages/FirstAccessPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
-// Task 7 liga `hasBusinessHours` ao hook de expediente; a Task 8 liga `renderForm` ao AppShell.
+// A Task 8 liga `renderForm` ao AppShell.
 export const routes: RouteObject[] = [
   {
     element: <RootLayout />,

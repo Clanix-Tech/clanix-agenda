@@ -1,0 +1,212 @@
+import { useState } from 'react';
+import { Switch } from '@/components/ui/switch';
+import type { Shift } from '@/features/appointments/domain/freeSlots';
+import { MAX_SHIFTS, MAX_TIME, validateShifts } from '../domain/validateHours';
+
+type Props = {
+  value: Shift[];
+  onChange: (shifts: Shift[]) => void;
+  variant: 'compact' | 'full';
+};
+
+// Segunda a domingo (0 = domingo).
+const DAYS = [
+  { weekday: 1, short: 'Seg', long: 'Segunda' },
+  { weekday: 2, short: 'Ter', long: 'Terça' },
+  { weekday: 3, short: 'Qua', long: 'Quarta' },
+  { weekday: 4, short: 'Qui', long: 'Quinta' },
+  { weekday: 5, short: 'Sex', long: 'Sexta' },
+  { weekday: 6, short: 'Sáb', long: 'Sábado' },
+  { weekday: 0, short: 'Dom', long: 'Domingo' },
+];
+
+const addHour = (t: string) => {
+  const [h, m] = t.split(':').map(Number);
+  const next = (h ?? 0) + 1;
+  return next > 23
+    ? MAX_TIME
+    : `${String(next).padStart(2, '0')}:${String(m ?? 0).padStart(2, '0')}`;
+};
+
+function summary(shifts: Shift[]) {
+  return [...shifts]
+    .sort((a, b) => a.start_time.localeCompare(b.start_time))
+    .map((s) => `${s.start_time}–${s.end_time}`)
+    .join(' · ');
+}
+
+const TIME_CLASS = 'h-11 rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A]';
+
+export function HoursEditor({ value, onChange, variant }: Props) {
+  const [open, setOpen] = useState<number | null>(null);
+  const { byIndex, global } = validateShifts(value);
+  const atMax = value.length >= MAX_SHIFTS;
+
+  const withIndex = value.map((s, index) => ({ s, index }));
+
+  const toggleDay = (weekday: number, on: boolean) => {
+    const others = value.filter((s) => s.weekday !== weekday);
+    if (!on) return onChange(others);
+    if (atMax) return;
+    onChange([...others, { weekday, start_time: '09:00', end_time: '18:00' }]);
+  };
+
+  const patch = (index: number, change: Partial<Shift>) =>
+    onChange(value.map((s, i) => (i === index ? { ...s, ...change } : s)));
+
+  const addShift = (weekday: number) => {
+    if (atMax) return;
+    const last = value
+      .filter((s) => s.weekday === weekday)
+      .map((s) => s.end_time)
+      .sort()
+      .at(-1);
+    const start = last && last < MAX_TIME ? last : '18:00';
+    onChange([...value, { weekday, start_time: start, end_time: addHour(start) }]);
+  };
+
+  const dayControls = (day: (typeof DAYS)[number]) => {
+    const rows = withIndex.filter(({ s }) => s.weekday === day.weekday);
+    return (
+      <div className="flex flex-col gap-2">
+        {rows.map(({ s, index }, n) => {
+          const error = byIndex.get(index);
+          return (
+            <div key={index} className="flex flex-col gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="time"
+                  step={300}
+                  max={MAX_TIME}
+                  aria-label={`Início do turno ${n + 1} de ${day.long}`}
+                  aria-invalid={error ? true : undefined}
+                  value={s.start_time}
+                  onChange={(e) => patch(index, { start_time: e.target.value })}
+                  className={TIME_CLASS}
+                />
+                <span aria-hidden="true" className="text-[#64748B]">
+                  –
+                </span>
+                <input
+                  type="time"
+                  step={300}
+                  max={MAX_TIME}
+                  aria-label={`Fim do turno ${n + 1} de ${day.long}`}
+                  aria-invalid={error ? true : undefined}
+                  value={s.end_time}
+                  onChange={(e) => patch(index, { end_time: e.target.value })}
+                  className={TIME_CLASS}
+                />
+                <button
+                  type="button"
+                  aria-label={`Remover turno ${n + 1} de ${day.long}`}
+                  onClick={() => onChange(value.filter((_, i) => i !== index))}
+                  className="inline-flex size-11 items-center justify-center rounded-lg text-xl text-[#64748B] hover:bg-[#F1F5F9]"
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              {error && (
+                <p role="alert" className="text-sm text-[#B91C1C]">
+                  {error}
+                </p>
+              )}
+            </div>
+          );
+        })}
+        {rows.length > 0 && (
+          <button
+            type="button"
+            disabled={atMax}
+            aria-label={`+ Turno em ${day.long}`}
+            onClick={() => addShift(day.weekday)}
+            className="inline-flex h-11 w-fit items-center rounded-lg px-3 text-sm font-semibold text-[#1D4ED8] hover:bg-[#E7F1FF] disabled:opacity-50"
+          >
+            + Turno
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const globalMessage = global && (
+    <p role="status" className="text-sm text-[#64748B]">
+      {global}
+    </p>
+  );
+
+  if (variant === 'full') {
+    return (
+      <div className="flex flex-col gap-3">
+        {DAYS.map((day) => {
+          const has = value.some((s) => s.weekday === day.weekday);
+          return (
+            <div
+              key={day.weekday}
+              data-day={day.weekday}
+              className="flex flex-col gap-3 rounded-xl border border-[#E2E8F0] bg-white p-4 sm:flex-row sm:items-start"
+            >
+              <div className="flex w-44 items-center gap-3">
+                <Switch
+                  checked={has}
+                  disabled={!has && atMax}
+                  onCheckedChange={(on) => toggleDay(day.weekday, on)}
+                  aria-label={`Atender em ${day.long}`}
+                />
+                <span className="font-semibold text-[#0F2D5B]">{day.long}</span>
+              </div>
+              {has ? dayControls(day) : <span className="py-2 text-[#64748B]">Fechado</span>}
+            </div>
+          );
+        })}
+        {globalMessage}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {DAYS.map((day) => {
+        const dayShifts = value.filter((s) => s.weekday === day.weekday);
+        const closed = dayShifts.length === 0;
+        const expanded = open === day.weekday;
+        return (
+          <div
+            key={day.weekday}
+            data-day={day.weekday}
+            className="rounded-xl border border-[#E2E8F0] bg-white"
+          >
+            <button
+              type="button"
+              aria-expanded={expanded}
+              onClick={() => setOpen(expanded ? null : day.weekday)}
+              className="flex min-h-12 w-full items-center gap-4 px-4 py-2 text-left"
+            >
+              <span className={`w-10 font-bold ${closed ? 'text-[#64748B]' : 'text-[#0F2D5B]'}`}>
+                {day.short}
+              </span>
+              <span className={closed ? 'text-[#64748B]' : 'text-[#0F172A]'}>
+                {closed ? 'Fechado' : summary(dayShifts)}
+              </span>
+            </button>
+            {expanded && (
+              <div className="flex flex-col gap-3 border-t border-[#E2E8F0] p-4">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={!closed}
+                    disabled={closed && atMax}
+                    onCheckedChange={(on) => toggleDay(day.weekday, on)}
+                    aria-label={`Atender em ${day.long}`}
+                  />
+                  <span className="text-sm text-[#475569]">Atender em {day.long}</span>
+                </div>
+                {!closed && dayControls(day)}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {globalMessage}
+    </div>
+  );
+}
