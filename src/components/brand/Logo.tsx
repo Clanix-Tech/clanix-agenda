@@ -1,14 +1,15 @@
-export type LogoVariant = 'icon' | 'full' | 'full-dark' | 'mono';
+import { WORDMARK_AGENDA, WORDMARK_EM, WORDMARK_ORDEM, WORDMARK_WIDTH } from './wordmark-paths';
+
+export type LogoVariant = 'icon' | 'icon-dark' | 'full' | 'full-dark' | 'mono';
 
 function Mark({ variant }: { variant: LogoVariant }) {
   const mono = variant === 'mono';
-  const dark = variant === 'full-dark';
-  const tile = mono ? 'currentColor' : dark ? '#FFFFFF' : '#0F2D5B';
-  const cal = mono ? 'var(--logo-bg, #FFFFFF)' : dark ? '#0F2D5B' : '#FFFFFF';
+  const dark = variant === 'icon-dark' || variant === 'full-dark';
+  const tile = mono ? 'currentColor' : dark ? '#24497F' : '#0F2D5B';
+  const cal = mono ? 'var(--logo-bg, #FFFFFF)' : '#FFFFFF';
   const blue = mono ? 'currentColor' : '#3B82F6';
   const light = mono ? 'currentColor' : '#93C5FD';
-  const badge = mono ? 'currentColor' : dark ? '#FFFFFF' : '#0F2D5B';
-  const check = mono ? 'var(--logo-bg, #FFFFFF)' : dark ? '#0F2D5B' : '#FFFFFF';
+  const badge = mono ? 'currentColor' : '#0F2D5B';
   return (
     <>
       <rect width="64" height="64" rx="16" fill={tile} />
@@ -26,7 +27,7 @@ function Mark({ variant }: { variant: LogoVariant }) {
       <path
         d="m39.5 34.5 2.2 2.2 4-4.2"
         fill="none"
-        stroke={check}
+        stroke={mono ? 'var(--logo-bg, #FFFFFF)' : '#FFFFFF'}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -36,41 +37,35 @@ function Mark({ variant }: { variant: LogoVariant }) {
 }
 
 export function Logo({ variant, size = 40 }: { variant: LogoVariant; size?: number }) {
-  if (variant === 'icon' || variant === 'mono') {
+  if (variant === 'full' || variant === 'full-dark') {
+    const dark = variant === 'full-dark';
+    const text = dark ? '#FFFFFF' : '#0F2D5B';
     return (
       <svg
         role="img"
         aria-label="Agenda em Ordem"
-        width={size}
         height={size}
-        viewBox="0 0 64 64"
+        width={(size * WORDMARK_WIDTH) / 64}
+        viewBox={`0 0 ${WORDMARK_WIDTH} 64`}
         xmlns="http://www.w3.org/2000/svg"
       >
         <Mark variant={variant} />
+        <path fill={text} d={WORDMARK_AGENDA} />
+        <path fill={dark ? '#93C5FD' : '#3B82F6'} d={WORDMARK_EM} />
+        <path fill={text} d={WORDMARK_ORDEM} />
       </svg>
     );
   }
-  const textColor = variant === 'full-dark' ? '#FFFFFF' : '#0F2D5B';
   return (
     <svg
       role="img"
       aria-label="Agenda em Ordem"
+      width={size}
       height={size}
-      width={size * 4.4}
-      viewBox="0 0 282 64"
+      viewBox="0 0 64 64"
       xmlns="http://www.w3.org/2000/svg"
     >
       <Mark variant={variant} />
-      <text
-        x="78"
-        y="41"
-        fontFamily="Manrope Variable, Manrope, system-ui, sans-serif"
-        fontWeight="800"
-        fontSize="26"
-        fill={textColor}
-      >
-        Agenda em Ordem
-      </text>
     </svg>
   );
 }
