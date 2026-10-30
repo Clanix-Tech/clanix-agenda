@@ -39,6 +39,28 @@ describe('time', () => {
     expect(formatDateBR('2026-10-29', SP)).toBe('29/10/2026');
     expect(formatLongDate('2026-10-29T17:00:00Z', SP)).toBe('Quinta-feira, 29 de outubro');
   });
+  it.each([
+    ['2026-02-30', '14:00'],
+    ['2026-13-01', '14:00'],
+    ['', '14:00'],
+    ['2026-1-5', '14:00'],
+    ['2026-11-02', '25:00'],
+    ['2026-11-02', '12:60'],
+    ['2026-11-02', ''],
+    ['2026-11-02', '9:00'],
+  ])('localToInstant rejeita %j %j', (d, t) => {
+    expect(() => localToInstant(d, t, SP)).toThrow(new RangeError('Data ou hora inválida'));
+  });
+  it('weekDays/monthMatrix rejeitam data inválida', () => {
+    expect(() => weekDays('2026-02-30', 1)).toThrow(RangeError);
+    expect(() => monthMatrix('', 1)).toThrow(RangeError);
+  });
+  it('addMinutesToTime com entrada inválida devolve null', () => {
+    expect(addMinutesToTime('abc', 30)).toBeNull();
+    expect(addMinutesToTime('', 30)).toBeNull();
+    expect(addMinutesToTime('25:00', 30)).toBeNull();
+    expect(addMinutesToTime('10:00', NaN)).toBeNull();
+  });
   it('addMinutesToTime', () => {
     expect(addMinutesToTime('23:30', 45)).toBeNull();
     expect(addMinutesToTime('13:00', 45)).toBe('13:45');

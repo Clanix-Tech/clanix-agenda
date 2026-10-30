@@ -12,13 +12,34 @@ import { ptBR } from 'date-fns/locale';
 
 type WeekStart = 0 | 1;
 
-function nums(s: string, sep: string): number[] {
-  return s.split(sep).map(Number);
+const INVALID = 'Data ou hora inválida';
+
+/** Estrito: YYYY-MM-DD de calendário real (rejeita 2026-02-30). */
+function parseDate(date: string): [number, number, number] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new RangeError(INVALID);
+  const y = Number(date.slice(0, 4));
+  const m = Number(date.slice(5, 7));
+  const d = Number(date.slice(8, 10));
+  const check = new Date(Date.UTC(y, m - 1, d));
+  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) {
+    throw new RangeError(INVALID);
+  }
+  return [y, m - 1, d];
 }
 
-function parseDate(date: string): [number, number, number] {
-  const [y = 0, m = 1, d = 1] = nums(date, '-');
-  return [y, m - 1, d];
+/** Estrito: HH:mm com horas 0-23 e minutos 0-59; null se inválido. */
+function tryParseTime(time: string): [number, number] | null {
+  if (!/^\d{2}:\d{2}$/.test(time)) return null;
+  const h = Number(time.slice(0, 2));
+  const m = Number(time.slice(3, 5));
+  if (h > 23 || m > 59) return null;
+  return [h, m];
+}
+
+function parseTime(time: string): [number, number] {
+  const r = tryParseTime(time);
+  if (!r) throw new RangeError(INVALID);
+  return r;
 }
 
 function ymd(d: Date): string {
@@ -28,7 +49,7 @@ function ymd(d: Date): string {
 /** Data (YYYY-MM-DD) + hora (HH:mm) no fuso `tz` -> ISO 8601 com offset. */
 export function localToInstant(date: string, time: string, tz: string): string {
   const [y, mo, d] = parseDate(date);
-  const [h = 0, mi = 0] = nums(time, ':');
+  const [h, mi] = parseTime(time);
   return formatISO(new TZDate(y, mo, d, h, mi, 0, tz));
 }
 
@@ -59,8 +80,9 @@ export function formatLongDate(iso: string, tz: string): string {
 
 /** Soma minutos a HH:mm; null se passar de 23:59 (RN12). */
 export function addMinutesToTime(time: string, minutes: number): string | null {
-  const [h = 0, m = 0] = nums(time, ':');
-  const total = h * 60 + m + minutes;
+  const parsed = tryParseTime(time);
+  if (!parsed || !Number.isFinite(minutes)) return null;
+  const total = parsed[0] * 60 + parsed[1] + minutes;
   if (total > 23 * 60 + 59 || total < 0) return null;
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }

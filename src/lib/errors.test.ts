@@ -38,6 +38,24 @@ describe('toAppError', () => {
     expect(toAppError(err)).toEqual({ kind, message });
   });
 
+  it.each([
+    [new TypeError('Load failed')],
+    [new TypeError('NetworkError when attempting to fetch resource.')],
+    [{ message: 'TypeError: Load failed' }],
+    [{ message: 'TypeError: NetworkError when attempting to fetch resource.' }],
+    [{ message: 'TypeError: fetch failed' }],
+    [{ name: 'AuthRetryableFetchError', status: 0, message: 'x' }],
+  ])('rede em outros navegadores: %j', (err) => {
+    expect(toAppError(err).kind).toBe('rede');
+  });
+
+  it('TypeError de código (não de fetch) é desconhecido', () => {
+    expect(toAppError(new TypeError("Cannot read properties of undefined (reading 'x')"))).toEqual({
+      kind: 'desconhecido',
+      message: 'Algo deu errado. Tente novamente.',
+    });
+  });
+
   it('nunca expõe details, hint nem a mensagem crua', () => {
     const r = toAppError({
       code: '23514',

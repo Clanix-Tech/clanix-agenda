@@ -44,8 +44,10 @@ function build(kind: AppErrorKind): AppError {
   return { kind, message: MESSAGES[kind] };
 }
 
+const FETCH_FAILURE = /Failed to fetch|Load failed|NetworkError|^TypeError:/;
+
 function isFailedFetch(message: unknown): boolean {
-  return typeof message === 'string' && message.includes('Failed to fetch');
+  return typeof message === 'string' && FETCH_FAILURE.test(message);
 }
 
 /** Converte qualquer erro em mensagem segura; nunca copia details/hint/mensagem crua. */
@@ -60,7 +62,8 @@ export function toAppError(err: unknown): AppError {
       if (k) return build(k);
     }
     if (obj.status === 401) return build('sessao');
-    if (err instanceof TypeError || isFailedFetch(obj.message)) return build('rede');
+    if (obj.name === 'AuthRetryableFetchError') return build('rede');
+    if (isFailedFetch(obj.message)) return build('rede');
   }
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return build('rede');
   return build('desconhecido');
