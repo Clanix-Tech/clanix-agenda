@@ -5,6 +5,8 @@ import { AgendaToolbar } from '../components/AgendaToolbar';
 import { useAgendaParams } from '../useAgendaParams';
 import { DayView } from '../views/DayView';
 import { ListView } from '../views/ListView';
+import { MonthView } from '../views/MonthView';
+import { WeekView } from '../views/WeekView';
 
 export default function AgendaPage() {
   const profile = useProfile();
@@ -29,13 +31,17 @@ export default function AgendaPage() {
             date={date}
             today={today}
             status={status}
+            weekStartsOn={profile.data.week_starts_on === 0 ? 0 : 1}
             onView={(v) => set({ view: v })}
             onDate={(d) => set({ date: d })}
             onStatus={(s) => set({ status: s })}
           />
-          {/* Semana e mês entram na Task 12; até lá mostram o dia selecionado. */}
           {view === 'lista' ? (
             <ListView date={date} tz={tz} status={status} />
+          ) : view === 'semana' ? (
+            <WeekView date={date} tz={tz} status={status} onDate={(d) => set({ date: d })} />
+          ) : view === 'mes' ? (
+            <MonthView date={date} tz={tz} status={status} />
           ) : (
             <DayView date={date} tz={tz} status={status} />
           )}

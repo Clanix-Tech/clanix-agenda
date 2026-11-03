@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation } from 'react-router';
@@ -58,7 +59,25 @@ function Where() {
   return <output data-testid="loc">{loc.search}</output>;
 }
 
-function setup(opts: { rows?: Row[]; status?: AppointmentStatus[] | null; date?: string } = {}) {
+function Switchable({ status }: { status: AppointmentStatus[] | null }) {
+  const [date, setDate] = useState('2026-10-29');
+  return (
+    <>
+      <button onClick={() => setDate('2026-10-28')}>ir para 28</button>
+      <button onClick={() => setDate('2026-10-29')}>ir para 29</button>
+      <DayView date={date} tz={TZ} status={status} />
+    </>
+  );
+}
+
+function setup(
+  opts: {
+    rows?: Row[];
+    status?: AppointmentStatus[] | null;
+    date?: string;
+    switchable?: boolean;
+  } = {},
+) {
   setViewportWidth(390);
   const fake = createFakeSupabase({
     session: makeSession(),
@@ -80,7 +99,11 @@ function setup(opts: { rows?: Row[]; status?: AppointmentStatus[] | null; date?:
               <output data-testid="prefill">{JSON.stringify(prefill)}</output>
             )}
           >
-            <DayView date={opts.date ?? '2026-10-29'} tz={TZ} status={opts.status ?? null} />
+            {opts.switchable ? (
+              <Switchable status={opts.status ?? null} />
+            ) : (
+              <DayView date={opts.date ?? '2026-10-29'} tz={TZ} status={opts.status ?? null} />
+            )}
             <Where />
           </NewAppointmentProvider>
         ),
@@ -190,5 +213,44 @@ describe('DayView', () => {
     expect(await screen.findByText('Zeca')).toBeInTheDocument();
     expect(screen.queryByText(/Agora ·/)).not.toBeInTheDocument();
     expect(screen.queryByText(/já realizados/)).not.toBeInTheDocument();
+  });
+});
+
+describe('DayView (correções da revisão da Task 11)', () => {
+  it('"1 já realizado" no singular', async () => {
+    setup({ rows: [ap('s1', 'Solo', 'Corte', '08:30', '09:30', 'concluido')] });
+    expect(
+      await screen.findByRole('button', { name: /^1 já realizado \(08:30 – 09:30\)/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('às 13:58 o livre 13:00–14:00 some; às 13:52 o prefill é 13:55', async () => {
+    vi.setSystemTime(new Date('2026-10-29T13:58:00-03:00'));
+    const first = setup();
+    await screen.findByText(/7 atendimentos/);
+    expect(screen.queryByRole('button', { name: /13:00.*Horário livre/ })).toBeNull();
+    first.unmount();
+
+    vi.setSystemTime(new Date('2026-10-29T13:52:00-03:00'));
+    const user = userEvent.setup();
+    setup();
+    await user.click(await screen.findByRole('button', { name: /13:00.*Horário livre/ }));
+    expect(screen.getByTestId('prefill')).toHaveTextContent(
+      JSON.stringify({ date: '2026-10-29', startTime: '13:55' }),
+    );
+  });
+
+  it('o "já realizados" volta recolhido ao trocar de data e voltar', async () => {
+    const user = userEvent.setup();
+    setup({ switchable: true });
+    const toggle = await screen.findByRole('button', { name: /4 já realizados/ });
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await user.click(screen.getByRole('button', { name: 'ir para 28' }));
+    await user.click(screen.getByRole('button', { name: 'ir para 29' }));
+    expect(await screen.findByRole('button', { name: /4 já realizados/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
   });
 });

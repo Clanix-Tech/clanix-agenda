@@ -57,3 +57,33 @@ export function weekdayShortDM(date: string): string {
 }
 
 export const toMinutes = (t: string): number => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+
+/** Soma meses a uma data, mantendo o dia dentro do tamanho do mês de destino (31/01 + 1 = 28/02). */
+export function shiftMonth(date: string, months: number): string {
+  const [y, m, d] = parts(date);
+  const total = y * 12 + (m - 1) + months;
+  const ny = Math.floor(total / 12);
+  const nm = total % 12;
+  const last = new Date(Date.UTC(ny, nm + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(ny, nm, Math.min(d, last))).toISOString().slice(0, 10);
+}
+
+/** "Sex 30" */
+export function weekdayDay(date: string): string {
+  const w = WEEKDAYS_SHORT[weekdayOf(date)]!;
+  return `${w.charAt(0).toUpperCase()}${w.slice(1)} ${Number(date.slice(8, 10))}`;
+}
+
+/** "26 a 31 de outubro de 2026" */
+export function weekRangeTitle(first: string, last: string): string {
+  const [, m1, d1] = parts(first);
+  const [y2, m2, d2] = parts(last);
+  if (m1 === m2) return `${d1} a ${d2} de ${MONTHS[m2 - 1]} de ${y2}`;
+  return `${d1} de ${MONTHS[m1 - 1]} a ${d2} de ${MONTHS[m2 - 1]} de ${y2}`;
+}
+
+/** "Outubro de 2026" */
+export function monthTitle(date: string): string {
+  const [y, m] = parts(date);
+  return `${MONTHS[m - 1]!.charAt(0).toUpperCase()}${MONTHS[m - 1]!.slice(1)} de ${y}`;
+}

@@ -1,6 +1,16 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AppointmentStatus } from '@/features/appointments/domain/status';
-import { dayAndMonth, shiftDate, shortDM, WEEKDAYS_LONG, weekdayOf } from '../dates';
+import { weekDays } from '@/lib/time';
+import {
+  dayAndMonth,
+  monthTitle,
+  shiftDate,
+  shiftMonth,
+  shortDM,
+  WEEKDAYS_LONG,
+  weekdayOf,
+  weekRangeTitle,
+} from '../dates';
 import type { AgendaView } from '../useAgendaParams';
 import { StatusFilter } from './StatusFilter';
 import { ViewSwitcher } from './ViewSwitcher';
@@ -10,6 +20,7 @@ type Props = {
   date: string;
   today: string;
   status: AppointmentStatus[] | null;
+  weekStartsOn?: 0 | 1;
   onView: (v: AgendaView) => void;
   onDate: (d: string) => void;
   onStatus: (s: AppointmentStatus[] | null) => void;
@@ -18,12 +29,43 @@ type Props = {
 const ib =
   'grid size-11 shrink-0 place-items-center rounded-[14px] text-[#0F2D5B] hover:bg-[#F1F5F9] focus-visible:outline-2 focus-visible:outline-[#2563EB]';
 
-export function AgendaToolbar({ view, date, today, status, onView, onDate, onStatus }: Props) {
+export function AgendaToolbar({
+  view,
+  date,
+  today,
+  status,
+  weekStartsOn = 1,
+  onView,
+  onDate,
+  onStatus,
+}: Props) {
   const list = view === 'lista';
-  const step = list ? 7 : 1;
+  const week = view === 'semana';
+  const month = view === 'mes';
   const weekday = WEEKDAYS_LONG[weekdayOf(date)];
-  const sub = list ? 'Próximos 30 dias' : date === today ? `${weekday} · hoje` : weekday;
-  const title = list ? `A partir de ${shortDM(date)}` : dayAndMonth(date);
+  const days = week ? weekDays(date, weekStartsOn) : [];
+  const sub = list
+    ? 'Próximos 30 dias'
+    : week
+      ? days.includes(today)
+        ? 'Esta semana'
+        : 'Semana'
+      : month
+        ? 'Mês'
+        : date === today
+          ? `${weekday} · hoje`
+          : weekday;
+  const title = list
+    ? `A partir de ${shortDM(date)}`
+    : week
+      ? weekRangeTitle(days[0]!, days[6]!)
+      : month
+        ? monthTitle(date)
+        : dayAndMonth(date);
+  const prevLabel = week || list ? 'Semana anterior' : month ? 'Mês anterior' : 'Dia anterior';
+  const nextLabel = week || list ? 'Próxima semana' : month ? 'Próximo mês' : 'Próximo dia';
+  const go = (dir: 1 | -1) =>
+    onDate(month ? shiftMonth(date, dir) : shiftDate(date, dir * (week || list ? 7 : 1)));
   return (
     <div className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-1.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4 lg:p-3">
       <div className="flex items-center justify-between gap-1 lg:justify-start lg:gap-2">
@@ -34,12 +76,7 @@ export function AgendaToolbar({ view, date, today, status, onView, onDate, onSta
         >
           Hoje
         </button>
-        <button
-          type="button"
-          aria-label={list ? 'Semana anterior' : 'Dia anterior'}
-          onClick={() => onDate(shiftDate(date, -step))}
-          className={ib}
-        >
+        <button type="button" aria-label={prevLabel} onClick={() => go(-1)} className={ib}>
           <ChevronLeft aria-hidden="true" className="size-5" />
         </button>
         <div className="min-w-0 flex-1 text-center lg:min-w-44 lg:flex-none">
@@ -48,12 +85,7 @@ export function AgendaToolbar({ view, date, today, status, onView, onDate, onSta
             {title}
           </div>
         </div>
-        <button
-          type="button"
-          aria-label={list ? 'Próxima semana' : 'Próximo dia'}
-          onClick={() => onDate(shiftDate(date, step))}
-          className={ib}
-        >
+        <button type="button" aria-label={nextLabel} onClick={() => go(1)} className={ib}>
           <ChevronRight aria-hidden="true" className="size-5" />
         </button>
       </div>

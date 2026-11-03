@@ -125,7 +125,7 @@ function FreeCard({
   );
 }
 
-export function DayView({ date, tz, status }: Props) {
+function DayViewInner({ date, tz, status }: Props) {
   const from = localToInstant(date, '00:00', tz);
   const to = localToInstant(shiftDate(date, 1), '00:00', tz);
   const appts = useAppointmentsRange(from, to);
@@ -160,13 +160,17 @@ export function DayView({ date, tz, status }: Props) {
   const active = rows.filter((r) => r.appt.status !== 'cancelado');
 
   const startOfToday = new Date(localToInstant(today, '00:00', tz));
+  // Mesmo piso de freeIntervals: agora arredondado para cima ao próximo múltiplo de 5 min.
+  const floor = isToday
+    ? Math.ceil((nowMin + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) * 5
+    : 0;
   const free = freeIntervals(
     date,
     tz,
     hours.data,
     active.map((r) => ({ startsAt: r.appt.starts_at, endsAt: r.appt.ends_at })),
     startOfToday,
-  ).filter((f) => !isToday || toMinutes(f.end) > nowMin);
+  ).filter((f) => !isToday || floor < toMinutes(f.end));
 
   const visible = rows.filter((r) => !status || status.includes(r.appt.status));
 
@@ -212,8 +216,7 @@ export function DayView({ date, tz, status }: Props) {
 
   for (const f of free) {
     const fs = toMinutes(f.start);
-    const ceil = Math.ceil(nowMin / 5) * 5;
-    const startTime = isToday && fs < nowMin && ceil < toMinutes(f.end) ? fmt(ceil) : f.start;
+    const startTime = isToday && fs < floor ? fmt(floor) : f.start;
     items.push({
       key: `free-${f.start}`,
       min: fs,
@@ -260,7 +263,7 @@ export function DayView({ date, tz, status }: Props) {
 
   const doneLabel =
     done.length > 0
-      ? `${done.length} já realizados (${fmt(Math.min(...done.map((r) => r.start)))} – ${fmt(
+      ? `${done.length} ${done.length === 1 ? 'já realizado' : 'já realizados'} (${fmt(Math.min(...done.map((r) => r.start)))} – ${fmt(
           Math.max(...done.map((r) => r.end)),
         )})`
       : '';
@@ -302,4 +305,9 @@ export function DayView({ date, tz, status }: Props) {
       ))}
     </div>
   );
+}
+
+/** Com `key={date}`, trocar de dia recomeça com os realizados recolhidos. */
+export function DayView(props: Props) {
+  return <DayViewInner key={props.date} {...props} />;
 }
