@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, setViewportWidth } from '@/test/render';
 import { createFakeSupabase, makeSession, type Row } from '@/test/fakeSupabase';
@@ -165,9 +165,27 @@ describe('ReschedulePage', () => {
     const user = userEvent.setup();
     await user.click(await slot('11:00'));
     const confirm = screen.getByRole('button', { name: 'Confirmar remarcação' });
-    await user.dblClick(confirm);
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
     await waitFor(() => expect(fake.calls.rpc.length).toBeGreaterThanOrEqual(1));
     expect(fake.calls.rpc).toHaveLength(1);
+  });
+
+  it('trocar de dia mantém o foco no botão do dia', async () => {
+    setup();
+    const user = userEvent.setup();
+    await slot('10:30');
+    const day = screen.getByRole('button', { name: /^Sáb 31/ });
+    await user.click(day);
+    expect(screen.getByRole('button', { name: /^Sáb 31/ })).toHaveFocus();
+    expect(screen.getByRole('button', { name: /^Sáb 31/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('nome acessível do horário ocupado e passo que não cabe até o fim do turno', async () => {
+    setup();
+    expect(await screen.findByRole('button', { name: '15:00, ocupado' })).toBeDisabled();
+    // 17:30 + 1h passaria das 18:00: aparece desabilitado.
+    expect(await screen.findByRole('button', { name: '17:30, ocupado' })).toBeDisabled();
   });
 
   it('conflito: mensagem, limpa a seleção e mantém o dia', async () => {

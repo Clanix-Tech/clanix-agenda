@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -55,10 +55,10 @@ function buildSlots(
     .filter((x) => x.weekday === weekday)
     .sort((a, b) => a.start_time.localeCompare(b.start_time))) {
     const end = toMin(s.end_time);
-    for (let t = toMin(s.start_time); t + duration <= end; t += step) {
+    for (let t = toMin(s.start_time); t < end; t += step) {
       const time = fromMin(t);
       if (new Date(localToInstant(date, time, tz)) < now) continue;
-      out.push({ time, busy: !free.has(time) });
+      out.push({ time, busy: t + duration > end || !free.has(time) });
     }
   }
   return out;
@@ -160,6 +160,8 @@ function RescheduleBody({
 }) {
   const navigate = useNavigate();
   const reschedule = useRescheduleAppointment();
+  const sending = useRef(false);
+  const dayRef = useRef<string | undefined>(undefined);
 
   const now = useMemo(() => new Date(), []);
   const current = instantToLocal(appointment.starts_at, tz);
@@ -180,6 +182,10 @@ function RescheduleBody({
   const [error, setError] = useState<AppError | null>(null);
   const day = pickedDay ?? (days.includes(current.date) ? current.date : days[0]);
 
+  useEffect(() => {
+    dayRef.current = day;
+  }, [day]);
+
   if (!day) {
     return (
       <Shell>
@@ -191,7 +197,6 @@ function RescheduleBody({
   }
   return (
     <Picker
-      key={day}
       {...{
         appointment,
         tz,
@@ -207,6 +212,15 @@ function RescheduleBody({
         setError,
         reschedule,
         navigate,
+        tryStart: () => {
+          if (sending.current) return false;
+          sending.current = true;
+          return true;
+        },
+        finish: () => {
+          sending.current = false;
+        },
+        isCurrentDay: (d: string) => dayRef.current === d,
         pickDay: (d: string) => {
           setPickedDay(d);
           setTime(null);
@@ -232,11 +246,13 @@ type PickerProps = {
   setError: (e: AppError | null) => void;
   reschedule: ReturnType<typeof useRescheduleAppointment>;
   navigate: ReturnType<typeof useNavigate>;
+  tryStart: () => boolean;
+  finish: () => void;
+  isCurrentDay: (d: string) => boolean;
   pickDay: (d: string) => void;
 };
 
 function Picker(p: PickerProps) {
-  const sending = useRef(false);
   const { appointment, tz, day, time, duration, now } = p;
   const range = useAppointmentsRange(
     localToInstant(day, '00:00', tz),
@@ -253,8 +269,7 @@ function Picker(p: PickerProps) {
   const pending = p.reschedule.isPending;
 
   async function submit() {
-    if (!time || sending.current) return;
-    sending.current = true;
+    if (!time || !p.tryStart()) return;
     p.setError(null);
     try {
       const endTime = fromMin(toMin(time) + duration);
@@ -268,6 +283,7 @@ function Picker(p: PickerProps) {
       toast.success('Atendimento remarcado');
       p.navigate(`/agenda?visao=dia&data=${day}`, { replace: true });
     } catch (err) {
+      if (!p.isCurrentDay(day)) return;
       const app = toAppError(err);
       p.setError(app);
       if (app.kind === 'conflito') {
@@ -275,7 +291,7 @@ function Picker(p: PickerProps) {
         void range.refetch();
       }
     } finally {
-      sending.current = false;
+      p.finish();
     }
   }
 
@@ -308,6 +324,7 @@ function Picker(p: PickerProps) {
               key={d}
               type="button"
               aria-pressed={selected}
+              disabled={pending}
               onClick={() => p.pickDay(d)}
               className={cn(
                 'h-11 min-w-16 shrink-0 rounded-xl border px-3 text-sm font-semibold',
@@ -341,7 +358,8 @@ function Picker(p: PickerProps) {
                 <button
                   key={s.time}
                   type="button"
-                  disabled={s.busy}
+                  disabled={s.busy || pending}
+                  aria-label={s.busy ? `${s.time}, ocupado` : undefined}
                   aria-pressed={selected}
                   onClick={() => {
                     p.setTime(s.time);
