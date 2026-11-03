@@ -76,8 +76,10 @@ export function weekdayDay(date: string): string {
 
 /** "26 a 31 de outubro de 2026" */
 export function weekRangeTitle(first: string, last: string): string {
-  const [, m1, d1] = parts(first);
+  const [y1, m1, d1] = parts(first);
   const [y2, m2, d2] = parts(last);
+  if (first === last) return `${d1} de ${MONTHS[m1 - 1]} de ${y1}`;
+  if (y1 !== y2) return `${d1} de ${MONTHS[m1 - 1]} de ${y1} a ${d2} de ${MONTHS[m2 - 1]} de ${y2}`;
   if (m1 === m2) return `${d1} a ${d2} de ${MONTHS[m2 - 1]} de ${y2}`;
   return `${d1} de ${MONTHS[m1 - 1]} a ${d2} de ${MONTHS[m2 - 1]} de ${y2}`;
 }

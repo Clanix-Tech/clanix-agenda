@@ -1,22 +1,22 @@
-import { useState, type MouseEvent } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
-import { instantToLocal, localToInstant, todayInTz, weekDays } from '@/lib/time';
-import { useAppointmentsRange, type Appointment } from '@/features/appointments/api';
+import { instantToLocal, todayInTz } from '@/lib/time';
+import type { Appointment } from '@/features/appointments/api';
 import { freeIntervals } from '@/features/appointments/domain/freeSlots';
 import { statusMeta, type AppointmentStatus } from '@/features/appointments/domain/status';
 import { useNewAppointment } from '@/features/appointments/components/NewAppointmentProvider';
-import { useBusinessHours } from '@/features/business-hours/api';
-import { useProfile } from '@/features/profile/api';
 import { LoadingState } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
-import { shiftDate, toMinutes, weekdayDay, weekdayOf } from '../dates';
-import { layoutDay } from '../layout/eventLayout';
+import { EmptyState } from '@/components/feedback/EmptyState';
+import { toMinutes, weekdayDay } from '../dates';
+import { eventPlacement, layoutDay, type LayoutBox } from '../layout/eventLayout';
 import { useNow } from '../useNow';
 import { useOpenAppointment } from '../useOpenAppointment';
 import { NowLine } from '../components/NowLine';
 import { DayView } from './DayView';
+import { rowsOf, shiftsOf, useWeekData, visibleDays, type Row, type Shift } from './weekData';
 
 type Props = {
   date: string;
@@ -30,8 +30,6 @@ const HATCH = 'repeating-linear-gradient(135deg,#F1F5F9 0 6px,#F8FAFC 6px 12px)'
 const fmt = (min: number) =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
-type Row = { appt: Appointment; start: number; end: number };
-
 const EVENT_COLORS: Record<AppointmentStatus, string> = {
   agendado: 'border-[#BFDBFE] bg-[#E7F1FF] text-[#1D4ED8]',
   concluido: 'border-[#BBF7D0] bg-[#DCFCE7] text-[#166534]',
@@ -39,28 +37,74 @@ const EVENT_COLORS: Record<AppointmentStatus, string> = {
   cancelado: 'border-dashed border-[#94A3B8] bg-[#F1F5F9] text-[#475569]',
 };
 
-/** Dados da semana: perfil, turnos e atendimentos agrupados por dia no fuso do perfil. */
-function useWeekData(date: string, tz: string) {
-  const profile = useProfile();
-  const weekStartsOn: 0 | 1 = profile.data?.week_starts_on === 0 ? 0 : 1;
-  const days = weekDays(date, weekStartsOn);
-  const from = localToInstant(days[0]!, '00:00', tz);
-  const to = localToInstant(shiftDate(days[6]!, 1), '00:00', tz);
-  const appts = useAppointmentsRange(from, to);
-  const hours = useBusinessHours();
-  const slot = profile.data?.slot_interval_minutes ?? 30;
-  return { days, appts, hours, slot };
-}
+type EventModel = { row: Row; box: LayoutBox; overlapsOther: boolean };
+type ColumnModel = {
+  d: string;
+  shifts: [number, number][];
+  hatched: [number, number][];
+  events: EventModel[];
+};
+type GridModel = { startMin: number; endMin: number; columns: ColumnModel[] };
 
-function rowsOf(appts: Appointment[], tz: string): Map<string, Row[]> {
-  const byDay = new Map<string, Row[]>();
-  for (const appt of appts) {
-    const s = instantToLocal(appt.starts_at, tz);
-    const e = instantToLocal(appt.ends_at, tz);
-    const row = { appt, start: toMinutes(s.time), end: e.date > s.date ? 1440 : toMinutes(e.time) };
-    byDay.set(s.date, [...(byDay.get(s.date) ?? []), row]);
+function buildGrid(
+  days: string[],
+  hours: Shift[],
+  byDay: Map<string, Row[]>,
+  status: AppointmentStatus[] | null,
+): GridModel {
+  const visible = visibleDays(days, hours, byDay);
+  // Faixa de horas da semana: menor início e maior fim dos turnos; amplia para não esconder atendimentos.
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const d of days) {
+    for (const [a, b] of shiftsOf(hours, d)) {
+      lo = Math.min(lo, a);
+      hi = Math.max(hi, b);
+    }
   }
-  return byDay;
+  if (!Number.isFinite(lo)) {
+    lo = 8 * 60;
+    hi = 19 * 60;
+  }
+  for (const d of visible) {
+    for (const r of byDay.get(d) ?? []) {
+      lo = Math.min(lo, r.start);
+      hi = Math.max(hi, r.end);
+    }
+  }
+  const startMin = Math.floor(lo / 60) * 60;
+  const endMin = Math.min(1440, Math.ceil(hi / 60) * 60);
+
+  const columns = visible.map((d): ColumnModel => {
+    const shifts = shiftsOf(hours, d);
+    const shown = (byDay.get(d) ?? []).filter((r) => !status || status.includes(r.appt.status));
+    const boxes = layoutDay(
+      shown.map((r) => ({ id: r.appt.id, start: fmt(r.start), end: fmt(r.end) })),
+      fmt(startMin),
+      fmt(endMin),
+      PX_PER_HOUR,
+    );
+    const events = shown.map((row, i): EventModel => {
+      const cancelled = row.appt.status === 'cancelado';
+      const overlapsOther = shown.some(
+        (o) =>
+          o !== row &&
+          (o.appt.status === 'cancelado') !== cancelled &&
+          o.start < row.end &&
+          o.end > row.start,
+      );
+      return { row, box: boxes[i]!, overlapsOther };
+    });
+    const hatched: [number, number][] = [];
+    let cursor = startMin;
+    for (const [a, b] of shifts) {
+      if (a > cursor) hatched.push([cursor, a]);
+      cursor = Math.max(cursor, b);
+    }
+    if (cursor < endMin) hatched.push([cursor, endMin]);
+    return { d, shifts, hatched, events };
+  });
+  return { startMin, endMin, columns };
 }
 
 export function WeekView(props: Props) {
@@ -70,10 +114,6 @@ export function WeekView(props: Props) {
 
 function WeekGrid({ date, tz, status }: Props) {
   const { days, appts, hours, slot } = useWeekData(date, tz);
-  const { open } = useNewAppointment();
-  const openAppointment = useOpenAppointment();
-  const now = useNow();
-  const [hover, setHover] = useState<{ date: string; min: number } | null>(null);
 
   if (appts.isPending || hours.isPending) return <LoadingState label="Carregando a agenda…" />;
   if (appts.isError || hours.isError) {
@@ -87,56 +127,80 @@ function WeekGrid({ date, tz, status }: Props) {
       />
     );
   }
+  return (
+    <WeekGridBody
+      days={days}
+      appts={appts.data}
+      hours={hours.data}
+      tz={tz}
+      status={status}
+      slot={slot}
+    />
+  );
+}
 
-  const byDay = rowsOf(appts.data, tz);
-  const shiftsOf = (d: string) =>
-    hours.data
-      .filter((s) => s.weekday === weekdayOf(d))
-      .map((s): [number, number] => [toMinutes(s.start_time), toMinutes(s.end_time)])
-      .filter(([a, b]) => b > a)
-      .sort((a, b) => a[0] - b[0]);
+function WeekGridBody({
+  days,
+  appts,
+  hours,
+  tz,
+  status,
+  slot,
+}: {
+  days: string[];
+  appts: Appointment[];
+  hours: Shift[];
+  tz: string;
+  status: AppointmentStatus[] | null;
+  slot: number;
+}) {
+  const { open } = useNewAppointment();
+  const openAppointment = useOpenAppointment();
+  const now = useNow();
+  const [hover, setHover] = useState<{ date: string; min: number } | null>(null);
 
-  const columns = days.filter((d) => shiftsOf(d).length > 0 || (byDay.get(d)?.length ?? 0) > 0);
+  const model = useMemo(
+    () => buildGrid(days, hours, rowsOf(appts, tz), status),
+    // `days` é recriado a cada render; a semana é identificada pelo primeiro dia.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [days[0], appts, hours, tz, status],
+  );
+  const { startMin, endMin, columns } = model;
 
-  // Faixa de horas da semana: menor início e maior fim dos turnos; amplia para não esconder atendimentos.
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (const d of days) {
-    for (const [a, b] of shiftsOf(d)) {
-      lo = Math.min(lo, a);
-      hi = Math.max(hi, b);
-    }
+  if (columns.length === 0) {
+    return <EmptyState title="Nenhum dia de atendimento nesta semana." />;
   }
-  if (!Number.isFinite(lo)) {
-    lo = 8 * 60;
-    hi = 19 * 60;
-  }
-  for (const d of columns) {
-    for (const r of byDay.get(d) ?? []) {
-      lo = Math.min(lo, r.start);
-      hi = Math.max(hi, r.end);
-    }
-  }
-  const startMin = Math.floor(lo / 60) * 60;
-  const endMin = Math.min(1440, Math.ceil(hi / 60) * 60);
+
   const height = ((endMin - startMin) / 60) * PX_PER_HOUR;
   const hourLabels = Array.from({ length: (endMin - startMin) / 60 }, (_, i) => startMin + i * 60);
 
   const today = todayInTz(tz, now);
-  const nowMin = toMinutes(instantToLocal(now.toISOString(), tz).time);
-  const nowTime = instantToLocal(now.toISOString(), tz).time;
+  const nowLocal = instantToLocal(now.toISOString(), tz).time;
+  const nowMin = toMinutes(nowLocal);
+  // Mesmo piso de freeIntervals: agora arredondado para cima ao próximo múltiplo de 5 min.
+  const floorNow =
+    Math.ceil((nowMin + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) * 5;
 
-  const nextId = appts.data
-    .filter((a) => a.status === 'agendado' && new Date(a.starts_at) >= now)
-    .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0]?.id;
+  // "Próximo" só vale na semana que contém hoje.
+  const nextId = days.includes(today)
+    ? appts
+        .filter((a) => a.status === 'agendado' && new Date(a.starts_at) >= now)
+        .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0]?.id
+    : undefined;
 
   const toTop = (min: number) => ((min - startMin) / 60) * PX_PER_HOUR;
 
-  const slotAt = (e: MouseEvent<HTMLDivElement>, d: string): number | null => {
+  /** Horário clicável sob o ponteiro: dentro de um turno, nunca no passado, arredondado ao intervalo. */
+  const slotAt = (e: MouseEvent<HTMLDivElement>, c: ColumnModel): number | null => {
     if ((e.target as HTMLElement).closest('button')) return null;
+    if (c.d < today) return null;
     const y = e.clientY - e.currentTarget.getBoundingClientRect().top;
-    const min = Math.floor((startMin + (y / PX_PER_HOUR) * 60) / slot) * slot;
-    return shiftsOf(d).some(([a, b]) => min >= a && min < b) ? min : null;
+    const raw = Math.floor(startMin + (y / PX_PER_HOUR) * 60);
+    const shift = c.shifts.find(([a, b]) => raw >= a && raw < b);
+    if (!shift) return null;
+    const min = Math.max(Math.floor(raw / slot) * slot, shift[0]);
+    if (c.d === today && min < floorNow) return null;
+    return min;
   };
 
   return (
@@ -160,29 +224,11 @@ function WeekGrid({ date, tz, status }: Props) {
           </div>
         </div>
 
-        {columns.map((d) => {
+        {columns.map((c) => {
+          const d = c.d;
           const label = weekdayDay(d);
-          const shifts = shiftsOf(d);
-          const closed = shifts.length === 0;
+          const closed = c.shifts.length === 0;
           const isToday = d === today;
-          const all = byDay.get(d) ?? [];
-          const shown = all.filter((r) => !status || status.includes(r.appt.status));
-          const boxes = layoutDay(
-            shown.map((r) => ({ id: r.appt.id, start: fmt(r.start), end: fmt(r.end) })),
-            fmt(startMin),
-            fmt(endMin),
-            PX_PER_HOUR,
-          );
-          const active = all.filter((r) => r.appt.status !== 'cancelado');
-
-          // Faixas fechadas (almoço, antes/depois do expediente, dia sem turno).
-          const hatched: [number, number][] = [];
-          let cursor = startMin;
-          for (const [a, b] of shifts) {
-            if (a > cursor) hatched.push([cursor, a]);
-            cursor = Math.max(cursor, b);
-          }
-          if (cursor < endMin) hatched.push([cursor, endMin]);
 
           return (
             <div
@@ -226,16 +272,25 @@ function WeekGrid({ date, tz, status }: Props) {
                   backgroundImage: `repeating-linear-gradient(to bottom,#EEF2F6 0 1px,transparent 1px ${PX_PER_HOUR}px)`,
                 }}
                 onClick={(e) => {
-                  const min = slotAt(e, d);
+                  const min = slotAt(e, c);
                   if (min !== null) open({ date: d, startTime: fmt(min) });
                 }}
                 onMouseMove={(e) => {
-                  const min = slotAt(e, d);
-                  setHover(min === null ? null : { date: d, min });
+                  const min = slotAt(e, c);
+                  // Mesmo valor devolve o mesmo objeto: o React não re-renderiza a grade.
+                  setHover((prev) =>
+                    min === null
+                      ? prev === null
+                        ? prev
+                        : null
+                      : prev && prev.date === d && prev.min === min
+                        ? prev
+                        : { date: d, min },
+                  );
                 }}
                 onMouseLeave={() => setHover(null)}
               >
-                {hatched.map(([a, b]) => (
+                {c.hatched.map(([a, b]) => (
                   <div
                     key={a}
                     aria-hidden="true"
@@ -260,31 +315,38 @@ function WeekGrid({ date, tz, status }: Props) {
                   </div>
                 )}
 
-                {shown.map((r, i) => {
-                  const box = boxes[i]!;
+                {c.events.map(({ row: r, box, overlapsOther }) => {
                   const a = r.appt;
                   const cancelled = a.status === 'cancelado';
-                  const overlapsActive =
-                    cancelled && active.some((o) => o.start < r.end && o.end > r.start);
                   const next = a.id === nextId;
-                  const Icon = statusMeta[a.status].icon;
+                  const meta = statusMeta[a.status];
+                  const Icon = meta.icon;
                   const range = `${fmt(r.start)}–${fmt(r.end)}`;
                   const compact = box.height < 40;
+                  const statusLine = next
+                    ? `Próximo · ${fmt(r.start)}`
+                    : cancelled
+                      ? meta.label
+                      : a.status === 'nao_compareceu'
+                        ? `Faltou · ${fmt(r.start)}`
+                        : `${meta.label} · ${range}`;
                   return (
                     <button
                       key={a.id}
                       type="button"
-                      aria-label={`${a.client_name}, ${range}, ${statusMeta[a.status].label}`}
+                      title={meta.label}
+                      aria-label={`${a.client_name}, ${range}, ${meta.label}`}
                       onClick={() => openAppointment(a.id)}
                       className={cn(
-                        'absolute flex flex-col gap-px overflow-hidden rounded-[10px] border px-2 py-1 text-left text-xs leading-tight focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2563EB]',
+                        'absolute flex gap-px overflow-hidden rounded-[10px] border px-2 py-1 text-left text-xs leading-tight focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2563EB]',
+                        compact ? 'flex-row items-center gap-1' : 'flex-col',
                         EVENT_COLORS[a.status],
                         next && 'border-[#0F2D5B] bg-[#0F2D5B] text-white',
-                        overlapsActive ? 'z-0 left-[58%] right-1' : 'left-1 right-1 z-10',
-                        compact && 'justify-center',
+                        eventPlacement(cancelled, overlapsOther),
                       )}
                       style={{ top: box.top, height: box.height }}
                     >
+                      {compact && <Icon aria-hidden="true" className="size-3 shrink-0" />}
                       <b
                         title={a.client_name}
                         className={cn('truncate font-semibold', cancelled && 'line-through')}
@@ -294,9 +356,7 @@ function WeekGrid({ date, tz, status }: Props) {
                       {!compact && (
                         <span className="flex items-center gap-1">
                           <Icon aria-hidden="true" className="size-3 shrink-0" />
-                          <span className="truncate">
-                            {next ? `${fmt(r.start)} · Próximo` : range}
-                          </span>
+                          <span className="truncate">{statusLine}</span>
                         </span>
                       )}
                       {box.height >= 64 && (
@@ -313,7 +373,7 @@ function WeekGrid({ date, tz, status }: Props) {
                     className="pointer-events-none absolute inset-x-0 z-20"
                     style={{ top: toTop(nowMin) - 8 }}
                   >
-                    <NowLine time={nowTime} />
+                    <NowLine time={nowLocal} />
                   </div>
                 )}
               </div>

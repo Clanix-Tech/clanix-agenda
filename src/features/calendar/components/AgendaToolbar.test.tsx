@@ -3,7 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { AgendaToolbar } from './AgendaToolbar';
 import type { AgendaView } from '../useAgendaParams';
 
-function setup(view: AgendaView, date: string, weekStartsOn: 0 | 1 = 1) {
+function setup(
+  view: AgendaView,
+  date: string,
+  weekStartsOn: 0 | 1 = 1,
+  visibleDays?: string[] | null,
+) {
   const onDate = vi.fn();
   render(
     <AgendaToolbar
@@ -12,6 +17,7 @@ function setup(view: AgendaView, date: string, weekStartsOn: 0 | 1 = 1) {
       today="2026-10-29"
       status={null}
       weekStartsOn={weekStartsOn}
+      visibleDays={visibleDays}
       onView={() => {}}
       onDate={onDate}
       onStatus={() => {}}
@@ -21,7 +27,7 @@ function setup(view: AgendaView, date: string, weekStartsOn: 0 | 1 = 1) {
 }
 
 describe('AgendaToolbar (semana e mês)', () => {
-  it('semana: título com o intervalo e navegação de 7 dias', async () => {
+  it('semana: navegação de 7 dias; sem colunas informadas o título cobre os 7 dias', async () => {
     const onDate = setup('semana', '2026-10-29');
     expect(screen.getByText('26 de outubro a 1 de novembro de 2026')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Próxima semana' }));
@@ -30,9 +36,19 @@ describe('AgendaToolbar (semana e mês)', () => {
     expect(onDate).toHaveBeenLastCalledWith('2026-10-22');
   });
 
-  it('semana dentro de um mês: "26 a 31 de outubro de 2026" (semana começando no domingo)', () => {
-    setup('semana', '2026-10-28', 0);
-    expect(screen.getByText('25 a 31 de outubro de 2026')).toBeInTheDocument();
+  it('semana: o título vem dos dias visíveis (seg–sáb, domingo fechado)', () => {
+    setup('semana', '2026-10-29', 1, ['2026-10-26', '2026-10-27', '2026-10-31']);
+    expect(screen.getByText('26 a 31 de outubro de 2026')).toBeInTheDocument();
+  });
+
+  it('semana: dias visíveis que cruzam meses', () => {
+    setup('semana', '2026-10-01', 1, ['2026-09-29', '2026-10-04']);
+    expect(screen.getByText('29 de setembro a 4 de outubro de 2026')).toBeInTheDocument();
+  });
+
+  it('semana: cruzando o ano mostra os dois anos', () => {
+    setup('semana', '2026-12-30', 1, ['2026-12-28', '2027-01-03']);
+    expect(screen.getByText('28 de dezembro de 2026 a 3 de janeiro de 2027')).toBeInTheDocument();
   });
 
   it('mês: título e navegação de 1 mês mantendo o dia dentro do tamanho do mês', async () => {

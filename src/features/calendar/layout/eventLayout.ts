@@ -23,3 +23,9 @@ export function layoutDay(
     };
   });
 }
+
+/** Classes de posição horizontal; ativo e cancelado sobrepostos dividem a coluna sem cobrir um ao outro. */
+export function eventPlacement(cancelled: boolean, overlapsOther: boolean): string {
+  if (!overlapsOther) return 'left-1 right-1 z-10';
+  return cancelled ? 'left-[58%] right-1 z-10' : 'left-1 right-[43%] z-10';
+}

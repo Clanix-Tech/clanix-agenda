@@ -1,3 +1,4 @@
+import { DESKTOP_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 import { useProfile } from '@/features/profile/api';
 import { LoadingState } from '@/components/feedback/LoadingState';
 import { ErrorState } from '@/components/feedback/ErrorState';
@@ -7,8 +8,18 @@ import { DayView } from '../views/DayView';
 import { ListView } from '../views/ListView';
 import { MonthView } from '../views/MonthView';
 import { WeekView } from '../views/WeekView';
+import { useVisibleWeekDays } from '../views/weekData';
+import type { ComponentProps } from 'react';
+
+/** Barra da semana no computador: o título acompanha as colunas realmente visíveis. */
+function WeekToolbar(props: ComponentProps<typeof AgendaToolbar> & { tz: string }) {
+  const { tz, ...rest } = props;
+  const visibleDays = useVisibleWeekDays(props.date, tz);
+  return <AgendaToolbar {...rest} visibleDays={visibleDays} />;
+}
 
 export default function AgendaPage() {
+  const desktop = useMediaQuery(DESKTOP_QUERY);
   const profile = useProfile();
   const { view, date, status, set, tz, today } = useAgendaParams();
 
@@ -26,16 +37,30 @@ export default function AgendaPage() {
         />
       ) : (
         <>
-          <AgendaToolbar
-            view={view}
-            date={date}
-            today={today}
-            status={status}
-            weekStartsOn={profile.data.week_starts_on === 0 ? 0 : 1}
-            onView={(v) => set({ view: v })}
-            onDate={(d) => set({ date: d })}
-            onStatus={(s) => set({ status: s })}
-          />
+          {view === 'semana' && desktop ? (
+            <WeekToolbar
+              tz={tz}
+              view={view}
+              date={date}
+              today={today}
+              status={status}
+              weekStartsOn={profile.data.week_starts_on === 0 ? 0 : 1}
+              onView={(v) => set({ view: v })}
+              onDate={(d) => set({ date: d })}
+              onStatus={(s) => set({ status: s })}
+            />
+          ) : (
+            <AgendaToolbar
+              view={view}
+              date={date}
+              today={today}
+              status={status}
+              weekStartsOn={profile.data.week_starts_on === 0 ? 0 : 1}
+              onView={(v) => set({ view: v })}
+              onDate={(d) => set({ date: d })}
+              onStatus={(s) => set({ status: s })}
+            />
+          )}
           {view === 'lista' ? (
             <ListView date={date} tz={tz} status={status} />
           ) : view === 'semana' ? (

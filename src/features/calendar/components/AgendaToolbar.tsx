@@ -21,6 +21,8 @@ type Props = {
   today: string;
   status: AppointmentStatus[] | null;
   weekStartsOn?: 0 | 1;
+  /** Dias com coluna na grade da semana; o título usa o primeiro e o último. */
+  visibleDays?: string[] | null;
   onView: (v: AgendaView) => void;
   onDate: (d: string) => void;
   onStatus: (s: AppointmentStatus[] | null) => void;
@@ -35,6 +37,7 @@ export function AgendaToolbar({
   today,
   status,
   weekStartsOn = 1,
+  visibleDays,
   onView,
   onDate,
   onStatus,
@@ -58,7 +61,11 @@ export function AgendaToolbar({
   const title = list
     ? `A partir de ${shortDM(date)}`
     : week
-      ? weekRangeTitle(days[0]!, days[6]!)
+      ? weekRangeTitle(
+          ...((visibleDays?.length
+            ? [visibleDays[0]!, visibleDays.at(-1)!]
+            : [days[0]!, days[6]!]) as [string, string]),
+        )
       : month
         ? monthTitle(date)
         : dayAndMonth(date);

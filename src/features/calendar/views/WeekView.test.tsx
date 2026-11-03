@@ -71,7 +71,15 @@ function Harness({ initial, status }: { initial: string; status?: AppointmentSta
   return <WeekView date={date} tz={TZ} status={status ?? null} onDate={setDate} />;
 }
 
-function setup(opts: { rows?: Row[]; width?: number; status?: AppointmentStatus[] | null } = {}) {
+function setup(
+  opts: {
+    rows?: Row[];
+    width?: number;
+    status?: AppointmentStatus[] | null;
+    date?: string;
+    shifts?: Row[];
+  } = {},
+) {
   setViewportWidth(opts.width ?? 1280);
   const fake = createFakeSupabase({
     session: makeSession(),
@@ -85,7 +93,7 @@ function setup(opts: { rows?: Row[]; width?: number; status?: AppointmentStatus[
           week_starts_on: 1,
         },
       ],
-      business_hours: shifts,
+      business_hours: opts.shifts ?? shifts,
       appointments: opts.rows ?? ROWS,
     },
   });
@@ -101,7 +109,7 @@ function setup(opts: { rows?: Row[]; width?: number; status?: AppointmentStatus[
               <output data-testid="prefill">{JSON.stringify(prefill)}</output>
             )}
           >
-            <Harness initial="2026-10-29" status={opts.status} />
+            <Harness initial={opts.date ?? '2026-10-29'} status={opts.status} />
             <Where />
           </NewAppointmentProvider>
         ),
@@ -219,6 +227,84 @@ describe('WeekView (computador)', () => {
     setup({ status: ['cancelado'] });
     expect(await screen.findByRole('button', { name: /Roberto Alves/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Juliana Rocha/ })).toBeNull();
+  });
+});
+
+describe('WeekView (computador) — revisão', () => {
+  it('ativo e cancelado sobrepostos dividem a coluna: o ativo estreita só se o cancelado aparece', async () => {
+    const rows = [
+      ap('a', 'Ativa Souza', '30', '10:00', '11:00'),
+      ap('c', 'Cancelada Lima', '30', '10:30', '11:30', 'cancelado'),
+    ];
+    const { unmount } = setup({ rows });
+    const active = await screen.findByRole('button', { name: /Ativa Souza/ });
+    const cancelled = screen.getByRole('button', { name: /Cancelada Lima/ });
+    expect(active).toHaveClass('right-[43%]');
+    expect(active).not.toHaveClass('right-1');
+    expect(cancelled).toHaveClass('left-[58%]');
+    unmount();
+    setup({ rows, status: ['cancelado'] });
+    const alone = await screen.findByRole('button', { name: /Cancelada Lima/ });
+    expect(alone).toHaveClass('left-1', 'right-1');
+    expect(alone).not.toHaveClass('left-[58%]');
+  });
+
+  it('evento ativo sem cancelado sobreposto ocupa a largura toda', async () => {
+    setup();
+    const e = await screen.findByRole('button', { name: /Vanessa Torres/ });
+    expect(e).toHaveClass('left-1', 'right-1');
+  });
+
+  it('"Próximo" só aparece na semana que contém hoje', async () => {
+    setup({
+      date: '2026-11-03',
+      rows: [ap('n1', 'Nina Futura', '04', '10:00', '11:00', 'agendado', '11')],
+    });
+    const e = await screen.findByRole('button', { name: /Nina Futura/ });
+    expect(e).not.toHaveClass('bg-[#0F2D5B]');
+    expect(screen.queryByText(/Próximo/)).toBeNull();
+  });
+
+  it('mostra o status também em texto nos eventos', async () => {
+    setup();
+    const next = await screen.findByRole('button', { name: /Juliana Rocha/ });
+    expect(next).toHaveTextContent('Próximo · 14:00');
+    expect(screen.getByRole('button', { name: /Roberto Alves/ })).toHaveTextContent('Cancelado');
+    expect(screen.getByRole('button', { name: /Marta Pires/ })).toHaveTextContent(
+      'Concluído · 09:00–10:00',
+    );
+  });
+
+  it('não abre horários passados: dias anteriores e hoje antes do agora', async () => {
+    setup();
+    await screen.findByRole('button', { name: /Vanessa Torres/ });
+    fireEvent.click(screen.getByTestId('col-2026-10-28'), { clientY: 156 });
+    expect(screen.queryByTestId('prefill')).toBeNull();
+    // hoje 13:10 (< 13:40)
+    fireEvent.click(screen.getByTestId('col-2026-10-29'), { clientY: 269 });
+    expect(screen.queryByTestId('prefill')).toBeNull();
+    // hoje 16:00 (futuro)
+    fireEvent.click(screen.getByTestId('col-2026-10-29'), { clientY: 416 });
+    expect(screen.getByTestId('prefill')).toHaveTextContent(
+      JSON.stringify({ date: '2026-10-29', startTime: '16:00' }),
+    );
+  });
+
+  it('o clique respeita o início do turno (08:15 com intervalo de 30 min)', async () => {
+    const odd = shifts.map((s) =>
+      s.weekday === 5 && s.start_time === '08:00:00' ? { ...s, start_time: '08:15:00' } : s,
+    );
+    setup({ shifts: odd });
+    await screen.findByRole('button', { name: /Vanessa Torres/ });
+    fireEvent.click(screen.getByTestId('col-2026-10-30'), { clientY: 18 });
+    expect(screen.getByTestId('prefill')).toHaveTextContent(
+      JSON.stringify({ date: '2026-10-30', startTime: '08:15' }),
+    );
+  });
+
+  it('semana sem dias de atendimento mostra o estado vazio', async () => {
+    setup({ shifts: [], rows: [] });
+    expect(await screen.findByText('Nenhum dia de atendimento nesta semana.')).toBeInTheDocument();
   });
 });
 
