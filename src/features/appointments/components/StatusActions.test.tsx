@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { renderWithProviders, setViewportWidth } from '@/test/render';
@@ -126,8 +126,9 @@ describe('StatusActions', () => {
 
   it('"Concluir" aplica direto, com um único envio mesmo em duplo clique', async () => {
     const fake = setup('agendado');
-    const user = userEvent.setup();
-    await user.dblClick(screen.getByRole('button', { name: 'Concluir' }));
+    const concluir = screen.getByRole('button', { name: 'Concluir' });
+    fireEvent.click(concluir);
+    fireEvent.click(concluir);
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Status atualizado'));
     expect(rpcCalls(fake, 'set_appointment_status')).toHaveLength(1);
     expect(rpcCalls(fake, 'set_appointment_status')[0]?.args).toEqual({

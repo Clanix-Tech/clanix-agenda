@@ -23,14 +23,12 @@ type Props = {
 /** Cancelamento com motivo opcional (até 300 caracteres). */
 export function CancelDialog({ open, pending, onOpenChange, onConfirm }: Props) {
   const [reason, setReason] = useState('');
+  const handleOpenChange = (o: boolean) => {
+    if (!o) setReason('');
+    onOpenChange(o);
+  };
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) setReason('');
-        onOpenChange(o);
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">
@@ -55,7 +53,7 @@ export function CancelDialog({ open, pending, onOpenChange, onConfirm }: Props) 
             type="button"
             variant="outline"
             className="h-11"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
           >
             Voltar
           </Button>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { Ban, CalendarClock, CheckCircle2, Pencil, Repeat, RotateCcw, UserX } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,7 +57,8 @@ function Act({
   );
 }
 
-const ACTION = 'h-[52px] rounded-[14px] border border-[#E2E8F0] bg-white text-sm font-semibold';
+const ACTION =
+  'h-auto min-h-[52px] rounded-[14px] border border-[#E2E8F0] bg-white py-2 text-center text-sm leading-tight font-semibold whitespace-normal';
 
 /** Ações permitidas por status (design §6.1); nada além da tabela aprovada. */
 export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
@@ -77,18 +78,14 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
     try {
       await action();
       toast.success(success);
-      // Sucesso: a trava só cai quando o status novo chegar (efeito abaixo), evitando 2º envio sobre dado velho.
       setConfirm(null);
     } catch (err) {
-      busy.current = false;
       setConfirm(null);
       setError(toAppError(err));
+    } finally {
+      busy.current = false;
     }
   }
-
-  useEffect(() => {
-    busy.current = false;
-  }, [status]);
 
   const changeTo = (next: AppointmentStatus) =>
     run(() => setStatus.mutateAsync({ id, status: next }), 'Status atualizado');
@@ -242,14 +239,16 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
         </div>
       )}
 
-      <CancelDialog
-        open={confirm === 'cancelar'}
-        pending={pending}
-        onOpenChange={(o) => !o && setConfirm(null)}
-        onConfirm={(reason) =>
-          void run(() => cancel.mutateAsync({ id, reason }), 'Atendimento cancelado')
-        }
-      />
+      {confirm === 'cancelar' && (
+        <CancelDialog
+          open
+          pending={pending}
+          onOpenChange={(o) => !o && setConfirm(null)}
+          onConfirm={(reason) =>
+            void run(() => cancel.mutateAsync({ id, reason }), 'Atendimento cancelado')
+          }
+        />
+      )}
 
       <Dialog
         open={confirm === 'faltou' || confirm === 'reativar'}

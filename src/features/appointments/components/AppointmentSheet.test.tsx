@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, setViewportWidth } from '@/test/render';
 import { AppShell } from '@/components/layout/AppShell';
@@ -213,5 +213,56 @@ describe('AppointmentSheet', () => {
     const dialog = await screen.findByRole('dialog');
     expect(await within(dialog).findByRole('button', { name: 'Reativar' })).toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: 'Remarcar' })).not.toBeInTheDocument();
+  });
+
+  it('Back durante a edição fecha e outro atendimento abre nos detalhes, não no formulário', async () => {
+    const { router } = setup({
+      route: '/agenda?atendimento=ap-1',
+      appointments: [appt(), appt({ id: 'ap-2', client_name: 'Bia Souza' })],
+    });
+    const user = userEvent.setup();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(await within(dialog).findByRole('button', { name: 'Editar dados' }));
+    expect(await screen.findByLabelText('Nome do cliente')).toBeInTheDocument();
+    await act(async () => {
+      await router.navigate(-1);
+    });
+    await act(async () => {
+      await router.navigate('/agenda?atendimento=ap-2');
+    });
+    expect(
+      await screen.findByRole('dialog', { name: 'Detalhes do atendimento' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Bia Souza')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Nome do cliente')).not.toBeInTheDocument();
+  });
+
+  it('reativação com conflito: "Criar novo agendamento" fecha os detalhes e abre o formulário na mesma data', async () => {
+    const { fake, router } = setup({ appointments: [appt({ status: 'cancelado' })] });
+    fake.rpc = ((orig) => (name: string, args?: unknown) =>
+      name === 'reactivate_appointment'
+        ? Promise.resolve({ data: null, error: { code: 'AE001', message: 'x' } })
+        : orig(name, args))(fake.rpc.bind(fake)) as typeof fake.rpc;
+    const user = userEvent.setup();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(await within(dialog).findByRole('button', { name: 'Reativar' }));
+    const confirm = (await screen.findAllByRole('dialog')).at(-1)!;
+    await user.click(within(confirm).getByRole('button', { name: 'Reativar' }));
+    await user.click(await screen.findByRole('button', { name: 'Criar novo agendamento' }));
+    expect(await screen.findByText(/novo agendamento 2026-10-30/)).toBeInTheDocument();
+    expect(router.state.location.search).toBe('');
+    expect(
+      screen.queryByRole('dialog', { name: 'Detalhes do atendimento' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('agendamento de amanhã dentro de 24 h mostra "amanhã às HH:mm"', async () => {
+    setup({
+      appointments: [
+        appt({ starts_at: '2026-10-31T11:00:00+00:00', ends_at: '2026-10-31T12:00:00+00:00' }),
+      ],
+    });
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('Próximo · amanhã às 08:00')).toBeInTheDocument();
   });
 });

@@ -23,10 +23,16 @@ function upcomingLabel(a: Appointment, tz: string, now = Date.now()): string | n
   if (a.status !== 'agendado') return null;
   const diff = Date.parse(a.starts_at) - now;
   if (diff < 0 || diff > 24 * 3_600_000) return null;
+  const at = formatTime(a.starts_at, tz);
+  if (
+    instantToLocal(a.starts_at, tz).date !== instantToLocal(new Date(now).toISOString(), tz).date
+  ) {
+    return `Próximo · amanhã às ${at}`;
+  }
   const min = Math.ceil(diff / 60_000);
   if (min < 60) return `Próximo · em ${min} min`;
   if (min < 180) return `Próximo · em ${Math.round(min / 60)} h`;
-  return `Próximo · às ${formatTime(a.starts_at, tz)}`;
+  return `Próximo · às ${at}`;
 }
 
 function InfoRow({
@@ -55,16 +61,18 @@ function InfoRow({
 export function AppointmentSheet() {
   const [params, setParams] = useSearchParams();
   const id = params.get(APPOINTMENT_PARAM);
-  const [editing, setEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editing = editingId === id;
   const newAppointment = useNewAppointment();
   const profile = useProfile();
   const appointment = useAppointment(id ?? undefined);
   const history = useAppointmentHistory(id ?? undefined);
 
+  if (!id && editingId !== null) setEditingId(null);
   if (!id) return null;
 
   const close = () => {
-    setEditing(false);
+    setEditingId(null);
     setParams(
       (p) => {
         const next = new URLSearchParams(p);
@@ -78,7 +86,7 @@ export function AppointmentSheet() {
   const a = appointment.data;
   if (editing && a) {
     // O formulário tem a própria gaveta; ao terminar, volta aos detalhes do mesmo atendimento.
-    return <AppointmentForm mode="edit" appointment={a} onDone={() => setEditing(false)} />;
+    return <AppointmentForm mode="edit" appointment={a} onDone={() => setEditingId(null)} />;
   }
 
   const tz = profile.data?.timezone;
@@ -143,7 +151,7 @@ export function AppointmentSheet() {
         </div>
         <StatusActions
           appointment={a}
-          onEdit={() => setEditing(true)}
+          onEdit={() => setEditingId(id)}
           onCreateNew={() => {
             close();
             newAppointment.open({ date: start.date });
