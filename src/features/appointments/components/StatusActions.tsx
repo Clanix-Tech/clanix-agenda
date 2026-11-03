@@ -1,0 +1,287 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
+import { Ban, CalendarClock, CheckCircle2, Pencil, Repeat, RotateCcw, UserX } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { toAppError, type AppError } from '@/lib/errors';
+import {
+  useCancelAppointment,
+  useReactivateAppointment,
+  useSetStatus,
+  type Appointment,
+} from '../api';
+import type { AppointmentStatus } from '../domain/status';
+import { CancelDialog } from './CancelDialog';
+
+type Confirm = 'cancelar' | 'faltou' | 'reativar' | null;
+
+type Props = {
+  appointment: Appointment;
+  onEdit?: () => void;
+  /** Reativação bloqueada por conflito/expediente: abre novo agendamento no mesmo dia. */
+  onCreateNew?: () => void;
+};
+
+function Act({
+  label,
+  icon,
+  onClick,
+  pending,
+  className = '',
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  pending: boolean;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      disabled={pending}
+      onClick={onClick}
+      className={`${ACTION} ${className}`}
+    >
+      {icon}
+      {label}
+    </Button>
+  );
+}
+
+const ACTION = 'h-[52px] rounded-[14px] border border-[#E2E8F0] bg-white text-sm font-semibold';
+
+/** Ações permitidas por status (design §6.1); nada além da tabela aprovada. */
+export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
+  const navigate = useNavigate();
+  const setStatus = useSetStatus();
+  const cancel = useCancelAppointment();
+  const reactivate = useReactivateAppointment();
+  const [confirm, setConfirm] = useState<Confirm>(null);
+  const [error, setError] = useState<AppError | null>(null);
+  const busy = useRef(false);
+  const { id, status } = appointment;
+
+  async function run(action: () => Promise<unknown>, success: string) {
+    if (busy.current) return;
+    busy.current = true;
+    setError(null);
+    try {
+      await action();
+      toast.success(success);
+      // Sucesso: a trava só cai quando o status novo chegar (efeito abaixo), evitando 2º envio sobre dado velho.
+      setConfirm(null);
+    } catch (err) {
+      busy.current = false;
+      setConfirm(null);
+      setError(toAppError(err));
+    }
+  }
+
+  useEffect(() => {
+    busy.current = false;
+  }, [status]);
+
+  const changeTo = (next: AppointmentStatus) =>
+    run(() => setStatus.mutateAsync({ id, status: next }), 'Status atualizado');
+  const pending = setStatus.isPending || cancel.isPending || reactivate.isPending;
+
+  const edit = (
+    <Act
+      label="Editar dados"
+      icon={<Pencil aria-hidden="true" />}
+      onClick={() => onEdit?.()}
+      pending={pending}
+      className="text-[#0F2D5B]"
+    />
+  );
+  const backToScheduled = (
+    <Act
+      label="Voltar para agendado"
+      icon={<CalendarClock aria-hidden="true" />}
+      onClick={() => void changeTo('agendado')}
+      pending={pending}
+      className="text-[#1D4ED8]"
+    />
+  );
+
+  let actions: ReactNode;
+  if (status === 'agendado') {
+    actions = (
+      <>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            disabled={pending}
+            onClick={() => void navigate(`/agenda/remarcar/${id}`)}
+            className={`${ACTION} border-[#2563EB] bg-[#2563EB] text-white hover:bg-[#1D4ED8]`}
+          >
+            <Repeat aria-hidden="true" />
+            Remarcar
+          </Button>
+          {
+            <Act
+              label="Concluir"
+              icon={<CheckCircle2 aria-hidden="true" />}
+              onClick={() => void changeTo('concluido')}
+              pending={pending}
+              className="border-[#BBF7D0] bg-[#F0FDF4] text-[#166534]"
+            />
+          }
+          {
+            <Act
+              label="Não compareceu"
+              icon={<UserX aria-hidden="true" />}
+              onClick={() => setConfirm('faltou')}
+              pending={pending}
+              className="text-[#92400E]"
+            />
+          }
+          {edit}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={pending}
+          onClick={() => setConfirm('cancelar')}
+          className="h-11 text-sm font-semibold text-[#B91C1C] hover:bg-[#FEF2F2] hover:text-[#B91C1C]"
+        >
+          <Ban aria-hidden="true" />
+          Cancelar atendimento
+        </Button>
+      </>
+    );
+  } else if (status === 'concluido') {
+    actions = (
+      <div className="grid grid-cols-2 gap-2">
+        {
+          <Act
+            label="Marcar como não compareceu"
+            icon={<UserX aria-hidden="true" />}
+            onClick={() => void changeTo('nao_compareceu')}
+            pending={pending}
+            className="text-[#92400E]"
+          />
+        }
+        {backToScheduled}
+        {edit}
+      </div>
+    );
+  } else if (status === 'nao_compareceu') {
+    actions = (
+      <div className="grid grid-cols-2 gap-2">
+        {
+          <Act
+            label="Marcar como concluído"
+            icon={<CheckCircle2 aria-hidden="true" />}
+            onClick={() => void changeTo('concluido')}
+            pending={pending}
+            className="text-[#166534]"
+          />
+        }
+        {backToScheduled}
+        {edit}
+      </div>
+    );
+  } else {
+    actions = (
+      <div className="grid grid-cols-2 gap-2">
+        {
+          <Act
+            label="Reativar"
+            icon={<RotateCcw aria-hidden="true" />}
+            onClick={() => setConfirm('reativar')}
+            pending={pending}
+            className="text-[#0F2D5B]"
+          />
+        }
+      </div>
+    );
+  }
+
+  const confirmCopy =
+    confirm === 'faltou'
+      ? {
+          title: 'Marcar como não compareceu?',
+          text: 'Você poderá voltar o atendimento para agendado depois.',
+          label: 'Não compareceu',
+          go: () => void changeTo('nao_compareceu'),
+        }
+      : {
+          title: 'Reativar este atendimento?',
+          text: 'Ele volta para agendado, se o horário continuar livre.',
+          label: 'Reativar',
+          go: () => void run(() => reactivate.mutateAsync({ id }), 'Atendimento reativado'),
+        };
+
+  const blocked = error && (error.kind === 'conflito' || error.kind === 'fora_expediente');
+
+  return (
+    <div className="flex flex-col gap-2">
+      {actions}
+      {error && (
+        <div role="alert" className="rounded-xl bg-[#FEF2F2] p-3 text-sm text-[#991B1B]">
+          <p>{error.message}</p>
+          {blocked && status === 'cancelado' && onCreateNew && (
+            <Button
+              type="button"
+              onClick={onCreateNew}
+              className="mt-2 h-11 bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+            >
+              Criar novo agendamento
+            </Button>
+          )}
+        </div>
+      )}
+
+      <CancelDialog
+        open={confirm === 'cancelar'}
+        pending={pending}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        onConfirm={(reason) =>
+          void run(() => cancel.mutateAsync({ id, reason }), 'Atendimento cancelado')
+        }
+      />
+
+      <Dialog
+        open={confirm === 'faltou' || confirm === 'reativar'}
+        onOpenChange={(o) => !o && setConfirm(null)}
+      >
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">
+              {confirmCopy.title}
+            </DialogTitle>
+            <DialogDescription>{confirmCopy.text}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={() => setConfirm(null)}
+            >
+              Voltar
+            </Button>
+            <Button
+              type="button"
+              disabled={pending}
+              className="h-11 bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              onClick={confirmCopy.go}
+            >
+              {confirmCopy.label}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

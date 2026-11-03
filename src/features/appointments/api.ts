@@ -111,7 +111,8 @@ export function useAppointment(id: string | undefined) {
   return useQuery({
     queryKey: apptKeys.detail(id ?? ''),
     enabled: !!id,
-    queryFn: () => must(supabase.from('appointments').select('*').eq('id', id!).single()),
+    queryFn: () =>
+      must<Appointment>(supabase.from('appointments').select('*').eq('id', id!).single()),
   });
 }
 

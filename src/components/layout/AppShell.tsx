@@ -4,6 +4,7 @@ import {
   NewAppointmentProvider,
   type NewAppointmentProviderProps,
 } from '@/features/appointments/components/NewAppointmentProvider';
+import { AppointmentSheet } from '@/features/appointments/components/AppointmentSheet';
 import { SideRail } from './SideRail';
 import { BottomNav } from './BottomNav';
 
@@ -21,6 +22,7 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
         </main>
         {!desktop && <BottomNav />}
       </div>
+      <AppointmentSheet />
     </NewAppointmentProvider>
   );
 }
