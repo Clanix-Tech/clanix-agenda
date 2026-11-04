@@ -23,10 +23,17 @@ dist-ssr
 *.sln
 *.sw?
 
+# Playwright (testes ponta a ponta)
+playwright-report
+test-results
+blob-report
+playwright/.cache
+
 # Ambiente e segredos
 .env
 .env.*
 !.env.example
+.env.test.local
 
 # Supabase local
 supabase/.temp

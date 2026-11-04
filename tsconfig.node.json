@@ -28,5 +28,6 @@
     "vitest.integration.config.ts",
     "tests",
     "src/types/database.ts"
-  ]
+  ],
+  "exclude": ["tests/e2e"]
 }

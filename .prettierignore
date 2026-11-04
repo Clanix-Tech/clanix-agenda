@@ -8,3 +8,5 @@ docs
 src/types/database.ts
 
 docs/design
+playwright-report
+test-results

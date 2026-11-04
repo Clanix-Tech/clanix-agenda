@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    // Os testes ponta a ponta também têm código que roda no navegador (page.evaluate).
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  },
+  "include": ["playwright.config.ts", "tests/e2e", "src/types/database.ts"]
+}
