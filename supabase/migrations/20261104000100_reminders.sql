@@ -112,6 +112,7 @@ as $$
   where a.status = 'agendado'
     and p.reminder_minutes is not null
     and a.starts_at > p_now
+    and a.starts_at <= p_now + interval '60 minutes' -- 60 é o maior reminder_minutes permitido
     and a.starts_at - p.reminder_minutes * interval '1 minute' <= p_now
     and a.starts_at - p.reminder_minutes * interval '1 minute' >= a.reminder_anchor_at
     and not exists (
@@ -130,8 +131,14 @@ as $$
 declare
   v_count int;
 begin
+  -- Só reserva se o atendimento ainda está agendado nesse horário (evita aviso velho
+  -- se foi cancelado ou remarcado entre due_reminders e claim_reminder).
   insert into public.appointment_reminders (appointment_id, starts_at)
-  values (p_appointment_id, p_starts_at)
+  select a.id, a.starts_at
+    from public.appointments a
+   where a.id = p_appointment_id
+     and a.status = 'agendado'
+     and a.starts_at = p_starts_at
   on conflict do nothing;
   get diagnostics v_count = row_count;
   return v_count = 1;

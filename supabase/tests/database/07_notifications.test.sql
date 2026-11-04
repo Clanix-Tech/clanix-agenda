@@ -23,10 +23,10 @@ select throws_ok(
 select throws_ok(
   $$select public.register_push_subscription('http://push.example/a3', 'p', 'a')$$,
   '23514', null, 'endpoint http rejeitado pela RPC');
+select public.register_push_subscription('https://push.example/a1', 'p256dh-a2', 'auth-a2', 'Celular');
 select is(
-  (select count(*)::int from public.push_subscriptions where owner_id = (select auth.uid())),
-  1, 'registrar o mesmo endpoint de novo não duplica a linha')
-  from (select public.register_push_subscription('https://push.example/a1', 'p256dh-a2', 'auth-a2', 'Celular')) x;
+  (select count(*)::int || '|' || min(p256dh) from public.push_subscriptions where endpoint = 'https://push.example/a1'),
+  '1|p256dh-a2', 'registrar o mesmo endpoint de novo não duplica e atualiza as chaves');
 
 select tests.authenticate_as(:'b'::uuid);
 select is((select count(*)::int from public.push_subscriptions), 0, 'B não enxerga assinaturas de A');

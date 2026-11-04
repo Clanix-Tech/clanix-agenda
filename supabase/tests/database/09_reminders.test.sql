@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(38);
+select plan(41);
 
 select tests.create_user('a@x.com') as a \gset
 select tests.create_user('b@x.com') as b \gset
@@ -11,8 +11,8 @@ update public.profiles set reminder_minutes = 30 where id = :'a'::uuid;
 insert into public.push_subscriptions (owner_id, endpoint, p256dh, auth)
 values (:'a'::uuid, 'https://push.example/a1', 'p', 'a');
 
-insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at)
-values (:'a'::uuid, 'Juliana Rocha', 'Escova e hidratação', '2026-11-10T14:00-03', '2026-11-10T15:00-03')
+insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at, reminder_anchor_at)
+values (:'a'::uuid, 'Juliana Rocha', 'Escova e hidratação', '2026-11-10T14:00-03', '2026-11-10T15:00-03', '2026-11-10T10:00-03')
 returning id as ap \gset
 
 -- Janela
@@ -63,8 +63,8 @@ select is((select reminder_anchor_at from public.appointments where id = :'ap'::
 -- Dono sem assinatura
 select tests.create_user('c@x.com') as c \gset
 select tests.reset_role();
-insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at)
-values (:'c'::uuid, 'Sem Push', 'Corte', '2026-11-10T14:00-03', '2026-11-10T15:00-03');
+insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at, reminder_anchor_at)
+values (:'c'::uuid, 'Sem Push', 'Corte', '2026-11-10T14:00-03', '2026-11-10T15:00-03', '2026-11-10T10:00-03');
 select is((select count(*)::int from public.due_reminders('2026-11-10T13:30-03') where owner_id = :'c'::uuid),
   0, 'dono sem assinatura: vazio');
 
@@ -100,8 +100,8 @@ select tests.reset_role();
 update public.profiles set timezone = 'America/Manaus', reminder_minutes = 30 where id = :'m'::uuid;
 insert into public.push_subscriptions (owner_id, endpoint, p256dh, auth)
 values (:'m'::uuid, 'https://push.example/m1', 'p', 'a');
-insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at)
-values (:'m'::uuid, 'Cliente Manaus', 'Corte', '2026-11-10T14:00-04', '2026-11-10T15:00-04');
+insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at, reminder_anchor_at)
+values (:'m'::uuid, 'Cliente Manaus', 'Corte', '2026-11-10T14:00-04', '2026-11-10T15:00-04', '2026-11-10T10:00-03');
 set local timezone = 'UTC';
 select matches((select body from public.due_reminders('2026-11-10T13:30-04') where owner_id = :'m'::uuid),
   '^14:00 · Cliente Manaus', 'texto no fuso do perfil (Manaus), sessão em UTC');
@@ -111,10 +111,26 @@ select tests.create_user('l@x.com') as l \gset
 select tests.reset_role();
 insert into public.push_subscriptions (owner_id, endpoint, p256dh, auth)
 values (:'l'::uuid, 'https://push.example/l1', 'p', 'a');
-insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at)
-values (:'l'::uuid, repeat('x', 120), 'Corte', '2026-11-10T14:00-03', '2026-11-10T15:00-03');
+insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at, reminder_anchor_at)
+values (:'l'::uuid, repeat('x', 120), 'Corte', '2026-11-10T14:00-03', '2026-11-10T15:00-03', '2026-11-10T10:00-03');
 select is((select body from public.due_reminders('2026-11-10T13:30-03') where owner_id = :'l'::uuid),
   '14:00 · ' || repeat('x', 60) || '… — Corte · em 30 min', 'nome cortado em 60 caracteres com reticências');
+
+-- Limite superior: atendimento a 3 horas não é devido cedo
+select is((select count(*)::int from public.due_reminders('2026-11-10T11:00-03') where owner_id = :'a'::uuid),
+  0, 'atendimento a 3 horas não é devolvido');
+
+-- Claim só vale para atendimento agendado e no mesmo horário
+select tests.create_user('k@x.com') as k \gset
+select tests.reset_role();
+insert into public.appointments (owner_id, client_name, service_name, starts_at, ends_at, reminder_anchor_at)
+values (:'k'::uuid, 'Cliente K', 'Corte', '2026-11-10T14:00-03', '2026-11-10T15:00-03', '2026-11-10T10:00-03')
+returning id as kp \gset
+update public.appointments set status = 'cancelado', canceled_at = '2026-11-10T13:00-03' where id = :'kp'::uuid;
+select is(public.claim_reminder(:'kp'::uuid, '2026-11-10T14:00-03'), false, 'claim após cancelar: false');
+update public.appointments set status = 'agendado', canceled_at = null,
+  starts_at = '2026-11-10T16:00-03', ends_at = '2026-11-10T17:00-03' where id = :'kp'::uuid;
+select is(public.claim_reminder(:'kp'::uuid, '2026-11-10T14:00-03'), false, 'claim com horário antigo após remarcar: false');
 
 -- Privilégios
 select tests.authenticate_as(:'a'::uuid);
