@@ -142,6 +142,36 @@ test('remarcar: a barra de confirmação não fica sob a navegação', async ({ 
   expect(overlaps(barBox, navBox)).toBe(false);
 });
 
+test('Início no computador: a tabela de próximos não fica sob o calendário (1440 e 1024 px)', async ({
+  page,
+  makeUser,
+}) => {
+  test.skip(!isDesktop(page), 'tabela e calendário só existem no computador');
+  const user = await makeUser(REALISTIC_USER);
+  await seedRealistic(user);
+  await login(page, user);
+  for (const size of [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto('/');
+    const table = page.locator('section[aria-labelledby="proximos"] table');
+    const calendar = page.getByRole('region', { name: 'Calendário do mês' });
+    await expect(table).toBeVisible();
+    await expect(calendar).toBeVisible();
+    const t = (await table.boundingBox())!;
+    const c = (await calendar.boundingBox())!;
+    expect(overlaps(t, c), `tabela sob o calendário em ${size.width} px`).toBe(false);
+    // Cada "Remarcar" da tabela pode ser clicado (nada por cima).
+    const links = page.getByRole('link', { name: /^Remarcar / });
+    for (let i = 0; i < (await links.count()); i++) {
+      await links.nth(i).click({ trial: true });
+    }
+    await expectNoHorizontalScroll(page);
+  }
+});
+
 test('Ajustes › Expediente: área de toque dos interruptores ≥ 44 px, sem invadir horários', async ({
   page,
   makeUser,

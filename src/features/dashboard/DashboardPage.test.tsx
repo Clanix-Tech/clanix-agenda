@@ -173,7 +173,7 @@ describe('DashboardPage', () => {
   it('sem próximo atendimento mostra a linha amigável', async () => {
     setup({ rows: [ap('A', 'Ana', '2026-10-29', '08:30', '09:30', 'concluido')] });
     expect(
-      (await screen.findAllByText('Nenhum atendimento agendado a seguir.')).length,
+      (await screen.findAllByText('Nenhum atendimento agendado nos próximos 14 dias.')).length,
     ).toBeGreaterThan(0);
   });
 

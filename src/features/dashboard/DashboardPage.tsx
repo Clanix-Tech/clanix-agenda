@@ -190,7 +190,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
+    <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:max-w-[1280px] lg:px-8 lg:pt-8">
       <header>
         <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">
           {greetingAt(now, tz)}
@@ -250,13 +250,14 @@ export default function DashboardPage() {
         </section>
       ) : (
         <div className="flex flex-col items-center gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-6 text-center">
-          <p className="text-[#334155]">Nenhum atendimento agendado a seguir.</p>
+          <p className="text-[#334155]">Nenhum atendimento agendado nos próximos 14 dias.</p>
           {newBtn}
         </div>
       )}
 
-      <div className={cn('grid gap-5', desktop && 'grid-cols-[1fr_320px] items-start')}>
-        <div className="flex min-w-0 flex-col gap-5">
+      {/* Computador: o calendário vai para baixo quando falta largura (nunca cobre a tabela). */}
+      <div className={desktop ? 'flex flex-wrap items-start gap-6' : 'grid gap-5'}>
+        <div className={cn('flex min-w-0 flex-col gap-5', desktop && 'flex-[999_1_600px]')}>
           <section aria-label="Indicadores" className="grid grid-cols-3 gap-2.5">
             <Kpi
               label="Hoje"
@@ -300,67 +301,78 @@ export default function DashboardPage() {
               Próximos atendimentos
             </h2>
             {upcoming.length === 0 ? (
-              <p className="text-sm text-[#64748B]">Nenhum atendimento agendado a seguir.</p>
+              <p className="text-sm text-[#64748B]">
+                Nenhum atendimento agendado nos próximos 14 dias.
+              </p>
             ) : desktop ? (
-              <table className="w-full overflow-hidden rounded-[18px] border border-[#E2E8F0] bg-white text-left text-sm">
-                <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
-                  <tr>
-                    <th className="px-3 py-2">Quando</th>
-                    <th className="px-3 py-2">Cliente</th>
-                    <th className="px-3 py-2">Serviço</th>
-                    <th className="px-3 py-2">Status</th>
-                    <th className="px-3 py-2">
-                      <span className="sr-only">Ações</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {upcoming.map((a) => {
-                    const l = instantToLocal(a.starts_at, tz);
-                    return (
-                      <tr key={a.id} className="border-t border-[#E2E8F0]">
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          {dayLabel(l.date, today)} · {l.time}
-                        </td>
-                        <td className="max-w-[180px] truncate px-3 py-2" title={a.client_name}>
-                          {a.client_name}
-                        </td>
-                        <td className="max-w-[160px] truncate px-3 py-2" title={a.service_name}>
-                          {a.service_name}
-                        </td>
-                        <td className="px-3 py-2">
-                          <StatusBadge status={a.status} compact />
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              type="button"
-                              aria-label={`Ver detalhes de ${a.client_name}`}
-                              onClick={() => openAppointment(a.id)}
-                              className={cn(
-                                'min-h-11 rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
-                                FOCUS,
-                              )}
-                            >
-                              Ver
-                            </button>
-                            <Link
-                              to={`/agenda/remarcar/${a.id}`}
-                              aria-label={`Remarcar ${a.client_name}`}
-                              className={cn(
-                                'inline-flex min-h-11 items-center rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
-                                FOCUS,
-                              )}
-                            >
-                              Remarcar
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="overflow-x-auto rounded-[18px] border border-[#E2E8F0] bg-white">
+                <table className="w-full table-fixed text-left text-sm">
+                  <colgroup>
+                    <col className="w-[130px]" />
+                    <col />
+                    <col className="w-[22%]" />
+                    <col className="w-[130px]" />
+                    <col className="w-[170px]" />
+                  </colgroup>
+                  <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
+                    <tr>
+                      <th className="px-3 py-2">Quando</th>
+                      <th className="px-3 py-2">Cliente</th>
+                      <th className="px-3 py-2">Serviço</th>
+                      <th className="px-3 py-2">Status</th>
+                      <th className="px-3 py-2">
+                        <span className="sr-only">Ações</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcoming.map((a) => {
+                      const l = instantToLocal(a.starts_at, tz);
+                      return (
+                        <tr key={a.id} className="border-t border-[#E2E8F0]">
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {dayLabel(l.date, today)} · {l.time}
+                          </td>
+                          <td className="truncate px-3 py-2" title={a.client_name}>
+                            {a.client_name}
+                          </td>
+                          <td className="truncate px-3 py-2" title={a.service_name}>
+                            {a.service_name}
+                          </td>
+                          <td className="px-3 py-2">
+                            <StatusBadge status={a.status} compact />
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                aria-label={`Ver detalhes de ${a.client_name}`}
+                                onClick={() => openAppointment(a.id)}
+                                className={cn(
+                                  'min-h-11 rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
+                                  FOCUS,
+                                )}
+                              >
+                                Ver
+                              </button>
+                              <Link
+                                to={`/agenda/remarcar/${a.id}`}
+                                aria-label={`Remarcar ${a.client_name}`}
+                                className={cn(
+                                  'inline-flex min-h-11 items-center rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
+                                  FOCUS,
+                                )}
+                              >
+                                Remarcar
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             ) : (
               <ul className="flex flex-col gap-2">
                 {upcoming.map((a) => {
@@ -406,12 +418,14 @@ export default function DashboardPage() {
         </div>
 
         {desktop && (
-          <MiniCalendar
-            today={today}
-            weekStartsOn={weekStartsOn}
-            counts={counts}
-            openWeekdays={openWeekdays}
-          />
+          <div className="max-w-[360px] min-w-0 flex-[1_1_300px]">
+            <MiniCalendar
+              today={today}
+              weekStartsOn={weekStartsOn}
+              counts={counts}
+              openWeekdays={openWeekdays}
+            />
+          </div>
         )}
       </div>
     </div>
