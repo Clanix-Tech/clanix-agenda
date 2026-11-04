@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router';
+import { Link, NavLink } from 'react-router';
 import { Plus } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -45,13 +45,14 @@ export function SideRail() {
           ))}
         </div>
       </nav>
-      <NavLink
+      {/* Link simples: só o item "Ajustes" da navegação marca a página atual. */}
+      <Link
         to="/ajustes"
         aria-label="Minha conta"
         className="mt-auto grid size-11 place-items-center rounded-[14px] bg-[#E7F1FF] font-display font-extrabold text-[#0F2D5B] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
       >
         {initials(user?.email)}
-      </NavLink>
+      </Link>
     </aside>
   );
 }

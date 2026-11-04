@@ -27,6 +27,15 @@ describe('AppShell', () => {
     expect(screen.getByTestId('side-rail')).toBeInTheDocument();
   });
 
+  it('em Ajustes só um elemento marca a página atual (o avatar não)', () => {
+    setViewportWidth(1280);
+    renderWithProviders(null, { routes, session: true, route: '/ajustes' });
+    const current = document.querySelectorAll('[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveAccessibleName('Ajustes');
+    expect(screen.getByRole('link', { name: 'Minha conta' })).not.toHaveAttribute('aria-current');
+  });
+
   it('no celular mostra a navegação inferior', () => {
     setViewportWidth(390);
     renderWithProviders(null, { routes, session: true });

@@ -408,7 +408,10 @@ export default function HistoryPage() {
           className="min-w-0 rounded-[18px] border border-[#E2E8F0] bg-white"
         >
           {search.data && (
-            <p className="border-b border-[#E2E8F0] px-4 py-3 font-display font-bold text-[#0F2D5B]">
+            <p
+              role="status"
+              className="border-b border-[#E2E8F0] px-4 py-3 font-display font-bold text-[#0F2D5B]"
+            >
               {count} {count === 1 ? 'resultado' : 'resultados'}
             </p>
           )}

@@ -123,6 +123,8 @@ describe('HistoryPage: busca', () => {
   it('q=ana mostra 6 resultados e destaca o termo em <mark>', async () => {
     const { container } = setup({ route: '/historico?q=ana' });
     expect(await screen.findByText('6 resultados')).toBeInTheDocument();
+    // A contagem é anunciada a cada busca/filtro.
+    expect(screen.getByText('6 resultados')).toHaveAttribute('role', 'status');
     const marks = [...container.querySelectorAll('mark')].map((m) => m.textContent);
     expect(marks).toHaveLength(6);
     expect(marks).toContain('Ana');
