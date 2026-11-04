@@ -18,3 +18,23 @@ describe('toCsv', () => {
     ).toBe('\uFEFF"Ana";""\r\n"b";"c\nd"');
   });
 });
+
+describe('toCsv: neutralização reforçada', () => {
+  it.each([
+    ' =1',
+    '  +1',
+    '\u00a0-1',
+    '\n@x',
+    '\uFF1D1',
+    '\uFF0B1',
+    '\uFF0D1',
+    '\uFF20x',
+    ' \uFF1D1',
+  ])('neutraliza %j', (c) => {
+    expect(toCsv([[c]])).toBe(`\uFEFF"'${c}"`);
+  });
+
+  it('não neutraliza espaço seguido de texto comum', () => {
+    expect(toCsv([[' ana']])).toBe('\uFEFF" ana"');
+  });
+});

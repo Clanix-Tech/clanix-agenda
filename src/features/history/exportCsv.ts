@@ -27,11 +27,23 @@ export async function fetchAllAppointments(
   tz: string,
 ): Promise<Appointment[]> {
   const all: Appointment[] = [];
+  let total = 0;
   for (let from = 0; ; from += CHUNK) {
-    const { rows, count } = await fetchHistoryRange(filters, tz, from, from + CHUNK - 1);
+    // O total só é pedido no primeiro bloco; os demais não repetem a contagem.
+    const { rows, count } = await fetchHistoryRange(
+      filters,
+      tz,
+      from,
+      from + CHUNK - 1,
+      from === 0,
+    );
+    if (from === 0) total = count;
     all.push(...rows);
-    if (rows.length < CHUNK || all.length >= count) return all;
+    if (rows.length === 0 || all.length >= total) break;
   }
+  // Nunca entrega arquivo truncado como se fosse completo.
+  if (all.length !== total) throw new Error('incomplete export');
+  return all;
 }
 
 export function appointmentsToCsv(rows: Appointment[], tz: string): string {
@@ -62,7 +74,8 @@ function download(csv: string, filename: string) {
     a.click();
   } finally {
     a.remove();
-    URL.revokeObjectURL(url);
+    // Revogar na hora aborta o download em alguns Safari/iOS.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 }
 

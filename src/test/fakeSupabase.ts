@@ -155,6 +155,13 @@ class FakeQuery implements PromiseLike<Result> {
     this.filters.push((r) => typeof r[column] === 'string' && re.test(r[column] as string));
     return this;
   }
+  /** Só `imatch` (regex POSIX sem diferenciar caixa), o necessário para a busca por nome. */
+  filter(column: string, operator: string, value: string) {
+    if (operator !== 'imatch') throw new Error(`fakeSupabase: operador não suportado: ${operator}`);
+    const re = new RegExp(value, 'i');
+    this.filters.push((r) => typeof r[column] === 'string' && re.test(r[column] as string));
+    return this;
+  }
   range(from: number, to: number) {
     this.window = [from, to];
     return this;

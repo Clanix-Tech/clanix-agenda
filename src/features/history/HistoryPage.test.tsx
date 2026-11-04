@@ -5,7 +5,6 @@ import { renderWithProviders, setViewportWidth } from '@/test/render';
 import { createFakeSupabase, makeSession, type Row } from '@/test/fakeSupabase';
 import type { AppointmentStatus } from '@/features/appointments/domain/status';
 import HistoryPage from './HistoryPage';
-import { likePattern } from './useHistorySearch';
 
 const NOW = new Date('2026-11-04T10:00:00-03:00');
 
@@ -118,13 +117,6 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
-});
-
-describe('likePattern', () => {
-  it('escapa barra, % e _ e envolve com %', () => {
-    expect(likePattern('50%_off')).toBe('%50\\%\\_off%');
-    expect(likePattern('a\\b')).toBe('%a\\\\b%');
-  });
 });
 
 describe('HistoryPage: busca', () => {
@@ -331,6 +323,7 @@ describe('HistoryPage: exportar CSV', () => {
     await screen.findByText('1 resultado');
     await user.click(screen.getByRole('button', { name: 'Exportar CSV' }));
     await waitFor(() => expect(downloads).toEqual(['agenda-em-ordem-2026-11-04.csv']));
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled(); // revogação adiada
     const { bytes, text } = await read(blobs[0]!);
     expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
     const lines = text.split('\r\n');
@@ -377,5 +370,69 @@ describe('HistoryPage: exportar CSV', () => {
     expect(await screen.findByText('Sua sessão expirou. Entre novamente.')).toBeInTheDocument();
     expect(downloads).toHaveLength(0);
     expect(screen.getByRole('button', { name: 'Exportar CSV' })).toBeEnabled();
+  });
+});
+
+describe('HistoryPage: busca sem acento', () => {
+  const names = ['João Silva', 'Maria Conceição', 'axb', 'a.b'];
+  const rows = names.map((n, i) => ap(`n${i}`, n, '2026-11-04', `${8 + i}:00`.padStart(5, '0')));
+
+  it('"joao" encontra "João Silva"', async () => {
+    setup({ route: '/historico?q=joao', rows });
+    expect(await screen.findByText('1 resultado')).toBeInTheDocument();
+    expect(document.body.textContent).toContain('João Silva');
+  });
+
+  it('"conceicao" encontra "Conceição"', async () => {
+    setup({ route: '/historico?q=conceicao', rows });
+    expect(await screen.findByText('1 resultado')).toBeInTheDocument();
+    expect(document.body.textContent).toContain('Maria Conceição');
+  });
+
+  it('"a.b" é literal: não casa "axb"', async () => {
+    setup({ route: '/historico?q=a.b', rows });
+    expect(await screen.findByText('1 resultado')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('axb');
+  });
+});
+
+describe('HistoryPage: filtros e navegação', () => {
+  it('digitar e escolher status em seguida mantém os dois no URL', async () => {
+    const user = userEvent.setup();
+    setup();
+    await screen.findByText('10 resultados');
+    await user.type(screen.getByRole('searchbox', { name: /cliente/i }), 'ana');
+    await user.click(screen.getByRole('button', { name: 'Agendados' }));
+    await waitFor(() => expect(loc()).toContain('q=ana'));
+    expect(loc()).toContain('status=agendado');
+    await new Promise((r) => setTimeout(r, 400));
+    expect(loc()).toContain('q=ana');
+    expect(loc()).toContain('status=agendado');
+  });
+
+  it('cartões do celular: nome acessível traz data, serviço e status; sem rótulo repetido', async () => {
+    setup({ width: 390, route: '/historico?q=carla' });
+    await screen.findByText('1 resultado');
+    const card = screen.getByRole('button', { name: /Carla Dias/ });
+    expect(card).not.toHaveAttribute('aria-label');
+    expect(card).toHaveAccessibleName(/06\/11\/2026.*Carla Dias.*Barba.*Concluído/);
+  });
+
+  it('desktop: "Ver" informa cliente, data e hora', async () => {
+    setup({ route: '/historico?q=carla' });
+    await screen.findByText('1 resultado');
+    expect(
+      screen.getByRole('button', { name: 'Ver detalhes de Carla Dias, 06/11/2026 10:00' }),
+    ).toBeInTheDocument();
+  });
+
+  it('página inexistente: avisa e volta para a página 1', async () => {
+    const user = userEvent.setup();
+    setup({ route: '/historico?pagina=5' });
+    expect(await screen.findByText('Esta página não existe mais.')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhum atendimento encontrado com esses filtros.')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Voltar para a página 1' }));
+    expect(await screen.findByText('10 resultados')).toBeInTheDocument();
+    expect(loc()).not.toContain('pagina=');
   });
 });

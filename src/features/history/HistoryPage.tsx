@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Download, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -42,7 +42,7 @@ function Highlight({ text, term }: { text: string; term: string }) {
             {p.text}
           </mark>
         ) : (
-          <span key={i}>{p.text}</span>
+          <Fragment key={i}>{p.text}</Fragment>
         ),
       )}
     </>
@@ -66,6 +66,8 @@ export default function HistoryPage() {
   const q = sp.get('q') ?? '';
   const [text, setText] = useState(q);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Texto digitado ainda não enviado ao URL (null = nada pendente).
+  const pending = useRef<string | null>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const [exporting, setExporting] = useState(false);
@@ -84,10 +86,17 @@ export default function HistoryPage() {
   };
   const page = Math.max(1, Number.parseInt(sp.get('pagina') ?? '1', 10) || 1);
 
-  const search = useHistorySearch(filters, tz, page);
+  const search = useHistorySearch(filters, profile.data?.timezone, page);
   const recent = useRecentChanges();
 
-  const update = (patch: Record<string, string | null>, opts?: { keepPage?: boolean }) =>
+  const update = (patch: Record<string, string | null>, opts?: { keepPage?: boolean }) => {
+    // Outra mudança de filtro leva junto a busca digitada e ainda não enviada.
+    if (pending.current !== null) {
+      clearTimeout(timer.current);
+      const typed = pending.current.trim();
+      pending.current = null;
+      patch = { q: typed === '' ? null : typed, ...patch };
+    }
     setSp(
       (prev) => {
         const next = new URLSearchParams(prev);
@@ -100,18 +109,23 @@ export default function HistoryPage() {
       },
       { replace: true },
     );
+  };
+  // O temporizador usa sempre o `update` da renderização mais recente (searchParams atual).
+  const updateRef = useRef(update);
+  useEffect(() => {
+    updateRef.current = update;
+  });
 
   const onSearchChange = (value: string) => {
     setText(value);
     clearTimeout(timer.current);
-    timer.current = setTimeout(
-      () => update({ q: value.trim() === '' ? null : value }),
-      DEBOUNCE_MS,
-    );
+    pending.current = value;
+    timer.current = setTimeout(() => updateRef.current({}), DEBOUNCE_MS);
   };
 
   const clearAll = () => {
     clearTimeout(timer.current);
+    pending.current = null;
     setText('');
     setSp(new URLSearchParams(), { replace: true });
   };
@@ -121,7 +135,7 @@ export default function HistoryPage() {
     setExporting(true);
     setExportError(null);
     try {
-      await exportAppointmentsCsv(filters, tz);
+      await exportAppointmentsCsv({ ...filters, q: text.trim() }, tz);
     } catch (err) {
       setExportError(toAppError(err).message);
     } finally {
@@ -179,6 +193,24 @@ export default function HistoryPage() {
         onRetry={() => void search.refetch()}
       />
     );
+  } else if (rows.length === 0 && count > 0) {
+    results = (
+      <EmptyState
+        title="Esta página não existe mais."
+        action={
+          <button
+            type="button"
+            onClick={() => update({ pagina: null })}
+            className={cn(
+              'inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E2E8F0] bg-white px-5 text-sm font-semibold text-[#0F2D5B]',
+              FOCUS,
+            )}
+          >
+            Voltar para a página 1
+          </button>
+        }
+      />
+    );
   } else if (rows.length === 0) {
     results = (
       <EmptyState
@@ -218,7 +250,7 @@ export default function HistoryPage() {
               <td className="px-3 py-2 text-right">
                 <button
                   type="button"
-                  aria-label={`Ver detalhes de ${a.client_name}`}
+                  aria-label={`Ver detalhes de ${a.client_name}, ${formatDateBR(a.starts_at, tz)} ${formatTime(a.starts_at, tz)}`}
                   onClick={() => openAppointment(a.id)}
                   className={cn(
                     'min-h-11 rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
@@ -240,7 +272,6 @@ export default function HistoryPage() {
           <li key={a.id}>
             <button
               type="button"
-              aria-label={`Ver detalhes de ${a.client_name}`}
               onClick={() => openAppointment(a.id)}
               className={cn(
                 'flex min-h-[64px] w-full flex-col gap-1 rounded-[14px] border border-[#E2E8F0] bg-white p-3 text-left',

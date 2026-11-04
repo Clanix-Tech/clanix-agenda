@@ -4,6 +4,7 @@ import { localToInstant, todayInTz } from '@/lib/time';
 import { shiftDate } from '@/features/calendar/dates';
 import type { Appointment } from '@/features/appointments/api';
 import { apptKeys } from '@/features/appointments/keys';
+import { accentInsensitivePattern } from './namePattern';
 import type { AppointmentStatus } from '@/features/appointments/domain/status';
 
 export const PAGE_SIZE = 25;
@@ -24,19 +25,15 @@ export function defaultPeriod(tz: string, now: Date = new Date()): { from: strin
   return { from: shiftDate(today, -DEFAULT_RANGE_DAYS), to: shiftDate(today, DEFAULT_RANGE_DAYS) };
 }
 
-/** Padrão `ilike` seguro: escapa `\`, `%` e `_` do termo e o envolve com `%…%`. */
-export function likePattern(term: string): string {
-  return `%${term.replace(/[\\%_]/g, '\\$&')}%`;
-}
-
-const baseQuery = () => supabase.from('appointments').select('*', { count: 'exact' });
+const baseQuery = (withCount: boolean) =>
+  supabase.from('appointments').select('*', withCount ? { count: 'exact' } : undefined);
 type Query = ReturnType<typeof baseQuery>;
 
 /** Só filtros do usuário; o isolamento por dono é feito pelo RLS do banco. */
-function build(filters: HistoryFilters, tz: string): Query {
-  let q = baseQuery();
+function build(filters: HistoryFilters, tz: string, withCount: boolean): Query {
+  let q = baseQuery(withCount);
   const term = filters.q.trim();
-  if (term) q = q.ilike('client_name', likePattern(term));
+  if (term) q = q.filter('client_name', 'imatch', accentInsensitivePattern(term));
   if (filters.statuses.length) q = q.in('status', filters.statuses);
   if (filters.service) q = q.eq('service_name', filters.service);
   if (filters.from) q = q.gte('starts_at', localToInstant(filters.from, '00:00', tz));
@@ -51,16 +48,19 @@ export async function fetchHistoryRange(
   tz: string,
   from: number,
   to: number,
+  withCount = true,
 ): Promise<HistoryPageResult> {
-  const { data, error, count } = await build(filters, tz).range(from, to);
+  const { data, error, count } = await build(filters, tz, withCount).range(from, to);
   if (error) throw error;
   return { rows: data, count: count ?? data.length };
 }
 
-export function useHistorySearch(filters: HistoryFilters, tz: string, page: number) {
+/** Só consulta depois que o fuso do perfil é conhecido (`tz` indefinido = desligado). */
+export function useHistorySearch(filters: HistoryFilters, tz: string | undefined, page: number) {
   return useQuery({
+    enabled: !!tz,
     queryKey: apptKeys.search({ ...filters, tz, page }),
     placeholderData: keepPreviousData,
-    queryFn: () => fetchHistoryRange(filters, tz, (page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
+    queryFn: () => fetchHistoryRange(filters, tz!, (page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1),
   });
 }

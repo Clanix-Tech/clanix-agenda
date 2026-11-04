@@ -1,5 +1,5 @@
 const BOM = '\uFEFF';
-const FORMULA_START = /^[=+\-@\t\r]/;
+const FORMULA_START = /^(?:[\t\r]|\s*[=+\-@\uFF1D\uFF0B\uFF0D\uFF20])/;
 
 /** Toda célula entre aspas; início de fórmula (`= + - @ TAB CR`) ganha `'` na frente. */
 function cell(value: string): string {
