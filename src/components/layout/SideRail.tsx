@@ -2,15 +2,19 @@ import { Link, NavLink } from 'react-router';
 import { Plus } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { useProfile } from '@/features/profile/api';
 import { useNewAppointment } from '@/features/appointments/components/NewAppointmentProvider';
 import { NAV_ITEMS } from './navItems';
 
-function initials(email: string | undefined): string {
-  return (email?.trim()[0] ?? '?').toUpperCase();
+/** Inicial do nome do perfil; sem nome, a do e-mail. */
+function initial(displayName: string | null | undefined, email: string | undefined): string {
+  const source = displayName?.trim() || email?.trim();
+  return (source?.[0] ?? '?').toUpperCase();
 }
 
 export function SideRail() {
   const { user } = useAuth();
+  const { data: profile } = useProfile();
   const { open } = useNewAppointment();
   return (
     <aside
@@ -51,7 +55,7 @@ export function SideRail() {
         aria-label="Minha conta"
         className="mt-auto grid size-11 place-items-center rounded-[14px] bg-[#E7F1FF] font-display font-extrabold text-[#0F2D5B] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
       >
-        {initials(user?.email)}
+        {initial(profile?.display_name, user?.email)}
       </Link>
     </aside>
   );

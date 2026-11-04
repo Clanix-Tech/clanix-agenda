@@ -7,7 +7,14 @@ export default defineConfig({
     projects: [
       {
         plugins: [react()],
-        resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+        resolve: {
+          alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+            'virtual:pwa-register/react': fileURLToPath(
+              new URL('./src/test/pwaRegisterStub.ts', import.meta.url),
+            ),
+          },
+        },
         test: {
           name: 'app',
           env: { TZ: 'Europe/Lisbon' },

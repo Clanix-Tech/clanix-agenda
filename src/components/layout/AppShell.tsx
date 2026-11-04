@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Outlet } from 'react-router';
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 import {
@@ -7,6 +8,7 @@ import {
 import { AppointmentSheet } from '@/features/appointments/components/AppointmentSheet';
 import { SideRail } from './SideRail';
 import { BottomNav } from './BottomNav';
+import { PageFallback } from './PageFallback';
 
 /** Rotas protegidas com navegação: barra lateral (≥1024 px) ou navegação inferior. */
 export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'renderForm'> = {}) {
@@ -18,7 +20,9 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
         <main
           className={`min-w-0 flex-1 ${desktop ? '' : 'pb-[calc(100px+env(safe-area-inset-bottom))]'}`}
         >
-          <Outlet />
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
         {!desktop && <BottomNav />}
       </div>

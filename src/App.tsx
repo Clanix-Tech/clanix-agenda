@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import { AppToaster } from '@/components/layout/AppToaster';
+import { UpdatePrompt } from '@/components/layout/UpdatePrompt';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { createQueryClient, type ExpireRef } from '@/lib/queryClient';
 import { routes } from '@/routes';
@@ -15,6 +16,7 @@ export default function App() {
       <AuthProvider expireRef={expireRef}>
         <RouterProvider router={router} />
         <AppToaster />
+        <UpdatePrompt />
       </AuthProvider>
     </QueryClientProvider>
   );

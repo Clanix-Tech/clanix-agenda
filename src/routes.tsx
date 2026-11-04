@@ -1,20 +1,25 @@
+/* eslint-disable react-refresh/only-export-components -- tabela de rotas, não é módulo de componente */
+import { lazy } from 'react';
 import type { RouteObject } from 'react-router';
 import { AppShell } from '@/components/layout/AppShell';
 import { RootLayout } from '@/components/layout/RootLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
-import Login from '@/features/auth/pages/Login';
-import Signup from '@/features/auth/pages/Signup';
-import ForgotPassword from '@/features/auth/pages/ForgotPassword';
-import ResetPassword from '@/features/auth/pages/ResetPassword';
-import DashboardPage from '@/features/dashboard/DashboardPage';
-import AgendaPage from '@/features/calendar/pages/AgendaPage';
-import ReschedulePage from '@/features/appointments/pages/ReschedulePage';
 import { AppointmentForm } from '@/features/appointments/components/AppointmentForm';
 import type { NewAppointmentProviderProps } from '@/features/appointments/components/NewAppointmentProvider';
-import HistoryPage from '@/features/history/HistoryPage';
-import SettingsPage from '@/features/settings/SettingsPage';
-import FirstAccessPage from '@/features/business-hours/pages/FirstAccessPage';
-import NotFoundPage from '@/pages/NotFoundPage';
+
+// Uma parte (chunk) por página: o primeiro acesso não baixa as telas que a pessoa não abriu.
+// O <Suspense> fica no RootLayout, acima de todas as rotas.
+const Login = lazy(() => import('@/features/auth/pages/Login'));
+const Signup = lazy(() => import('@/features/auth/pages/Signup'));
+const ForgotPassword = lazy(() => import('@/features/auth/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/features/auth/pages/ResetPassword'));
+const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
+const AgendaPage = lazy(() => import('@/features/calendar/pages/AgendaPage'));
+const ReschedulePage = lazy(() => import('@/features/appointments/pages/ReschedulePage'));
+const HistoryPage = lazy(() => import('@/features/history/HistoryPage'));
+const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const FirstAccessPage = lazy(() => import('@/features/business-hours/pages/FirstAccessPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 /** "+" e horários livres abrem o formulário real de novo agendamento (Task 8). */
 const renderNewAppointment: NewAppointmentProviderProps['renderForm'] = ({ prefill, close }) => (

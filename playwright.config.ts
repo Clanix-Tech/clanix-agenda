@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 import { readLocalStatus } from './tests/e2e/support/localStatus.ts';
 
 const PORT = 5174;
+const PWA_PORT = 5175;
 const BASE_URL = `http://localhost:${PORT}`;
+const PWA_URL = `http://localhost:${PWA_PORT}`;
 
 // O servidor web sobe antes do global-setup; por isso URL e chave publicável são lidas aqui
 // (uma vez: os workers herdam as variáveis). A chave secreta só é lida no global-setup.
@@ -16,6 +18,10 @@ function publicEnv(): { url: string; publishableKey: string } {
   return { url: status.url, publishableKey: status.publishableKey };
 }
 const supabase = publicEnv();
+const serverEnv = {
+  VITE_SUPABASE_URL: supabase.url,
+  VITE_SUPABASE_PUBLISHABLE_KEY: supabase.publishableKey,
+};
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -41,6 +47,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-desktop',
+      testIgnore: /pwa.spec.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
@@ -50,21 +57,39 @@ export default defineConfig({
     },
     {
       name: 'webkit-iphone',
+      testIgnore: /pwa.spec.ts/,
       use: { ...devices['iPhone 15'], timezoneId: 'America/Sao_Paulo' },
     },
     {
       name: 'chromium-android',
+      testIgnore: /pwa.spec.ts/,
       use: { ...devices['Pixel 7'], timezoneId: 'America/Sao_Paulo' },
     },
-  ],
-  webServer: {
-    command: `npx vite --mode test --port ${PORT} --strictPort`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    env: {
-      VITE_SUPABASE_URL: supabase.url,
-      VITE_SUPABASE_PUBLISHABLE_KEY: supabase.publishableKey,
+    {
+      name: 'pwa',
+      testMatch: /pwa.spec.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: PWA_URL,
+        viewport: { width: 1440, height: 900 },
+      },
     },
-  },
+  ],
+  webServer: [
+    {
+      command: `npx vite --mode test --port ${PORT} --strictPort`,
+      url: BASE_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: serverEnv,
+    },
+    {
+      // O service worker só existe no build: o projeto `pwa` usa o resultado do build servido pelo preview.
+      command: `npx vite build --mode test && npx vite preview --port ${PWA_PORT} --strictPort`,
+      url: PWA_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      env: serverEnv,
+    },
+  ],
 });
