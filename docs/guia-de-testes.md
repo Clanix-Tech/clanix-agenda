@@ -5,9 +5,9 @@ repositório.
 
 | Camada | Comando | Precisa do Supabase local? | O que cobre |
 |---|---|---|---|
-| Unitários | `npm test` | Não | Regras puras (horários, fuso, CSV), componentes e telas com um Supabase falso (Vitest + Testing Library, jsdom). |
+| Unitários | `npm test` | Não | Regras puras (horários, fuso, CSV), componentes e telas com um Supabase falso (Vitest + Testing Library, jsdom) e a lógica das Edge Functions (`supabase/functions/**/handler.ts`, ambiente node, dependências falsas). |
 | Banco (pgTAP) | `npm run db:test` | Sim | Recria o banco local (`supabase db reset`) e roda os testes SQL de `supabase/tests`: RLS, RPCs, regras de conflito e expediente. |
-| Integração | `npm run test:integration` | Sim | Chamadas reais à API local (RLS entre usuários, concorrência na criação de agendamentos). |
+| Integração | `npm run test:integration` | Sim | Chamadas reais à API local (RLS entre usuários, concorrência na criação de agendamentos) e à Edge Function `send-reminders` (exige `npm run vapid:gerar` e a pilha reiniciada depois; veja `docs/supabase-local.md`). |
 | Ponta a ponta | `npm run e2e` | Sim | O app de verdade no navegador (Playwright): computador, iPhone e Android. |
 
 Antes de abrir um PR: `npm run typecheck && npm run lint && npm test && npm run db:test && npm run test:integration && npm run e2e`.

@@ -12,6 +12,8 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
+    // handler.ts importa só tipos de _shared/webpush.ts; o tsc resolve o `npm:` do Deno pelos @types.
+    "paths": { "npm:web-push@3.6.7": ["./node_modules/@types/web-push/index.d.ts"] },
 
     /* Linting */
     "noUnusedLocals": true,
@@ -27,6 +29,8 @@
     "vitest.config.ts",
     "vitest.integration.config.ts",
     "tests",
+    "supabase/functions/**/handler.ts",
+    "supabase/functions/**/*.test.ts",
     "src/types/database.ts"
   ],
   "exclude": ["tests/e2e"]

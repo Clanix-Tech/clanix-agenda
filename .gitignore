@@ -38,6 +38,8 @@ playwright/.cache
 # Supabase local
 supabase/.temp
 supabase/.branches
+# Segredos locais das Edge Functions (VAPID e CRON_SECRET), gerados por `npm run vapid:gerar`
+supabase/functions/.env
 
 # Chaves de assinatura
 *.keystore

@@ -33,4 +33,15 @@ export default tseslint.config(
     files: ['src/components/ui/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
+  {
+    // Edge Functions rodam no Deno: globais do Deno e imports `npm:`/`jsr:`.
+    files: ['supabase/functions/**/*.ts'],
+    languageOptions: { globals: { ...globals.denoBuiltin } },
+  },
+  {
+    // Scripts locais em Node (gerar VAPID, configurar o cron local).
+    files: ['scripts/**/*.mjs'],
+    extends: [js.configs.recommended, prettier],
+    languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: globals.node },
+  },
 );

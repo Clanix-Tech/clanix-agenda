@@ -388,6 +388,10 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# Chamada pelo pg_cron com o header x-cron-secret (sem JWT de usuário); a função valida o segredo.
+[functions.send-reminders]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 55327
