@@ -7,6 +7,11 @@ export function greeting(hour: number): string {
   return 'Boa noite';
 }
 
+/** Saudação pela hora local no fuso do perfil. */
+export function greetingAt(now: Date, tz: string): string {
+  return greeting(Number(instantToLocal(now.toISOString(), tz).time.slice(0, 2)));
+}
+
 /** "em 20 min", "em 3 h", "às 17:00", "amanhã às 09:00", "Sex 30 às 09:00". */
 export function whenLabel(startsAt: string, tz: string, now: Date): string {
   const diffMin = Math.floor((new Date(startsAt).getTime() - now.getTime()) / 60_000);

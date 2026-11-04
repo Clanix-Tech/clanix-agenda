@@ -23,7 +23,7 @@ import { shiftDate, shiftMonth, toMinutes, weekdayDay, weekdayOf } from '@/featu
 import { useNow } from '@/features/calendar/useNow';
 import { useOpenAppointment } from '@/features/calendar/useOpenAppointment';
 import { computeIndicators } from './domain/indicators';
-import { dayLabel, greeting, whenLabel } from './domain/labels';
+import { dayLabel, greetingAt, whenLabel } from './domain/labels';
 
 const NOW_PLUS_DAYS = 14;
 const FOCUS =
@@ -80,9 +80,11 @@ function MiniCalendar({
               className={cn(
                 'flex size-11 flex-col items-center justify-center rounded-lg text-sm font-semibold',
                 FOCUS,
-                d === today ? 'bg-[#0F2D5B] text-white' : 'text-[#0F2D5B]',
-                muted && d !== today && 'text-[#64748B]',
-                d.slice(0, 7) !== month && d !== today && 'text-[#64748B]',
+                d === today
+                  ? 'bg-[#0F2D5B] text-white'
+                  : muted || d.slice(0, 7) !== month
+                    ? 'text-[#64748B]'
+                    : 'text-[#0F2D5B]',
               )}
             >
               <span aria-hidden="true">{Number(d.slice(8, 10))}</span>
@@ -191,7 +193,7 @@ export default function DashboardPage() {
     <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header>
         <h1 className="font-[Manrope,sans-serif] text-2xl font-extrabold text-[#0F2D5B]">
-          {greeting(Number(nowLocal.time.slice(0, 2)))}
+          {greetingAt(now, tz)}
           {firstName ? `, ${firstName}` : ''}
         </h1>
         <p className="text-sm text-[#64748B]">

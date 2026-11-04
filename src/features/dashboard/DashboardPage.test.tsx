@@ -198,8 +198,12 @@ describe('DashboardPage', () => {
       })),
     });
     const cal = await screen.findByRole('region', { name: 'Calendário do mês' });
-    expect(within(cal).getByRole('link', { name: '25/10' }).className).not.toMatch(/#64748B/);
-    expect(within(cal).getByRole('link', { name: '31/10' }).className).toMatch(/#64748B/); // sábado fechado
+    const sunday = within(cal).getByRole('link', { name: '25/10' }).className;
+    expect(sunday).toMatch(/text-\[#0F2D5B\]/);
+    expect(sunday).not.toMatch(/#64748B/);
+    const closed = within(cal).getByRole('link', { name: '31/10' }).className; // sábado fechado
+    expect(closed).toMatch(/text-\[#64748B\]/);
+    expect(closed).not.toMatch(/text-\[#0F2D5B\]/);
     expect(within(cal).getByRole('link', { name: '25/10' }).className).toMatch(/size-11/);
   });
 

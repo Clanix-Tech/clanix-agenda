@@ -1,4 +1,4 @@
-import { dayLabel, greeting, whenLabel } from './labels';
+import { dayLabel, greeting, greetingAt, whenLabel } from './labels';
 
 const TZ = 'America/Sao_Paulo';
 const NOW = new Date('2026-10-29T08:00:00-03:00');
@@ -28,6 +28,19 @@ describe('greeting', () => {
     expect(greeting(12)).toBe('Boa tarde');
     expect(greeting(17)).toBe('Boa tarde');
     expect(greeting(18)).toBe('Boa noite');
+  });
+});
+
+describe('greetingAt (fuso do perfil)', () => {
+  const g = (utc: string) => greetingAt(new Date(utc), TZ);
+  it('limites 11:59 / 12:00 / 17:59 / 18:00 em São Paulo', () => {
+    expect(g('2026-10-29T14:59:00Z')).toBe('Bom dia');
+    expect(g('2026-10-29T15:00:00Z')).toBe('Boa tarde');
+    expect(g('2026-10-29T20:59:00Z')).toBe('Boa tarde');
+    expect(g('2026-10-29T21:00:00Z')).toBe('Boa noite');
+  });
+  it('não depende do fuso do navegador (Lisboa)', () => {
+    expect(greetingAt(new Date('2026-10-29T14:59:00Z'), 'Europe/Lisbon')).toBe('Boa tarde');
   });
 });
 
