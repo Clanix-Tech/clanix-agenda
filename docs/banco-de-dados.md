@@ -11,7 +11,7 @@ Banco PostgreSQL do Supabase. Toda escrita de agendamentos passa por funções (
 | `favorite_services` | Serviços favoritos (atalhos) | `owner_id`, `name` (1–80), `duration_minutes` (5–480), `color` (`#RRGGBB`), `is_active` |
 | `appointments` | Atendimentos | `owner_id`, `client_name`, `client_phone`, `service_name`, `starts_at`, `ends_at`, `status`, `notes`, `cancellation_reason`, `canceled_at`, `created_at`, `updated_at` |
 | `appointment_history` | Histórico imutável, gravado por trigger | `appointment_id`, `owner_id`, `actor_id`, `action` (criado/editado/remarcado/status_alterado/cancelado/reativado), `previous_values`, `new_values`, `created_at` |
-| `push_subscriptions` | Assinaturas Web Push (um dispositivo por linha) | `owner_id`, `endpoint` (único, https), `p256dh`, `auth`, `device_label`, `last_used_at` |
+| `push_subscriptions` | Assinaturas Web Push (um dispositivo por linha); gravadas só por `register_push_subscription`; índice em `owner_id` | `owner_id`, `endpoint` (único, https), `p256dh`, `auth`, `device_label`, `last_used_at` |
 | `appointment_reminders` | Controle de lembretes já enviados (evita duplicar) | `appointment_id`, `starts_at`, `sent_at` — só o service role acessa |
 
 Todos os instantes são `timestamptz`. O fuso do perfil é a fonte de verdade para decidir "dia" e "expediente".
@@ -48,9 +48,18 @@ Qualquer outra transição responde `AE005`. Um agendamento cancelado não pode 
 
 ## Funções (RPC)
 
-`create_appointment`, `reschedule_appointment`, `update_appointment_details`, `set_appointment_status`, `cancel_appointment`, `reactivate_appointment` e `set_business_hours`. Todas são `SECURITY DEFINER` com `search_path` vazio e só têm `EXECUTE` para `authenticated` (e `service_role`, inofensivo: sem `auth.uid()` a função responde `42501`).
+`create_appointment`, `reschedule_appointment`, `update_appointment_details`, `set_appointment_status`, `cancel_appointment`, `reactivate_appointment` e `set_business_hours` e `register_push_subscription`. Todas são `SECURITY DEFINER` com `search_path` vazio e só têm `EXECUTE` para `authenticated` (e `service_role`, inofensivo: sem `auth.uid()` a função responde `42501`).
 
 `update_appointment_details(p_id, p_client_name, p_service_name, p_client_phone, p_notes)` faz substituição completa: os cinco parâmetros são obrigatórios; `null` ou `''` em telefone/observações limpa o campo, e os valores informados são gravados (aparados).
+
+`register_push_subscription(p_endpoint, p_p256dh, p_auth, p_device_label default null)` devolve o id da assinatura. É um upsert por `endpoint` com "claim": se o mesmo navegador/endpoint já pertencia a outra conta, passa a pertencer a quem registrou por último (com as chaves novas), e a conta anterior deixa de vê-lo por RLS. Sem `auth.uid()` responde `42501`; endpoint que não seja `https://` responde `23514`.
+
+### Lembretes (somente `service_role`)
+
+- `appointments.reminder_anchor_at`: quando o horário atual foi marcado. Um trigger `before update` a atualiza quando `starts_at` muda ou o status volta de `cancelado` para `agendado`; nas linhas existentes recebeu `created_at`. Avisos cujo momento já havia passado nesse instante não são enviados.
+- `due_reminders(p_now default now())` devolve `appointment_id, owner_id, starts_at, title, body, url` dos lembretes devidos: status `agendado`, `profiles.reminder_minutes` não nulo, `starts_at > p_now`, momento de aviso (`starts_at - reminder_minutes`) entre `reminder_anchor_at` e `p_now`, sem reserva em `appointment_reminders` para `(id, starts_at)` e dono com ao menos uma assinatura. O texto usa o fuso do perfil (`profiles.timezone`), nunca o da sessão.
+- `claim_reminder(p_appointment_id, p_starts_at)` reserva o par e devolve `true` só para quem inseriu (no máximo um envio por atendimento e horário).
+- `release_reminder(p_appointment_id, p_starts_at)` apaga a reserva (falha temporária: nenhum aparelho recebeu).
 
 Por causa do revoke global de privilégios padrão (`alter default privileges ... revoke execute on functions`), toda função nova, inclusive de extensões instaladas depois (ex.: `pg_net`, `pg_cron`), precisa de `GRANT EXECUTE` explícito para quem deve chamá-la.
 
@@ -78,9 +87,10 @@ Além desses, as RPCs podem devolver erros crus `23514` (check violation) e `235
 | `profiles` | nada | `SELECT` próprio e `UPDATE` de colunas de preferência | total |
 | `business_hours` | nada | `SELECT`; escrita via `set_business_hours` | total |
 | `favorite_services` | nada | `SELECT`, `DELETE`, `INSERT`/`UPDATE` por coluna (sem `owner_id`) | total |
-| `push_subscriptions` | nada | `SELECT`, `DELETE`, `INSERT` por coluna | total |
+| `push_subscriptions` | nada | `SELECT` e `DELETE` próprios; escrita só via `register_push_subscription` | total |
 | `appointment_reminders` | nada | nada | acesso total |
-| RPCs | nada | `EXECUTE` | total |
+| RPCs | nada | `EXECUTE` (exceto `due_reminders`, `claim_reminder`, `release_reminder`) | total |
+| `due_reminders`, `claim_reminder`, `release_reminder` | nada | nada | `EXECUTE` |
 
 ## Como testar
 

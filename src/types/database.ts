@@ -71,14 +71,14 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "canceled_at": string | null,"cancellation_reason": string | null,"client_name": string,"client_phone": string | null,"created_at": string,"ends_at": string,"id": string,"notes": string | null,"owner_id": string,"service_name": string,"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
+                    "canceled_at": string | null,"cancellation_reason": string | null,"client_name": string,"client_phone": string | null,"created_at": string,"ends_at": string,"id": string,"notes": string | null,"owner_id": string,"reminder_anchor_at": string,"service_name": string,"starts_at": string,"status": Database["public"]['Enums']["appointment_status"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "canceled_at"?: string | null,"cancellation_reason"?: string | null,"client_name": string,"client_phone"?: string | null,"created_at"?: string,"ends_at": string,"id"?: string,"notes"?: string | null,"owner_id": string,"service_name": string,"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "canceled_at"?: string | null,"cancellation_reason"?: string | null,"client_name": string,"client_phone"?: string | null,"created_at"?: string,"ends_at": string,"id"?: string,"notes"?: string | null,"owner_id": string,"reminder_anchor_at"?: string,"service_name": string,"starts_at": string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Update: {
-                    "canceled_at"?: string | null,"cancellation_reason"?: string | null,"client_name"?: string,"client_phone"?: string | null,"created_at"?: string,"ends_at"?: string,"id"?: string,"notes"?: string | null,"owner_id"?: string,"service_name"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
+                    "canceled_at"?: string | null,"cancellation_reason"?: string | null,"client_name"?: string,"client_phone"?: string | null,"created_at"?: string,"ends_at"?: string,"id"?: string,"notes"?: string | null,"owner_id"?: string,"reminder_anchor_at"?: string,"service_name"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["appointment_status"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -180,6 +180,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
@@ -191,6 +192,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"claim_reminder":
+{ Args: { "p_appointment_id": string,"p_starts_at": string }; Returns: boolean
+                           },
 "create_appointment":
 { Args: { "p_client_name": string,"p_client_phone"?: string,"p_confirm_past"?: boolean,"p_ends_at": string,"p_notes"?: string,"p_service_name": string,"p_starts_at": string }; Returns: {
               "canceled_at": string | null,
@@ -202,6 +206,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
@@ -213,6 +218,11 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"due_reminders":
+{ Args: { "p_now"?: string }; Returns: {
+              "appointment_id": string,"body": string,"owner_id": string,"starts_at": string,"title": string,"url": string
+            }[]
+                           },
 "reactivate_appointment":
 { Args: { "p_id": string }; Returns: {
               "canceled_at": string | null,
@@ -224,6 +234,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
@@ -235,6 +246,12 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"register_push_subscription":
+{ Args: { "p_auth": string,"p_device_label"?: string,"p_endpoint": string,"p_p256dh": string }; Returns: string
+                           },
+"release_reminder":
+{ Args: { "p_appointment_id": string,"p_starts_at": string }; Returns: undefined
+                           },
 "reschedule_appointment":
 { Args: { "p_confirm_past"?: boolean,"p_ends_at": string,"p_id": string,"p_starts_at": string }; Returns: {
               "canceled_at": string | null,
@@ -246,6 +263,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
@@ -268,6 +286,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
@@ -307,6 +326,7 @@ isOneToOne: false
 "id": string,
 "notes": string | null,
 "owner_id": string,
+"reminder_anchor_at": string,
 "service_name": string,
 "starts_at": string,
 "status": Database["public"]['Enums']["appointment_status"],
