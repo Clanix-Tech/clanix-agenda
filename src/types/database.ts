@@ -312,6 +312,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"set_reminder_config":
+{ Args: { "p_cron_secret": string,"p_function_url": string }; Returns: undefined
+                           },
 "timemultirange":
 { Args: Record<PropertyKey, never>; Returns: unknown
                            },

@@ -63,6 +63,15 @@ Qualquer outra transição responde `AE005`. Um agendamento cancelado não pode 
 
 Por causa do revoke global de privilégios padrão (`alter default privileges ... revoke execute on functions`), toda função nova, inclusive de extensões instaladas depois (ex.: `pg_net`, `pg_cron`), precisa de `GRANT EXECUTE` explícito para quem deve chamá-la.
 
+### Agendamento por minuto (pg_cron + pg_net + Vault)
+
+- Migração `20261104000200_reminders_cron.sql` habilita `pg_net` e `pg_cron` e agenda o job `send-reminders` (`* * * * *`), que executa `app_private.invoke_send_reminders()`. Essa função (schema `app_private`, sem acesso por API) lê `reminders_function_url` e `reminders_cron_secret` de `vault.decrypted_secrets`; se faltar algum, devolve `null` e não chama nada; senão faz `net.http_post` (corpo `{}`, header `x-cron-secret`, timeout 10 s) e devolve o id da requisição.
+- `set_reminder_config(p_function_url, p_cron_secret)` (somente `service_role`) grava ou atualiza os dois segredos no Vault. A URL precisa começar com `http://` ou `https://` e o segredo ter ao menos 32 caracteres (`22023` caso contrário).
+- Configurar (o segredo deve ser o mesmo `CRON_SECRET` da Edge Function; nunca versione):
+  - Local: `select public.set_reminder_config('http://host.docker.internal:55321/functions/v1/send-reminders', '<segredo de 32+ caracteres>');` via `psql` no banco local (porta 55322) como `postgres`/`service_role`.
+  - Produção: no SQL Editor, `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<segredo>');` e o mesmo valor em `supabase secrets set CRON_SECRET=...`.
+- Sem configuração o job roda a cada minuto e não faz nada.
+
 ## Códigos de erro
 
 O erro chega ao supabase-js em `error.code`; `error.message` traz a chave.
@@ -89,8 +98,8 @@ Além desses, as RPCs podem devolver erros crus `23514` (check violation) e `235
 | `favorite_services` | nada | `SELECT`, `DELETE`, `INSERT`/`UPDATE` por coluna (sem `owner_id`) | total |
 | `push_subscriptions` | nada | `SELECT` e `DELETE` próprios; escrita só via `register_push_subscription` | total |
 | `appointment_reminders` | nada | nada | acesso total |
-| RPCs | nada | `EXECUTE` (exceto `due_reminders`, `claim_reminder`, `release_reminder`) | total |
-| `due_reminders`, `claim_reminder`, `release_reminder` | nada | nada | `EXECUTE` |
+| RPCs | nada | `EXECUTE` (exceto `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config`) | total |
+| `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config` | nada | nada | `EXECUTE` |
 
 ## Como testar
 
