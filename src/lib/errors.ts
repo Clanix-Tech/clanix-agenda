@@ -7,6 +7,7 @@ export type AppErrorKind =
   | 'nao_encontrado'
   | 'sessao'
   | 'dados_invalidos'
+  | 'duplicado'
   | 'rede'
   | 'desconhecido';
 
@@ -21,6 +22,7 @@ const MESSAGES: Record<AppErrorKind, string> = {
   nao_encontrado: 'Atendimento não encontrado.',
   sessao: 'Sua sessão expirou. Entre novamente.',
   dados_invalidos: 'Alguns dados estão inválidos. Revise os campos.',
+  duplicado: 'Esse registro já existe.',
   rede: 'Sem conexão. Nada foi salvo — tente novamente.',
   desconhecido: 'Algo deu errado. Tente novamente.',
 };
@@ -39,6 +41,7 @@ const BY_CODE: Record<string, AppErrorKind> = {
   '23502': 'dados_invalidos',
   '22023': 'dados_invalidos',
   '22P02': 'dados_invalidos',
+  '23505': 'duplicado',
 };
 
 function build(kind: AppErrorKind): AppError {

@@ -23,6 +23,7 @@ describe('toAppError', () => {
     [{ code: '23514' }, 'dados_invalidos', 'Alguns dados estão inválidos. Revise os campos.'],
     [{ code: '23502' }, 'dados_invalidos', 'Alguns dados estão inválidos. Revise os campos.'],
     [{ code: '22023' }, 'dados_invalidos', 'Alguns dados estão inválidos. Revise os campos.'],
+    [{ code: '23505' }, 'duplicado', 'Esse registro já existe.'],
     [{ code: '22P02' }, 'dados_invalidos', 'Alguns dados estão inválidos. Revise os campos.'],
     [new TypeError('Failed to fetch'), 'rede', 'Sem conexão. Nada foi salvo — tente novamente.'],
     [
