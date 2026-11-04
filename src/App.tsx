@@ -1,6 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createBrowserRouter } from 'react-router';
-import { Toaster } from '@/components/ui/sonner';
+import { AppToaster } from '@/components/layout/AppToaster';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { createQueryClient, type ExpireRef } from '@/lib/queryClient';
 import { routes } from '@/routes';
@@ -14,7 +14,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider expireRef={expireRef}>
         <RouterProvider router={router} />
-        <Toaster />
+        <AppToaster />
       </AuthProvider>
     </QueryClientProvider>
   );
