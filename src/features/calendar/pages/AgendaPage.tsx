@@ -25,9 +25,7 @@ export default function AgendaPage() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-3.5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
-      <h1 className="px-1 font-[Manrope,sans-serif] text-2xl font-extrabold text-[#0F2D5B]">
-        Agenda
-      </h1>
+      <h1 className="px-1 font-display text-2xl font-extrabold text-[#0F2D5B]">Agenda</h1>
       {profile.isPending ? (
         <LoadingState label="Carregando a agenda…" />
       ) : profile.isError ? (

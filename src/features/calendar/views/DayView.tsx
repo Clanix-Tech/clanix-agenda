@@ -58,7 +58,7 @@ function AppointmentCard({
           next ? 'bg-white/15 text-white' : 'bg-[#E7F1FF] text-[#0F2D5B]',
         )}
       >
-        <b className="font-[Manrope,sans-serif] text-[15px] font-extrabold">{start}</b>
+        <b className="font-display text-[15px] font-extrabold">{start}</b>
         <span className={cn('text-[11px]', next ? 'text-[#CBD5E1]' : 'text-[#475569]')}>{end}</span>
       </span>
       <span className="min-w-0 flex-1">
@@ -106,7 +106,7 @@ function FreeCard({
       className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-[#93C5FD] bg-[#F5F9FF] p-2.5 text-left text-[#1D4ED8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
     >
       <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-white">
-        <b className="font-[Manrope,sans-serif] text-[15px] font-extrabold">{interval.start}</b>
+        <b className="font-display text-[15px] font-extrabold">{interval.start}</b>
         <span className="text-[11px]">{interval.end}</span>
       </span>
       <span className="min-w-0 flex-1">

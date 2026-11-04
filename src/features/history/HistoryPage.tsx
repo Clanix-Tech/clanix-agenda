@@ -313,9 +313,7 @@ export default function HistoryPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-[Manrope,sans-serif] text-2xl font-extrabold text-[#0F2D5B]">
-            Histórico e busca
-          </h1>
+          <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">Histórico e busca</h1>
           <p className="text-sm text-[#64748B]">
             Encontre atendimentos por cliente, data, serviço ou status.
           </p>
@@ -410,7 +408,7 @@ export default function HistoryPage() {
           className="min-w-0 rounded-[18px] border border-[#E2E8F0] bg-white"
         >
           {search.data && (
-            <p className="border-b border-[#E2E8F0] px-4 py-3 font-[Manrope,sans-serif] font-bold text-[#0F2D5B]">
+            <p className="border-b border-[#E2E8F0] px-4 py-3 font-display font-bold text-[#0F2D5B]">
               {count} {count === 1 ? 'resultado' : 'resultados'}
             </p>
           )}
@@ -432,10 +430,7 @@ export default function HistoryPage() {
           aria-labelledby="remarcacoes"
           className="rounded-[18px] border border-[#E2E8F0] bg-white p-4"
         >
-          <h2
-            id="remarcacoes"
-            className="mb-2 font-[Manrope,sans-serif] text-lg font-bold text-[#0F2D5B]"
-          >
+          <h2 id="remarcacoes" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
             Remarcações e cancelamentos
           </h2>
           {recent.isPending ? (

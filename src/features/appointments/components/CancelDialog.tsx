@@ -31,7 +31,7 @@ export function CancelDialog({ open, pending, onOpenChange, onConfirm }: Props) 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">
+          <DialogTitle className="font-display text-[#0F2D5B]">
             Cancelar este atendimento?
           </DialogTitle>
           <DialogDescription>O horário será liberado na agenda.</DialogDescription>

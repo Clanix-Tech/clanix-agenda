@@ -33,7 +33,7 @@ function Kpi({ label, value, hint }: { label: string; value: number; hint?: stri
   return (
     <div className="rounded-[18px] border border-[#E2E8F0] bg-white p-3.5">
       <p className="text-xs font-semibold text-[#64748B]">{label}</p>
-      <p className="font-[Manrope,sans-serif] text-[28px] leading-tight font-extrabold text-[#0F2D5B]">
+      <p className="font-display text-[28px] leading-tight font-extrabold text-[#0F2D5B]">
         {value}
       </p>
       {hint && <p className="text-xs text-[#64748B]">{hint}</p>}
@@ -192,7 +192,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header>
-        <h1 className="font-[Manrope,sans-serif] text-2xl font-extrabold text-[#0F2D5B]">
+        <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">
           {greetingAt(now, tz)}
           {firstName ? `, ${firstName}` : ''}
         </h1>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
           <p className="text-xs font-semibold tracking-wide text-[#CBD5E1] uppercase">
             Próximo atendimento
           </p>
-          <p className="mt-1 font-[Manrope,sans-serif] text-2xl font-extrabold">
+          <p className="mt-1 font-display text-2xl font-extrabold">
             {whenLabel(next.starts_at, tz, now)}
           </p>
           <p title={next.client_name} className="mt-2 truncate text-lg font-semibold">
@@ -268,10 +268,7 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="livres-hoje">
-            <h2
-              id="livres-hoje"
-              className="mb-2 font-[Manrope,sans-serif] text-lg font-bold text-[#0F2D5B]"
-            >
+            <h2 id="livres-hoje" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
               Horários livres hoje
             </h2>
             {free.length === 0 ? (
@@ -299,10 +296,7 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="proximos">
-            <h2
-              id="proximos"
-              className="mb-2 font-[Manrope,sans-serif] text-lg font-bold text-[#0F2D5B]"
-            >
+            <h2 id="proximos" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
               Próximos atendimentos
             </h2>
             {upcoming.length === 0 ? (
@@ -382,9 +376,7 @@ export default function DashboardPage() {
                         )}
                       >
                         <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-[#E7F1FF] text-[#0F2D5B]">
-                          <b className="font-[Manrope,sans-serif] text-[15px] font-extrabold">
-                            {l.time}
-                          </b>
+                          <b className="font-display text-[15px] font-extrabold">{l.time}</b>
                           <span className="text-[11px] text-[#475569]">
                             {dayLabel(l.date, today)}
                           </span>

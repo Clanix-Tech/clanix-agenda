@@ -40,7 +40,7 @@ export default function FirstAccessPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-5 bg-[#F8FAFC] px-4 py-8">
       <header>
-        <h1 className="font-[Manrope] text-[26px] leading-tight font-extrabold text-[#0F2D5B]">
+        <h1 className="font-display text-[26px] leading-tight font-extrabold text-[#0F2D5B]">
           Quando você atende?
         </h1>
         <p className="mt-2 text-[15px] leading-normal text-[#475569]">

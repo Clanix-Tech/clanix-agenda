@@ -140,7 +140,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         >
           <ArrowLeft aria-hidden="true" className="size-5" />
         </button>
-        <h1 className="font-[Manrope] text-xl font-bold text-[#0F2D5B]">Remarcar atendimento</h1>
+        <h1 className="font-display text-xl font-bold text-[#0F2D5B]">Remarcar atendimento</h1>
       </header>
       {children}
     </div>

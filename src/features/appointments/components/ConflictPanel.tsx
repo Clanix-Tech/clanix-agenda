@@ -95,7 +95,7 @@ export function ConflictPanel({
           aria-label={`Livres em ${dayLabel} para ${durationLabel}`}
           className="flex flex-col gap-2 rounded-[14px] border border-[#EEF2F6] bg-[#F8FAFC] p-4"
         >
-          <h3 className="font-[Manrope,sans-serif] text-[15px] font-bold text-[#0F2D5B]">
+          <h3 className="font-display text-[15px] font-bold text-[#0F2D5B]">
             Livres em {dayLabel} para {durationLabel}
           </h3>
           {suggestions.length > 0 ? (

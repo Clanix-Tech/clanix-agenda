@@ -119,7 +119,7 @@ export function AppointmentSheet() {
           {next && <span className="text-xs font-bold text-[#1D4ED8]">{next}</span>}
         </div>
         <p
-          className={`font-[Manrope,sans-serif] text-2xl font-extrabold break-words text-[#0F2D5B] ${a.status === 'cancelado' ? 'line-through' : ''}`}
+          className={`font-display text-2xl font-extrabold break-words text-[#0F2D5B] ${a.status === 'cancelado' ? 'line-through' : ''}`}
         >
           {a.client_name}
         </p>
@@ -158,9 +158,7 @@ export function AppointmentSheet() {
           }}
         />
         <section className="border-t border-[#EEF2F6] pt-3.5">
-          <h3 className="mb-3 font-[Manrope,sans-serif] text-[15px] font-bold text-[#0F2D5B]">
-            Histórico
-          </h3>
+          <h3 className="mb-3 font-display text-[15px] font-bold text-[#0F2D5B]">Histórico</h3>
           {history.isError ? (
             <ErrorState
               message={toAppError(history.error).message}

@@ -93,7 +93,7 @@ export function ListView({ date, tz, status }: Props) {
       ) : (
         [...groups.entries()].map(([day, list]) => (
           <section key={day} aria-label={heading(day, today)} className="flex flex-col gap-2">
-            <h2 className="px-1 font-[Manrope,sans-serif] text-sm font-extrabold text-[#0F2D5B]">
+            <h2 className="px-1 font-display text-sm font-extrabold text-[#0F2D5B]">
               {heading(day, today)}
             </h2>
             {list.map((a) => (
@@ -104,7 +104,7 @@ export function ListView({ date, tz, status }: Props) {
                 className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
               >
                 <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-[#E7F1FF] text-[#0F2D5B]">
-                  <b className="font-[Manrope,sans-serif] text-[15px] font-extrabold">
+                  <b className="font-display text-[15px] font-extrabold">
                     {instantToLocal(a.starts_at, tz).time}
                   </b>
                   <span className="text-[11px] text-[#475569]">

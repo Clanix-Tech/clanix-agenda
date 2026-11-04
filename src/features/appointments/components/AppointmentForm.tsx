@@ -661,7 +661,7 @@ function FormBody(props: BodyProps) {
                 <span className="text-[11px] font-semibold text-[#64748B]">Termina às</span>
                 <output
                   htmlFor={`${ids}-start ${ids}-duration`}
-                  className="font-[Manrope,sans-serif] text-[17px] leading-tight font-extrabold text-[#0F2D5B]"
+                  className="font-display text-[17px] leading-tight font-extrabold text-[#0F2D5B]"
                 >
                   {endTime ?? '--:--'}
                 </output>

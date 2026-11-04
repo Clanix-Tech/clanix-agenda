@@ -36,7 +36,7 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">{title}</DialogTitle>
+            <DialogTitle className="font-display text-[#0F2D5B]">{title}</DialogTitle>
             <DialogDescription className="sr-only">{title}</DialogDescription>
           </DialogHeader>
           <DialogClose
@@ -56,7 +56,7 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">{title}</DrawerTitle>
+          <DrawerTitle className="font-display text-[#0F2D5B]">{title}</DrawerTitle>
           <DrawerDescription className="sr-only">{title}</DrawerDescription>
         </DrawerHeader>
         <div className="overflow-y-auto px-4 pb-4">{children}</div>

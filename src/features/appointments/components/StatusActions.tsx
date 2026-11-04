@@ -256,9 +256,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
       >
         <DialogContent showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle className="font-[Manrope,sans-serif] text-[#0F2D5B]">
-              {confirmCopy.title}
-            </DialogTitle>
+            <DialogTitle className="font-display text-[#0F2D5B]">{confirmCopy.title}</DialogTitle>
             <DialogDescription>{confirmCopy.text}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

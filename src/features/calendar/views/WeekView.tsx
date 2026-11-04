@@ -442,7 +442,7 @@ function WeekStrip({ date, tz, status, onDate }: Props) {
               <span aria-hidden="true" className="text-[11px] font-semibold">
                 {wd}
               </span>
-              <b aria-hidden="true" className="font-[Manrope,sans-serif] text-base font-extrabold">
+              <b aria-hidden="true" className="font-display text-base font-extrabold">
                 {num}
               </b>
               <span aria-hidden="true" className="flex h-3 items-center gap-1 text-[11px]">

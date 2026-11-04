@@ -20,7 +20,7 @@ export function SectionCard({
       className="flex flex-col gap-5 rounded-2xl border border-[#E2E8F0] bg-white p-5"
     >
       <header>
-        <h2 id="secao-titulo" className="font-[Manrope] text-xl font-extrabold text-[#0F2D5B]">
+        <h2 id="secao-titulo" className="font-display text-xl font-extrabold text-[#0F2D5B]">
           {title}
         </h2>
         {description && <p className="mt-1 text-[15px] text-[#475569]">{description}</p>}

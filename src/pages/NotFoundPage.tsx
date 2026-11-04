@@ -27,10 +27,10 @@ export default function NotFoundPage() {
         <circle cx="66" cy="88" r="3.6" fill="#3B82F6" />
       </svg>
       <div>
-        <p className="mb-1.5 font-[Manrope,sans-serif] text-sm font-bold tracking-[.06em] text-[#1D4ED8]">
+        <p className="mb-1.5 font-display text-sm font-bold tracking-[.06em] text-[#1D4ED8]">
           ERRO 404
         </p>
-        <h1 className="font-[Manrope,sans-serif] text-[26px] font-extrabold text-[#0F2D5B]">
+        <h1 className="font-display text-[26px] font-extrabold text-[#0F2D5B]">
           Página não encontrada
         </h1>
         <p className="mt-2.5 text-[15px] leading-normal text-[#475569]">

@@ -81,7 +81,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
     <SectionCard title="Conta e privacidade">
       <div className="flex max-w-md flex-col gap-8">
         <form onSubmit={(e) => void changePassword(e)} noValidate className="flex flex-col gap-4">
-          <h3 className="font-[Manrope] text-base font-extrabold text-[#0F2D5B]">Alterar senha</h3>
+          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Alterar senha</h3>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="conta-senha">Nova senha</Label>
             <Input
@@ -127,7 +127,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
         </form>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-[Manrope] text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
+          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
           <p className="text-[15px] text-[#475569]">
             Baixe todos os seus atendimentos em uma planilha.
           </p>

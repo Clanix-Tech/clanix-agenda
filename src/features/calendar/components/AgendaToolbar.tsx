@@ -88,9 +88,7 @@ export function AgendaToolbar({
         </button>
         <div className="min-w-0 flex-1 text-center lg:min-w-44 lg:flex-none">
           <div className="text-xs font-semibold text-[#64748B]">{sub}</div>
-          <div className="font-[Manrope,sans-serif] text-lg font-extrabold text-[#0F2D5B]">
-            {title}
-          </div>
+          <div className="font-display text-lg font-extrabold text-[#0F2D5B]">{title}</div>
         </div>
         <button type="button" aria-label={nextLabel} onClick={() => go(1)} className={ib}>
           <ChevronRight aria-hidden="true" className="size-5" />

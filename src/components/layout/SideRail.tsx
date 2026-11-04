@@ -48,7 +48,7 @@ export function SideRail() {
       <NavLink
         to="/ajustes"
         aria-label="Minha conta"
-        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-[#E7F1FF] font-[Manrope,sans-serif] font-extrabold text-[#0F2D5B] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-[#E7F1FF] font-display font-extrabold text-[#0F2D5B] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
       >
         {initials(user?.email)}
       </NavLink>
