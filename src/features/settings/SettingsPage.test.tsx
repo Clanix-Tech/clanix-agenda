@@ -110,6 +110,7 @@ function setup(
 
 beforeEach(() => {
   vi.mocked(toast.success).mockClear();
+  vi.mocked(toast.error).mockClear();
 });
 
 describe('SettingsPage navegação', () => {
@@ -281,6 +282,30 @@ describe('Agenda: gravações em sequência', () => {
     await waitFor(() => expect(fake.tables.profiles![0]!.default_view).toBe('lista'));
     expect(await screen.findByText('Salvo')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Lista' })).toBeChecked();
+  });
+});
+
+describe('Agenda: falha depois de sair da seção', () => {
+  it('a gravação que falha com a seção já fechada avisa por toast', async () => {
+    const user = userEvent.setup();
+    const errors = { profiles: { update: { code: 'XX000' } } };
+    setup({ route: '/ajustes/agenda', errors, updateDelay: 150 });
+    await user.click(await screen.findByRole('radio', { name: 'Lista' }));
+    await user.click(screen.getByRole('link', { name: 'Perfil' }));
+    expect(await screen.findByLabelText('Seu nome')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'Não foi possível salvar suas preferências. Algo deu errado. Tente novamente.',
+      ),
+    );
+  });
+
+  it('com a seção aberta o erro fica na tela, sem toast', async () => {
+    const user = userEvent.setup();
+    setup({ route: '/ajustes/agenda', errors: { profiles: { update: { code: 'XX000' } } } });
+    await user.click(await screen.findByRole('radio', { name: 'Lista' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Algo deu errado');
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });
 

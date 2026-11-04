@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { toAppError } from '@/lib/errors';
 import { useUpdateProfile, type Profile, type ProfilePatch } from '@/features/profile/api';
 
 type Phase = 'idle' | 'saving' | 'saved' | 'error';
@@ -46,7 +48,10 @@ export function useAutoSaveProfile(profile: Profile) {
         await mutation.mutateAsync(patch);
       } catch (err) {
         failed.current = { ...failed.current, ...patch };
-        if (mounted.current) {
+        if (!mounted.current) {
+          // A seção já saiu da tela: sem aviso aqui, a falha passaria despercebida.
+          toast.error(`Não foi possível salvar suas preferências. ${toAppError(err).message}`);
+        } else {
           setErrorMessage((err as { message?: string }).message ?? 'Algo deu errado.');
           // Descarta só as escolhas que falharam e não foram trocadas por outra mais nova.
           const newer = pending.current;
