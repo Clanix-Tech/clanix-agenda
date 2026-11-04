@@ -407,7 +407,11 @@ function Picker(p: PickerProps) {
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-[#E2E8F0] bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      {/* Acima da navegação inferior no celular; à direita da barra lateral no computador. */}
+      <div
+        data-testid="reschedule-bar"
+        className="fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-10 border-t border-[#E2E8F0] bg-white px-4 pt-4 pb-6 lg:bottom-0 lg:left-24 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]"
+      >
         <Button
           type="button"
           disabled={!time || pending}
