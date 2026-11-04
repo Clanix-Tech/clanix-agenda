@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 
 export type Row = Record<string, unknown>;
-type Result = { data: unknown; error: unknown };
+type Result = { data: unknown; error: unknown; count?: number };
 type Handler = (args: unknown) => { data?: unknown; error?: unknown };
 type AuthListener = (event: string, session: Session | null) => void;
 type Operation = 'select' | 'insert' | 'update' | 'delete';
@@ -65,6 +65,21 @@ function sqlEquals(a: unknown, b: unknown): boolean {
 
 type Filter = (row: Row) => boolean;
 
+const escapeRe = (ch: string) => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Padrão do `ilike` do PostgREST: sem diferenciar caixa; `%` e `_` são curingas; `\` escapa. */
+function likeToRegExp(pattern: string): RegExp {
+  let out = '';
+  for (let i = 0; i < pattern.length; i++) {
+    const ch = pattern[i]!;
+    if (ch === '\\' && i + 1 < pattern.length) out += escapeRe(pattern[++i]!);
+    else if (ch === '%') out += '[\\s\\S]*';
+    else if (ch === '_') out += '[\\s\\S]';
+    else out += escapeRe(ch);
+  }
+  return new RegExp(`^${out}$`, 'i');
+}
+
 /** Construtor de consultas encadeável e "thenable" (como o do supabase-js). */
 class FakeQuery implements PromiseLike<Result> {
   private filters: Filter[] = [];
@@ -73,6 +88,8 @@ class FakeQuery implements PromiseLike<Result> {
   private payload: Row | Row[] | null = null;
   private singleMode: 'one' | 'maybe' | null = null;
   private max: number | null = null;
+  private window: [number, number] | null = null;
+  private wantCount = false;
 
   private readonly rows: Row[];
   private readonly errors: Partial<Record<Operation, unknown>>;
@@ -82,7 +99,8 @@ class FakeQuery implements PromiseLike<Result> {
     this.errors = errors;
   }
 
-  select() {
+  select(_columns?: string, opts?: { count?: 'exact' }) {
+    if (opts?.count) this.wantCount = true;
     return this;
   }
   update(values: Row) {
@@ -130,6 +148,15 @@ class FakeQuery implements PromiseLike<Result> {
   }
   in(column: string, values: unknown[]) {
     this.filters.push((r) => values.some((v) => sqlEquals(r[column], v)));
+    return this;
+  }
+  ilike(column: string, pattern: string) {
+    const re = likeToRegExp(pattern);
+    this.filters.push((r) => typeof r[column] === 'string' && re.test(r[column] as string));
+    return this;
+  }
+  range(from: number, to: number) {
+    this.window = [from, to];
     return this;
   }
   limit(count: number) {
@@ -194,8 +221,13 @@ class FakeQuery implements PromiseLike<Result> {
       }
       return 0;
     });
-    const limited = this.max === null ? out : out.slice(0, this.max);
-    return { data: structuredClone(limited), error: null };
+    let limited = this.max === null ? out : out.slice(0, this.max);
+    if (this.window) limited = limited.slice(this.window[0], this.window[1] + 1);
+    return {
+      data: structuredClone(limited),
+      error: null,
+      ...(this.wantCount ? { count: out.length } : {}),
+    };
   }
 
   then<R1 = Result, R2 = never>(

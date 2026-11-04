@@ -117,3 +117,36 @@ describe('fakeSupabase: null com semantica SQL', () => {
     expect(await ids(fake.from('t').select().in('v', ['Ana']))).toEqual(['a']);
   });
 });
+
+describe('fakeSupabase: ilike, range e count', () => {
+  const names = ['Ana', 'ANA Maria', 'Joana', '50%_off', '500xoff', 'a_b', 'axb'];
+  const make = () =>
+    createFakeSupabase({ tables: { c: names.map((name, i) => ({ id: i, name })) } });
+  const ids = (res: { data: unknown }) => (res.data as Array<{ name: string }>).map((r) => r.name);
+
+  it('ilike ignora maiúsculas e usa % e _ como curingas', async () => {
+    expect(ids(await make().from('c').select().ilike('name', '%ana%'))).toEqual([
+      'Ana',
+      'ANA Maria',
+      'Joana',
+    ]);
+    expect(ids(await make().from('c').select().ilike('name', 'a_b'))).toEqual(['a_b', 'axb']);
+  });
+
+  it('ilike respeita escapes com barra invertida', async () => {
+    expect(ids(await make().from('c').select().ilike('name', '%50\\%\\_off%'))).toEqual([
+      '50%_off',
+    ]);
+    expect(ids(await make().from('c').select().ilike('name', 'a\\_b'))).toEqual(['a_b']);
+  });
+
+  it('range fatia e count exact informa o total antes da fatia', async () => {
+    const res = await make()
+      .from('c')
+      .select('*', { count: 'exact' })
+      .order('id', { ascending: true })
+      .range(2, 3);
+    expect((res.data as Array<{ id: number }>).map((r) => r.id)).toEqual([2, 3]);
+    expect((res as { count?: number }).count).toBe(7);
+  });
+});
