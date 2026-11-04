@@ -6,6 +6,14 @@ export type FreeInterval = { start: string; end: string };
 
 type Range = [number, number];
 
+/** Minutos do dia (fuso do perfil) de `now`, arredondados para cima ao próximo múltiplo de `step`. */
+export function ceilNowToStep(now: Date, tz: string, step = 5): number {
+  const n = instantToLocal(now.toISOString(), tz);
+  const min = Number(n.time.slice(0, 2)) * 60 + Number(n.time.slice(3, 5));
+  const extra = now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0;
+  return Math.ceil((min + extra) / step) * step;
+}
+
 function toMin(t: string): number {
   return Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
 }
@@ -57,10 +65,7 @@ export function freeIntervals(
   if (date < today) return [];
   let floor = 0;
   if (date === today) {
-    const n = instantToLocal(now.toISOString(), tz);
-    floor =
-      Math.ceil((toMin(n.time) + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) *
-      5;
+    floor = ceilNowToStep(now, tz);
   }
   const busyR = busyRanges(date, tz, busy);
   const result: FreeInterval[] = [];

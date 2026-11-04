@@ -10,8 +10,8 @@ import {
   todayInTz,
   weekDays,
 } from '@/lib/time';
-import { useAppointmentsRange, type Appointment } from '@/features/appointments/api';
-import { freeIntervals } from '@/features/appointments/domain/freeSlots';
+import { useAppointmentsRange } from '@/features/appointments/api';
+import { ceilNowToStep, freeIntervals } from '@/features/appointments/domain/freeSlots';
 import { useNewAppointment } from '@/features/appointments/components/NewAppointmentProvider';
 import { useBusinessHours } from '@/features/business-hours/api';
 import { useProfile } from '@/features/profile/api';
@@ -23,34 +23,11 @@ import { shiftDate, shiftMonth, toMinutes, weekdayDay, weekdayOf } from '@/featu
 import { useNow } from '@/features/calendar/useNow';
 import { useOpenAppointment } from '@/features/calendar/useOpenAppointment';
 import { computeIndicators } from './domain/indicators';
+import { dayLabel, greeting, whenLabel } from './domain/labels';
 
 const NOW_PLUS_DAYS = 14;
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]';
-
-function greeting(hour: number): string {
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
-/** "em 20 min", "em 3 h", "às 17:00", "amanhã às 09:00", "Sex 30 às 09:00". */
-function whenLabel(a: Appointment, tz: string, now: Date, today: string): string {
-  const diffMin = Math.floor((new Date(a.starts_at).getTime() - now.getTime()) / 60_000);
-  if (diffMin < 60) return `em ${Math.max(diffMin, 0)} min`;
-  if (diffMin < 360) return `em ${Math.floor(diffMin / 60)} h`;
-  const { date, time } = instantToLocal(a.starts_at, tz);
-  if (date === today) return `às ${time}`;
-  if (date === shiftDate(today, 1)) return `amanhã às ${time}`;
-  return `${weekdayDay(date)} às ${time}`;
-}
-
-function dayLabel(date: string, today: string): string {
-  if (date === today) return 'Hoje';
-  if (date === shiftDate(today, 1)) return 'Amanhã';
-  const w = weekdayDay(date).split(' ')[0];
-  return `${w}, ${date.slice(8, 10)}/${date.slice(5, 7)}`;
-}
 
 function Kpi({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
@@ -90,10 +67,10 @@ function MiniCalendar({
           <span key={d}>{weekdayDay(d).split(' ')[0]}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 justify-items-center gap-1">
         {weeks.flat().map((d) => {
           const n = counts.get(d) ?? 0;
-          const muted = weekdayOf(d) === 0 || !openWeekdays.has(weekdayOf(d));
+          const muted = !openWeekdays.has(weekdayOf(d));
           return (
             <Link
               key={d}
@@ -101,11 +78,11 @@ function MiniCalendar({
               aria-label={`${Number(d.slice(8, 10))}/${d.slice(5, 7)}${n > 0 ? ', com atendimentos' : ''}`}
               aria-current={d === today ? 'date' : undefined}
               className={cn(
-                'flex h-9 flex-col items-center justify-center rounded-lg text-sm font-semibold',
+                'flex size-11 flex-col items-center justify-center rounded-lg text-sm font-semibold',
                 FOCUS,
                 d === today ? 'bg-[#0F2D5B] text-white' : 'text-[#0F2D5B]',
-                muted && d !== today && 'text-[#94A3B8]',
-                d.slice(0, 7) !== month && 'opacity-40',
+                muted && d !== today && 'text-[#64748B]',
+                d.slice(0, 7) !== month && d !== today && 'text-[#64748B]',
               )}
             >
               <span aria-hidden="true">{Number(d.slice(8, 10))}</span>
@@ -174,9 +151,7 @@ export default function DashboardPage() {
     .slice(0, 5);
 
   // Horários livres de hoje, sem passado (mesmo piso de 5 min da visão Dia).
-  const nowMin = toMinutes(nowLocal.time);
-  const floor =
-    Math.ceil((nowMin + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) * 5;
+  const floor = ceilNowToStep(now, tz);
   const free = freeIntervals(
     today,
     tz,
@@ -241,7 +216,7 @@ export default function DashboardPage() {
             Próximo atendimento
           </p>
           <p className="mt-1 font-[Manrope,sans-serif] text-2xl font-extrabold">
-            {whenLabel(next, tz, now, today)}
+            {whenLabel(next.starts_at, tz, now)}
           </p>
           <p title={next.client_name} className="mt-2 truncate text-lg font-semibold">
             {next.client_name}

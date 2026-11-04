@@ -3,7 +3,11 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { instantToLocal, localToInstant, todayInTz } from '@/lib/time';
 import { useAppointmentsRange, type Appointment } from '@/features/appointments/api';
-import { freeIntervals, type FreeInterval } from '@/features/appointments/domain/freeSlots';
+import {
+  ceilNowToStep,
+  freeIntervals,
+  type FreeInterval,
+} from '@/features/appointments/domain/freeSlots';
 import type { AppointmentStatus } from '@/features/appointments/domain/status';
 import { useNewAppointment } from '@/features/appointments/components/NewAppointmentProvider';
 import { useBusinessHours } from '@/features/business-hours/api';
@@ -161,9 +165,7 @@ function DayViewInner({ date, tz, status }: Props) {
 
   const startOfToday = new Date(localToInstant(today, '00:00', tz));
   // Mesmo piso de freeIntervals: agora arredondado para cima ao próximo múltiplo de 5 min.
-  const floor = isToday
-    ? Math.ceil((nowMin + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) * 5
-    : 0;
+  const floor = isToday ? ceilNowToStep(now, tz) : 0;
   const free = freeIntervals(
     date,
     tz,

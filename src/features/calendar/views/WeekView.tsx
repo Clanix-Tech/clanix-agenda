@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { DESKTOP_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 import { instantToLocal, todayInTz } from '@/lib/time';
 import type { Appointment } from '@/features/appointments/api';
-import { freeIntervals } from '@/features/appointments/domain/freeSlots';
+import { ceilNowToStep, freeIntervals } from '@/features/appointments/domain/freeSlots';
 import { statusMeta, type AppointmentStatus } from '@/features/appointments/domain/status';
 import { useNewAppointment } from '@/features/appointments/components/NewAppointmentProvider';
 import { LoadingState } from '@/components/feedback/LoadingState';
@@ -178,8 +178,7 @@ function WeekGridBody({
   const nowLocal = instantToLocal(now.toISOString(), tz).time;
   const nowMin = toMinutes(nowLocal);
   // Mesmo piso de freeIntervals: agora arredondado para cima ao próximo múltiplo de 5 min.
-  const floorNow =
-    Math.ceil((nowMin + (now.getUTCSeconds() || now.getUTCMilliseconds() ? 1 : 0)) / 5) * 5;
+  const floorNow = ceilNowToStep(now, tz);
 
   // "Próximo" só vale na semana que contém hoje.
   const nextId = days.includes(today)

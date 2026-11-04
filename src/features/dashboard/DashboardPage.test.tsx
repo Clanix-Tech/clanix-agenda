@@ -56,7 +56,15 @@ function Where() {
   return <output data-testid="loc">{loc.pathname + loc.search}</output>;
 }
 
-function setup(opts: { rows?: Row[]; width?: number; name?: string } = {}) {
+function setup(
+  opts: {
+    rows?: Row[];
+    width?: number;
+    name?: string;
+    hours?: Row[];
+    errors?: Record<string, Partial<Record<'select', unknown>>>;
+  } = {},
+) {
   setViewportWidth(opts.width ?? 390);
   const fake = createFakeSupabase({
     session: makeSession(),
@@ -69,9 +77,10 @@ function setup(opts: { rows?: Row[]; width?: number; name?: string } = {}) {
           week_starts_on: 1,
         },
       ],
-      business_hours: hours,
+      business_hours: opts.hours ?? hours,
       appointments: opts.rows ?? FIXTURE,
     },
+    errors: opts.errors,
   });
   return renderWithProviders(null, {
     supabase: fake,
@@ -132,6 +141,9 @@ describe('DashboardPage', () => {
     setup();
     const slot = await screen.findByRole('button', { name: '15:00 – 17:00' });
     expect(screen.queryByRole('button', { name: /^08:00/ })).not.toBeInTheDocument();
+    // Livre 12:00-14:00 já com 13:40 como piso: nunca no passado.
+    await user.click(screen.getByRole('button', { name: '13:40 – 14:00' }));
+    expect(screen.getByTestId('prefill')).toHaveTextContent('"startTime":"13:40"');
     await user.click(slot);
     expect(screen.getByTestId('prefill')).toHaveTextContent('"startTime":"15:00"');
     expect(screen.getByTestId('prefill')).toHaveTextContent('"date":"2026-10-29"');
@@ -160,7 +172,9 @@ describe('DashboardPage', () => {
 
   it('sem próximo atendimento mostra a linha amigável', async () => {
     setup({ rows: [ap('A', 'Ana', '2026-10-29', '08:30', '09:30', 'concluido')] });
-    expect((await screen.findAllByText('Nenhum atendimento agendado a seguir.')).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText('Nenhum atendimento agendado a seguir.')).length,
+    ).toBeGreaterThan(0);
   });
 
   it('agenda vazia mostra o EmptyState e mantém a saudação', async () => {
@@ -170,5 +184,40 @@ describe('DashboardPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /Boa tarde/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Novo agendamento' })).toBeInTheDocument();
+  });
+
+  it('minicalendário usa o expediente: domingo com horário não fica apagado', async () => {
+    setup({
+      width: 1280,
+      hours: [0, 1, 2, 3, 4, 5].map((weekday) => ({
+        id: `h-${weekday}`,
+        owner_id: 'user-1',
+        weekday,
+        start_time: '08:00:00',
+        end_time: '18:00:00',
+      })),
+    });
+    const cal = await screen.findByRole('region', { name: 'Calendário do mês' });
+    expect(within(cal).getByRole('link', { name: '25/10' }).className).not.toMatch(/#64748B/);
+    expect(within(cal).getByRole('link', { name: '31/10' }).className).toMatch(/#64748B/); // sábado fechado
+    expect(within(cal).getByRole('link', { name: '25/10' }).className).toMatch(/size-11/);
+  });
+
+  it('mostra carregando e depois o painel', async () => {
+    setup();
+    expect(screen.getByText('Carregando seu painel…')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Boa tarde/ })).toBeInTheDocument();
+  });
+
+  it('erro de carga mostra ErrorState e "Tentar novamente" recarrega', async () => {
+    const user = userEvent.setup();
+    const errors: Record<string, Partial<Record<'select', unknown>>> = {
+      appointments: { select: { code: 'XX000', message: 'boom' } },
+    };
+    setup({ errors });
+    expect(await screen.findByText('Não foi possível carregar o painel.')).toBeInTheDocument();
+    delete errors.appointments;
+    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    expect(await screen.findByRole('heading', { name: /Boa tarde/ })).toBeInTheDocument();
   });
 });
