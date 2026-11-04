@@ -20,7 +20,9 @@ export function createQueryClient(expireRef: ExpireRef): QueryClient {
         staleTime: 30_000,
         retry: (count, err) => toAppError(err).kind === 'rede' && count < 2,
       },
-      mutations: { retry: false },
+      // `always`: sem internet a gravação falha na hora (erro de rede → "Nada foi salvo" e
+      // "Tentar novamente"), em vez de ficar pausada e gravar sozinha quando a conexão volta.
+      mutations: { retry: false, networkMode: 'always' },
     },
   });
 }
