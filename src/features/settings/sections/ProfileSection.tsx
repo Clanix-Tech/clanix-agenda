@@ -38,10 +38,13 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
   const [tz, setTz] = useState(saved.tz);
   const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const busy = useRef(false);
   const mutation = useUpdateProfile();
 
-  const dirty = name !== saved.name || business !== saved.business || tz !== saved.tz;
+  const changed = name !== saved.name || business !== saved.business || tz !== saved.tz;
+  // Durante o envio o formulário conta como limpo; se falhar, volta a ser editado.
+  const dirty = changed && !submitting;
   useEffect(() => {
     onDirtyChange(dirty);
     return () => onDirtyChange(false);
@@ -49,7 +52,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (busy.current || !dirty) return;
+    if (busy.current || !changed) return;
     const trimmed = name.trim();
     if (trimmed.length < 1 || trimmed.length > 80) {
       setNameError(NAME_ERROR);
@@ -57,13 +60,14 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
     }
     setNameError(null);
     busy.current = true;
+    setSubmitting(true);
     setError(null);
     try {
       const businessName = business.trim();
       await mutation.mutateAsync({
         display_name: trimmed,
         business_name: businessName === '' ? null : businessName,
-        timezone: tz,
+        ...(tz !== saved.tz ? { timezone: tz } : {}),
       });
       setSaved({ name: trimmed, business: businessName, tz });
       setName(trimmed);
@@ -73,6 +77,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
       setError((err as { message?: string }).message ?? 'Algo deu errado. Tente novamente.');
     } finally {
       busy.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -89,7 +94,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
             id="perfil-nome"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            maxLength={120}
+            maxLength={80}
             aria-invalid={nameError ? true : undefined}
             aria-describedby={nameError ? 'perfil-nome-erro' : undefined}
             className={FIELD}
@@ -106,7 +111,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
             id="perfil-negocio"
             value={business}
             onChange={(e) => setBusiness(e.target.value)}
-            maxLength={120}
+            maxLength={80}
             className={FIELD}
           />
         </div>
@@ -131,7 +136,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
           </p>
         )}
         <div>
-          <SaveButton pending={mutation.isPending} label="Salvar perfil" disabled={!dirty} />
+          <SaveButton pending={mutation.isPending} label="Salvar perfil" disabled={!changed} />
         </div>
       </form>
     </SectionCard>

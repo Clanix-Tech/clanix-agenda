@@ -129,7 +129,12 @@ export default function SettingsPage() {
         nav
       )}
 
-      <Dialog open={blocker.state === 'blocked'}>
+      <Dialog
+        open={blocker.state === 'blocked'}
+        onOpenChange={(o) => {
+          if (!o && blocker.state === 'blocked') blocker.reset();
+        }}
+      >
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Descartar alterações?</DialogTitle>

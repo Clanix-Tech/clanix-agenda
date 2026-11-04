@@ -77,7 +77,10 @@ describe('FavoritesSection', () => {
     await user.type(screen.getByLabelText('Nome do serviço'), 'Corte');
     await user.click(screen.getByRole('button', { name: 'Salvar serviço' }));
     expect(await screen.findByText('Você já tem um serviço com esse nome.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Nome do serviço')).toHaveValue('Corte');
+    const field = screen.getByLabelText('Nome do serviço');
+    expect(field).toHaveValue('Corte');
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(field).toHaveAccessibleDescription('Você já tem um serviço com esse nome.');
     expect(toast.success).not.toHaveBeenCalled();
   });
 

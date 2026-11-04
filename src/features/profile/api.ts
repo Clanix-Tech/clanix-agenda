@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { toAppError, type AppError } from '@/lib/errors';
 import { guard, must } from '@/lib/queryHelpers';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { apptKeys } from '@/features/appointments/keys';
 import type { Database } from '@/types/database';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -44,6 +45,11 @@ export function useUpdateProfile() {
         for (const k of EDITABLE) if (k in patch) Object.assign(values, { [k]: patch[k] });
         return must(supabase.from('profiles').update(values).eq('id', user.id).select().single());
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['profile'] }),
+    onSuccess: (_data, patch) =>
+      Promise.all([
+        qc.invalidateQueries({ queryKey: ['profile'] }),
+        // Mudar o fuso muda o dia/hora de tudo o que já está em cache (busca, histórico, detalhe).
+        'timezone' in patch ? qc.invalidateQueries({ queryKey: apptKeys.all }) : undefined,
+      ]),
   });
 }

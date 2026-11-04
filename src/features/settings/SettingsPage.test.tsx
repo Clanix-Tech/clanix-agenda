@@ -48,6 +48,9 @@ function setup(
     width?: number;
     rpc?: FakeSupabaseOptions['rpc'];
     auth?: FakeSupabaseOptions['auth'];
+    errors?: FakeSupabaseOptions['errors'];
+    /** Atraso (ms) de cada gravação do perfil, para provocar sobreposição. */
+    updateDelay?: number;
   } = {},
 ) {
   setViewportWidth(opts.width ?? 1280);
@@ -61,15 +64,29 @@ function setup(
     },
     rpc: opts.rpc,
     auth: opts.auth,
+    errors: opts.errors,
   });
   const updates: Array<{ table: string; values: Row }> = [];
+  const stats = { inflight: 0, max: 0 };
   const orig = fake.from.bind(fake);
   fake.from = ((table: string) => {
     const q = orig(table);
     const u = q.update.bind(q);
     q.update = (values: Row) => {
       updates.push({ table, values });
-      return u(values);
+      const res = u(values);
+      if (opts.updateDelay) {
+        const then = res.then.bind(res);
+        res.then = ((a: never, b: never) => {
+          stats.inflight++;
+          stats.max = Math.max(stats.max, stats.inflight);
+          return new Promise((r) => setTimeout(r, opts.updateDelay)).then(() => {
+            stats.inflight--;
+            return then(a, b);
+          });
+        }) as typeof res.then;
+      }
+      return res;
     };
     return q;
   }) as typeof fake.from;
@@ -88,7 +105,7 @@ function setup(
       },
     ],
   });
-  return { ...view, fake, updates };
+  return { ...view, fake, updates, stats };
 }
 
 beforeEach(() => {
@@ -219,6 +236,107 @@ describe('Agenda', () => {
     await user.type(input, '45');
     await user.tab();
     await waitFor(() => expect(fake.tables.profiles![0]!.default_duration_minutes).toBe(45));
+  });
+});
+
+describe('Agenda: gravações em sequência', () => {
+  it('dois cliques no mesmo controle: pedidos em ordem, um por vez, vale o último', async () => {
+    const user = userEvent.setup();
+    const { fake, updates, stats } = setup({ route: '/ajustes/agenda', updateDelay: 150 });
+    await user.click(await screen.findByRole('radio', { name: '15 min' }));
+    await user.click(screen.getByRole('radio', { name: '60 min' }));
+    expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
+    await waitFor(() => expect(screen.getByText('Salvo')).toBeInTheDocument());
+    expect(fake.tables.profiles![0]!.slot_interval_minutes).toBe(60);
+    expect(screen.getByRole('radio', { name: '60 min' })).toBeChecked();
+    expect(updates.map((u) => u.values.slot_interval_minutes)).toEqual([15, 60]);
+    expect(stats.max).toBe(1);
+  });
+
+  it('dois controles diferentes em seguida: os dois ficam', async () => {
+    const user = userEvent.setup();
+    const { fake } = setup({ route: '/ajustes/agenda', updateDelay: 150 });
+    await user.click(await screen.findByRole('radio', { name: '15 min' }));
+    await user.click(screen.getByRole('radio', { name: 'Domingo' }));
+    expect(screen.getByRole('radio', { name: '15 min' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Domingo' })).toBeChecked();
+    await waitFor(() => expect(screen.getByText('Salvo')).toBeInTheDocument());
+    expect(fake.tables.profiles![0]).toMatchObject({
+      slot_interval_minutes: 15,
+      week_starts_on: 0,
+    });
+    expect(screen.getByRole('radio', { name: '15 min' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Domingo' })).toBeChecked();
+  });
+
+  it('falha mostra o erro, volta ao valor salvo e Tentar novamente reenvia', async () => {
+    const user = userEvent.setup();
+    const errors = { profiles: { update: { code: 'XX000' } } };
+    const { fake } = setup({ route: '/ajustes/agenda', errors });
+    await user.click(await screen.findByRole('radio', { name: 'Lista' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Algo deu errado');
+    expect(screen.getByRole('radio', { name: 'Semana' })).toBeChecked();
+    delete (errors.profiles as Record<string, unknown>).update;
+    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    await waitFor(() => expect(fake.tables.profiles![0]!.default_view).toBe('lista'));
+    expect(await screen.findByText('Salvo')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Lista' })).toBeChecked();
+  });
+});
+
+describe('Perfil: fuso e estado de edição', () => {
+  it('trocar o fuso invalida também os atendimentos em cache', async () => {
+    const user = userEvent.setup();
+    const { queryClient } = setup();
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+    await user.selectOptions(await screen.findByLabelText('Fuso horário'), 'America/Manaus');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(spy).toHaveBeenCalledWith({ queryKey: ['appointments'] });
+  });
+
+  it('sem trocar o fuso não invalida os atendimentos', async () => {
+    const user = userEvent.setup();
+    const { queryClient } = setup();
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+    await user.type(await screen.findByLabelText('Seu nome'), 'a');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(spy).not.toHaveBeenCalledWith({ queryKey: ['appointments'] });
+  });
+
+  it('durante o envio não pede para descartar', async () => {
+    const user = userEvent.setup();
+    setup({ updateDelay: 80 });
+    await user.type(await screen.findByLabelText('Seu nome'), 'a');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+    await user.click(screen.getByRole('link', { name: 'Agenda' }));
+    expect(screen.queryByText('Descartar alterações?')).not.toBeInTheDocument();
+    expect(screen.getByTestId('loc')).toHaveTextContent('/ajustes/agenda');
+  });
+
+  it('se o envio falhar, volta a contar como editado', async () => {
+    const user = userEvent.setup();
+    setup({ errors: { profiles: { update: { code: 'XX000' } } } });
+    await user.type(await screen.findByLabelText('Seu nome'), 'a');
+    await user.click(screen.getByRole('button', { name: 'Salvar perfil' }));
+    await screen.findAllByRole('alert');
+    await user.click(screen.getByRole('link', { name: 'Agenda' }));
+    expect(await screen.findByText('Descartar alterações?')).toBeInTheDocument();
+  });
+
+  it('Esc no aviso cancela a troca de seção', async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.type(await screen.findByLabelText('Seu nome'), 'a');
+    await user.click(screen.getByRole('link', { name: 'Agenda' }));
+    await screen.findByText('Descartar alterações?');
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByText('Descartar alterações?')).not.toBeInTheDocument(),
+    );
+    expect(screen.getByTestId('loc')).toHaveTextContent('/ajustes/perfil');
+    expect(screen.getByLabelText('Seu nome')).toHaveValue('Marinaa');
   });
 });
 

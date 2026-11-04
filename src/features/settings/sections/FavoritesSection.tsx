@@ -242,11 +242,8 @@ function FavoriteDialog({
       onClose();
     } catch (err) {
       const kind = (err as { kind?: string }).kind;
-      setError(
-        kind === 'duplicado'
-          ? DUPLICATE
-          : ((err as { message?: string }).message ?? 'Algo deu errado. Tente novamente.'),
-      );
+      if (kind === 'duplicado') setErrors({ name: DUPLICATE });
+      else setError((err as { message?: string }).message ?? 'Algo deu errado. Tente novamente.');
     } finally {
       busy.current = false;
     }
@@ -265,13 +262,17 @@ function FavoriteDialog({
             <Input
               id="fav-nome"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={120}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((er) => ({ ...er, name: undefined }));
+              }}
+              maxLength={80}
               aria-invalid={errors.name ? true : undefined}
+              aria-describedby={errors.name ? 'fav-nome-erro' : undefined}
               className={FIELD}
             />
             {errors.name && (
-              <p role="alert" className="text-sm text-[#B91C1C]">
+              <p id="fav-nome-erro" role="alert" className="text-sm text-[#B91C1C]">
                 {errors.name}
               </p>
             )}

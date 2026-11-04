@@ -111,7 +111,7 @@ function setup(
 const loc = () => screen.getByTestId('loc').textContent ?? '';
 
 beforeEach(() => {
-  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'], shouldAdvanceTime: true });
   vi.setSystemTime(NOW);
 });
 afterEach(() => {
@@ -166,7 +166,7 @@ describe('HistoryPage: busca', () => {
   });
 
   it('filtra por serviço pelo select (lista favoritos ativos e inativos)', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup();
     await screen.findByText('10 resultados');
     const select = screen.getByLabelText('Serviço');
@@ -181,7 +181,7 @@ describe('HistoryPage: busca', () => {
   });
 
   it('digitar na busca atualiza o URL só depois de 300 ms', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup();
     await screen.findByText('10 resultados');
     await user.type(screen.getByRole('searchbox', { name: /cliente/i }), 'carla');
@@ -191,7 +191,7 @@ describe('HistoryPage: busca', () => {
   });
 
   it('sem resultados: estado vazio e "Limpar filtros" restaura', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({ route: '/historico?q=zzz&status=cancelado' });
     expect(
       await screen.findByText('Nenhum atendimento encontrado com esses filtros.'),
@@ -202,7 +202,7 @@ describe('HistoryPage: busca', () => {
   });
 
   it('ver abre os detalhes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({ route: '/historico?q=carla' });
     await screen.findByText('1 resultado');
     await user.click(screen.getByRole('button', { name: /Ver detalhes de Carla Dias/ }));
@@ -227,7 +227,7 @@ describe('HistoryPage: paginação', () => {
   );
 
   it('25 por página com Anterior/Próxima', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({ rows: many });
     expect(await screen.findByText('Mostrando 1–25 de 30')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled();
@@ -251,7 +251,7 @@ describe('HistoryPage: remarcações e cancelamentos', () => {
   });
 
   it('lista só remarcado/cancelado, com o nome do cliente, e abre os detalhes', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({
       history: [
         entry('h1', 'bruno', 'cancelado', '2026-11-03T12:00:00Z'),
@@ -308,7 +308,7 @@ describe('HistoryPage: exportar CSV', () => {
     });
 
   it('baixa agenda-em-ordem-AAAA-MM-DD.csv com cabeçalho exato, BOM e fuso do perfil', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({
       route: '/historico?status=cancelado',
       rows: [
@@ -337,7 +337,7 @@ describe('HistoryPage: exportar CSV', () => {
   });
 
   it('busca todas as páginas (mais de 1000 linhas) e neutraliza fórmulas', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const rows = Array.from({ length: 1005 }, (_, i) =>
       ap(`r${i}`, i === 0 ? '=HYPERLINK("x")' : `Cliente ${i}`, '2026-11-04', '09:00'),
     );
@@ -361,7 +361,7 @@ describe('HistoryPage: exportar CSV', () => {
   });
 
   it('falha na exportação mostra a mensagem e não baixa nada', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const errors: Record<string, Partial<Record<'select', unknown>>> = {};
     setup({ errors });
     await screen.findByText('10 resultados');
@@ -398,14 +398,14 @@ describe('HistoryPage: busca sem acento', () => {
 
 describe('HistoryPage: filtros e navegação', () => {
   it('digitar e escolher status em seguida mantém os dois no URL', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup();
     await screen.findByText('10 resultados');
     await user.type(screen.getByRole('searchbox', { name: /cliente/i }), 'ana');
     await user.click(screen.getByRole('button', { name: 'Agendados' }));
     await waitFor(() => expect(loc()).toContain('q=ana'));
     expect(loc()).toContain('status=agendado');
-    await new Promise((r) => setTimeout(r, 400));
+    await vi.advanceTimersByTimeAsync(400);
     expect(loc()).toContain('q=ana');
     expect(loc()).toContain('status=agendado');
   });
@@ -427,7 +427,7 @@ describe('HistoryPage: filtros e navegação', () => {
   });
 
   it('página inexistente: avisa e volta para a página 1', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({ route: '/historico?pagina=5' });
     expect(await screen.findByText('Esta página não existe mais.')).toBeInTheDocument();
     expect(screen.queryByText('Nenhum atendimento encontrado com esses filtros.')).toBeNull();
