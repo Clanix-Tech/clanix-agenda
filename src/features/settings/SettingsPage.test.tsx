@@ -289,10 +289,27 @@ describe('Agenda: falha depois de sair da seção', () => {
   it('a gravação que falha com a seção já fechada avisa por toast', async () => {
     const user = userEvent.setup();
     const errors = { profiles: { update: { code: 'XX000' } } };
-    setup({ route: '/ajustes/agenda', errors, updateDelay: 150 });
+    const { fake } = setup({ route: '/ajustes/agenda', errors });
+    // Segura a resposta da gravação até a seção sair da tela (sem depender de tempo).
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const from = fake.from.bind(fake);
+    fake.from = ((table: string) => {
+      const q = from(table);
+      const update = q.update.bind(q);
+      q.update = (values: Row) => {
+        const res = update(values);
+        const then = res.then.bind(res);
+        res.then = ((a: never, b: never) => gate.then(() => then(a, b))) as typeof res.then;
+        return res;
+      };
+      return q;
+    }) as typeof fake.from;
     await user.click(await screen.findByRole('radio', { name: 'Lista' }));
     await user.click(screen.getByRole('link', { name: 'Perfil' }));
     expect(await screen.findByLabelText('Seu nome')).toBeInTheDocument();
+    expect(toast.error).not.toHaveBeenCalled();
+    release();
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
         'Não foi possível salvar suas preferências. Algo deu errado. Tente novamente.',
