@@ -174,10 +174,18 @@ describe('WeekView (computador)', () => {
   it('destaca hoje e mostra a linha do agora só na coluna de hoje', async () => {
     setup();
     await screen.findByRole('button', { name: /Juliana Rocha/ });
-    expect(screen.getAllByText('Agora · 13:40')).toHaveLength(1);
+    expect(screen.getAllByRole('separator', { name: 'Agora, 13:40' })).toHaveLength(1);
     const today = screen.getByRole('group', { name: 'Qui 29' });
-    expect(within(today).getByText('Agora · 13:40')).toBeInTheDocument();
+    expect(within(today).getByRole('separator', { name: 'Agora, 13:40' })).toBeInTheDocument();
     expect(today).toHaveAttribute('aria-current', 'date');
+    // Na grade da semana só a linha com o ponto (T03): sem texto por cima dos eventos.
+    expect(screen.queryByText(/Agora/)).not.toBeInTheDocument();
+  });
+
+  it('o "+" do cabeçalho de cada dia tem alvo de toque de 44 px', async () => {
+    setup();
+    const plus = await screen.findByRole('button', { name: 'Novo agendamento em Sex 30' });
+    expect(plus).toHaveClass('size-11');
   });
 
   it('clique em 11:00 de sexta abre o formulário com data e horário', async () => {

@@ -256,7 +256,7 @@ function WeekGridBody({
                     type="button"
                     aria-label={`Novo agendamento em ${label}`}
                     onClick={() => open({ date: d })}
-                    className="grid size-8 shrink-0 place-items-center rounded-lg text-[#1D4ED8] hover:bg-white focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+                    className="grid size-11 shrink-0 place-items-center rounded-lg text-[#1D4ED8] hover:bg-white focus-visible:outline-2 focus-visible:outline-[#2563EB]"
                   >
                     <Plus aria-hidden="true" className="size-4" />
                   </button>
@@ -370,9 +370,9 @@ function WeekGridBody({
                 {isToday && nowMin >= startMin && nowMin <= endMin && (
                   <div
                     className="pointer-events-none absolute inset-x-0 z-20"
-                    style={{ top: toTop(nowMin) - 8 }}
+                    style={{ top: toTop(nowMin) - 4 }}
                   >
-                    <NowLine time={nowLocal} />
+                    <NowLine time={nowLocal} variant="line" />
                   </div>
                 )}
               </div>
