@@ -150,6 +150,9 @@ export function AppointmentSheet() {
           )}
         </div>
         <StatusActions
+          // Status novo (inclusive o descoberto depois de uma resposta perdida) = ações novas,
+          // sem erro da tentativa anterior.
+          key={a.status}
           appointment={a}
           onEdit={() => setEditingId(id)}
           onCreateNew={() => {

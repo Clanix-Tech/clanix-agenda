@@ -157,7 +157,9 @@ function useApptMutation<I extends { id: string }>(run: (input: I) => Promise<Ap
   const invalidate = useInvalidate();
   return useMutation<Appointment, AppError, I>({
     mutationFn: (input) => guard(() => run(input)),
-    onSuccess: (a) => invalidate(a.id),
+    // Também no erro: se a gravação chegou ao banco e a resposta se perdeu (RN17), os detalhes,
+    // o histórico e a agenda mostram o estado real em vez de um status velho.
+    onSettled: (_data, _error, input) => invalidate(input.id),
   });
 }
 

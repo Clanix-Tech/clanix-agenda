@@ -256,6 +256,38 @@ describe('AppointmentSheet', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('RN17: "Concluir" grava mas a resposta se perde → os detalhes se atualizam, sem erro antigo', async () => {
+    const { fake } = setup();
+    let calls = 0;
+    fake.rpc = ((orig) => (name: string, args?: unknown) => {
+      if (name !== 'set_appointment_status') return orig(name, args);
+      calls += 1;
+      if (calls === 1) {
+        // O banco gravou; a resposta não chegou.
+        fake.tables.appointments![0]!.status = 'concluido';
+        return Promise.resolve({
+          data: null,
+          error: { message: 'TypeError: Failed to fetch', details: '', hint: '', code: '' },
+        });
+      }
+      return Promise.resolve({ data: null, error: { code: 'AE005', message: 'x' } });
+    })(fake.rpc.bind(fake)) as typeof fake.rpc;
+
+    const user = userEvent.setup();
+    const dialog = await screen.findByRole('dialog');
+    await user.click(await within(dialog).findByRole('button', { name: 'Concluir' }));
+
+    // O erro invalida os dados: o painel mostra o status real e as ações de "Concluído".
+    expect(
+      await within(dialog).findByRole('button', { name: 'Marcar como não compareceu' }),
+    ).toBeInTheDocument();
+    expect(within(dialog).getAllByText('Concluído').length).toBeGreaterThan(0);
+    expect(within(dialog).queryByRole('button', { name: 'Concluir' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/Sem conexão/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/não é permitida/)).not.toBeInTheDocument();
+    expect(calls).toBe(1);
+  });
+
   it('agendamento de amanhã dentro de 24 h mostra "amanhã às HH:mm"', async () => {
     setup({
       appointments: [
