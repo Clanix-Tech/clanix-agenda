@@ -84,11 +84,11 @@ test('nenhuma página rola na horizontal (com nome de 120 caracteres)', async ({
   await expect(page.getByRole('heading', { name: 'Próximos atendimentos' })).toBeVisible();
   await expectNoHorizontalScroll(page);
 
-  await page.goto(`/agenda?data=${data.day}`);
+  await page.goto(`/agenda?data=${data.nextDay}`);
   await expect(page.getByText(LONG_NAME).first()).toBeVisible();
   await expectNoHorizontalScroll(page);
 
-  await page.goto(`/agenda?visao=dia&data=${data.day}`);
+  await page.goto(`/agenda?visao=dia&data=${data.nextDay}`);
   await expect(page.getByText(LONG_NAME).first()).toBeVisible();
   await expectNoHorizontalScroll(page);
 

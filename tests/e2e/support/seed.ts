@@ -58,10 +58,12 @@ export async function seedRealistic(user: TestUser): Promise<RealisticData> {
     status: 'cancelado',
     cancelReason: 'Cliente teve um imprevisto',
   });
+  // Nunca "hoje": a visão Dia recolhe os atendimentos de hoje que já terminaram, e o nome
+  // longo precisa estar na tela a qualquer hora em que o teste rode.
   const longo = await seedAppointment(user, {
-    date: day,
-    start: '13:00',
-    end: '15:00',
+    date: nextDay,
+    start: '10:30',
+    end: '12:00',
     name: LONG_NAME,
     service: 'Coloração',
   });

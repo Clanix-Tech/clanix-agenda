@@ -37,8 +37,11 @@ test('capturas das telas com dados realistas', async ({ page, makeUser }, testIn
   await shot('02-inicio');
 
   await page.goto(`/agenda?visao=dia&data=${data.day}`);
-  await expect(page.getByText(LONG_NAME).first()).toBeVisible();
+  await expect(page.getByText(/^\d+ atendimentos?$/)).toBeVisible();
   await shot('03-agenda-dia');
+  await page.goto(`/agenda?visao=dia&data=${data.nextDay}`);
+  await expect(page.getByText(LONG_NAME).first()).toBeVisible();
+  await shot('03b-agenda-dia-seguinte');
 
   if (isDesktop(page)) {
     await page.goto(`/agenda?visao=semana&data=${data.day}`);
