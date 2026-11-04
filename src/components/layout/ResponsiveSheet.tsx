@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -13,7 +12,6 @@ import {
 import {
   Drawer,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -34,10 +32,14 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
   if (desktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent showCloseButton={false} className="max-h-[90vh] overflow-y-auto">
+        {/* Sem descrição: repetir o título fazia o leitor de tela anunciá-lo duas vezes. */}
+        <DialogContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="max-h-[90vh] overflow-y-auto"
+        >
           <DialogHeader>
-            <DialogTitle className="font-display text-[#0F2D5B]">{title}</DialogTitle>
-            <DialogDescription className="sr-only">{title}</DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
           </DialogHeader>
           <DialogClose
             aria-label="Fechar"
@@ -54,10 +56,9 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
+      <DrawerContent aria-describedby={undefined}>
         <DrawerHeader>
-          <DrawerTitle className="font-display text-[#0F2D5B]">{title}</DrawerTitle>
-          <DrawerDescription className="sr-only">{title}</DrawerDescription>
+          <DrawerTitle>{title}</DrawerTitle>
         </DrawerHeader>
         <div className="overflow-y-auto px-4 pb-4">{children}</div>
         {footer && <DrawerFooter>{footer}</DrawerFooter>}

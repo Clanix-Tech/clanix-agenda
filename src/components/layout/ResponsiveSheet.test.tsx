@@ -34,4 +34,12 @@ describe('ResponsiveSheet', () => {
     expect(screen.getByRole('dialog', { name: 'Novo agendamento' })).toBeInTheDocument();
     expect(screen.getByText('conteúdo')).toBeInTheDocument();
   });
+
+  it.each([1280, 390])('em %i px o título é anunciado uma vez (sem descrição repetida)', (w) => {
+    setViewportWidth(w);
+    renderWithProviders(<Harness />);
+    const dialog = screen.getByRole('dialog', { name: 'Novo agendamento' });
+    expect(dialog).not.toHaveAttribute('aria-describedby');
+    expect(screen.getAllByText('Novo agendamento')).toHaveLength(1);
+  });
 });
