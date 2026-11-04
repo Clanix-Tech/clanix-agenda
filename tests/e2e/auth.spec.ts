@@ -46,9 +46,9 @@ test('criar conta → primeiro acesso → Início vazio; sair e entrar de novo',
 
     await signOut(page);
 
-    // Depois de entrar, o app volta para onde a pessoa estava (Ajustes); o Início segue vazio.
+    // R20: depois de "Sair", entrar de novo leva ao Início (não volta para Ajustes).
     await login(page, { email, password });
-    await mainNav(page).getByRole('link', { name: 'Início' }).click();
+    await expect(page).toHaveURL(/:\d+\/$/);
     await expect(page.getByText(EMPTY)).toBeVisible();
   } finally {
     await deleteUserByEmail(email);
@@ -94,5 +94,6 @@ test('recuperar senha pelo e-mail (Mailpit) e entrar com a nova senha', async ({
   await expect(page).toHaveURL(/\/entrar$/);
 
   await login(page, { email: user.email, password: newPassword });
+  await expect(page).toHaveURL(/:\d+\/$/);
   await expect(mainNav(page)).toBeVisible();
 });

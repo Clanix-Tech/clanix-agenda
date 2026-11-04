@@ -17,7 +17,12 @@ export function RequireAuth() {
       <Navigate
         to="/entrar"
         replace
-        state={{ from: location, reason: signOutReason === 'sessao' ? 'sessao' : undefined }}
+        state={{
+          // R20: depois de "Sair" o próximo login começa no Início; link direto e sessão
+          // expirada continuam voltando para onde a pessoa estava.
+          from: signOutReason === 'usuario' ? undefined : location,
+          reason: signOutReason === 'sessao' ? 'sessao' : undefined,
+        }}
       />
     );
   return <BusinessHoursGate />;

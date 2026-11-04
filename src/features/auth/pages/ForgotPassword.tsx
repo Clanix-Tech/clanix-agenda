@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { toAppError } from '@/lib/errors';
 import { authErrorMessage, isNetworkError, isRateLimited } from '../authErrors';
+
+function isNeutralClientError(err: unknown): boolean {
+  if (isNetworkError(err) || isRateLimited(err)) return false;
+  const status = (err as { status?: unknown }).status;
+  return typeof status === 'number' && status >= 400 && status < 500;
+}
 import { forgotSchema } from '../schemas';
 import { AuthInput, AuthLayout, AuthLink, FormError, TextField } from '../AuthLayout';
 
@@ -29,9 +35,10 @@ export default function ForgotPassword() {
       const { error: err } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: `${window.location.origin}/redefinir-senha`,
       });
-      // Só rede e limite de tentativas são mostrados; o resto vira a mensagem neutra
-      // (não revela se o e-mail existe).
-      if (err && (isNetworkError(err) || isRateLimited(err))) setError(authErrorMessage(err));
+      // Só um erro do cliente (4xx, exceto limite de tentativas) vira a mensagem neutra: é o
+      // que poderia revelar se o e-mail existe. Rede, limite, 5xx e erro desconhecido nunca
+      // fingem que o link foi enviado.
+      if (err && !isNeutralClientError(err)) setError(authErrorMessage(err));
       else setSent(true);
     } catch (e) {
       setError(toAppError(e).message);

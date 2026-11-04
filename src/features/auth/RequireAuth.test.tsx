@@ -43,6 +43,15 @@ function routesFor() {
           ),
         },
         { path: '/agenda', element: <h1>Agenda</h1> },
+        {
+          path: '/ajustes/conta',
+          element: (
+            <>
+              <h1>Conta</h1>
+              <SignOutButton />
+            </>
+          ),
+        },
         { path: '/primeiro-acesso', element: <h1>Quando você atende?</h1> },
       ],
     },
@@ -145,6 +154,27 @@ describe('RequireAuth', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
     expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
     expect(screen.queryByText(MESSAGE)).not.toBeInTheDocument();
+  });
+
+  it('R20: depois de "Sair" voluntário, o próximo login vai para o Início (não para onde estava)', async () => {
+    const { router } = renderApp({ route: '/ajustes/conta', session: true });
+    await userEvent.click(await screen.findByRole('button', { name: 'Sair' }));
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
+    const state = router.state.location.state as { from?: unknown } | null;
+    expect(state?.from).toBeUndefined();
+
+    await userEvent.type(screen.getByLabelText('E-mail'), 'camila@example.com');
+    await userEvent.type(screen.getByLabelText('Senha', { selector: 'input' }), 'segredo123');
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/');
+  });
+
+  it('primeira visita a um link interno sem sessão continua voltando para ele após entrar', async () => {
+    const { router } = renderApp({ route: '/agenda' });
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
+    const state = router.state.location.state as { from: { pathname: string } };
+    expect(state.from.pathname).toBe('/agenda');
   });
 
   it('ao sair (qualquer motivo) o cache de consultas é limpo', async () => {

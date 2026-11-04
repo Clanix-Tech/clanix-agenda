@@ -51,6 +51,20 @@ describe('ForgotPassword', () => {
     expect(screen.queryByText(MSG)).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['500 do servidor', { name: 'AuthApiError', status: 500, message: 'x' }],
+    ['503 do servidor', { name: 'AuthApiError', status: 503, code: 'unexpected_failure' }],
+    ['erro desconhecido sem status', { name: 'AuthUnknownError', message: 'x' }],
+  ])('%s não finge sucesso (não revela se a conta existe)', async (_caso, error) => {
+    const supabase = createFakeSupabase({
+      auth: { resetPasswordForEmail: () => ({ error }) },
+    });
+    renderWithProviders(null, { routes, route: '/recuperar-senha', supabase });
+    await send('x@example.com');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Algo deu errado. Tente novamente.');
+    expect(screen.queryByText(MSG)).not.toBeInTheDocument();
+  });
+
   it('e-mail inválido não chama o servidor', async () => {
     const supabase = createFakeSupabase();
     const spy = vi.spyOn(supabase.auth, 'resetPasswordForEmail');
