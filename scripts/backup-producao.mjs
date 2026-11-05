@@ -21,7 +21,8 @@ export function backupDir(env, home, repoRoot) {
   const custom = env.AGENDA_BACKUP_DIR?.trim();
   const dir = path.resolve(custom || path.join(home, 'Backups', 'agenda-em-ordem'));
   const rel = path.relative(path.resolve(repoRoot), dir);
-  if (rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel))) {
+  const outside = rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel);
+  if (!outside) {
     throw new Error(
       'A pasta de backup não pode ficar dentro do repositório. Use outra pasta em AGENDA_BACKUP_DIR.',
     );
@@ -41,10 +42,12 @@ export function backupFileNames(now) {
   };
 }
 
-/** Nomes dos arquivos com mais de `days` dias. */
+const OWN_FILE_RE = /^\d{4}-\d{2}-\d{2}_\d{4}-(roles|schema|data)\.sql$/;
+
+/** Nomes dos arquivos DESTE script (padrão de nome) com mais de `days` dias; outros arquivos nunca. */
 export function expiredBackups(files, now, days = RETENTION_DAYS) {
   const limit = now.getTime() - days * DAY_MS;
-  return files.filter((f) => f.mtimeMs < limit).map((f) => f.name);
+  return files.filter((f) => OWN_FILE_RE.test(f.name) && f.mtimeMs < limit).map((f) => f.name);
 }
 
 /** Tira a URL do banco (e a senha dela) de qualquer texto. */

@@ -47,6 +47,8 @@ O comando imprime só os nomes dos arquivos, nunca a URL. Arquivos com mais de *
 
 ### Num projeto novo do Supabase (o caso real)
 
+> **Atenção: a restauração num projeto Supabase de verdade ainda não foi testada.** Ela só foi simulada no banco local (veja "Como isto foi testado"). Ao publicar, faça uma restauração de teste num projeto gratuito reserva, antes de precisar dela de verdade.
+
 Um projeto novo já vem com `auth`, `storage` e as extensões da plataforma. Restaure só o seu conteúdo:
 
 1. Crie o projeto novo e pegue a URL de conexão dele (variável `DESTINO` abaixo).
@@ -76,6 +78,7 @@ O fluxo foi ensaiado de verdade no banco local, em um banco descartável (`resta
 
 - A estrutura de `auth`, `storage`, `extensions` e `vault` foi copiada do banco local para simular o projeto novo (que já os tem).
 - `schema.sql` e `data.sql` foram aplicados com `psql`. Só houve os erros esperados acima (extensão `pg_cron` só no banco `postgres`, publicação `supabase_realtime`, tabelas internas do `storage`).
+- Limite do teste: foi só uma simulação local; restaurar num projeto hospedado real não foi testado.
 - Resultado: `public.appointments` 20 = 20, `auth.users` 25 = 25 e `public.profiles` 25 = 25. O banco descartável foi apagado em seguida.
 
 ## 3. Manter o projeto ativo

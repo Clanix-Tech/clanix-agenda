@@ -24,6 +24,14 @@ describe('backupDir', () => {
   });
 });
 
+describe('backupDir (nome parecido com ..)', () => {
+  it('rejeita pasta do repositório cujo nome começa com ..', () => {
+    expect(() => backupDir({ AGENDA_BACKUP_DIR: path.join(repo, '..foo') }, home, repo)).toThrow(
+      /repositório/,
+    );
+  });
+});
+
 describe('backupFileNames', () => {
   it('usa o horário local da máquina no formato AAAA-MM-DD_HHmm-tipo.sql', () => {
     const d = new Date(2026, 10, 5, 13, 7);
@@ -39,10 +47,19 @@ describe('expiredBackups', () => {
   it('devolve só os arquivos com mais de 30 dias', () => {
     const now = new Date('2026-11-05T12:00:00Z');
     const files = [
-      { name: 'novo.sql', mtimeMs: now.getTime() - 29 * DAY },
-      { name: 'velho.sql', mtimeMs: now.getTime() - 31 * DAY },
+      { name: '2026-10-10_0900-schema.sql', mtimeMs: now.getTime() - 29 * DAY },
+      { name: '2026-09-01_0900-schema.sql', mtimeMs: now.getTime() - 31 * DAY },
     ];
-    expect(expiredBackups(files, now)).toEqual(['velho.sql']);
+    expect(expiredBackups(files, now)).toEqual(['2026-09-01_0900-schema.sql']);
+  });
+
+  it('só considera arquivos com o nome gerado pelo script', () => {
+    const now = new Date('2026-11-05T12:00:00Z');
+    const files = [
+      { name: 'minhas-consultas.sql', mtimeMs: now.getTime() - 60 * DAY },
+      { name: '2026-09-01_0900-data.sql', mtimeMs: now.getTime() - 60 * DAY },
+    ];
+    expect(expiredBackups(files, now)).toEqual(['2026-09-01_0900-data.sql']);
   });
 });
 
