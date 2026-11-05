@@ -44,3 +44,7 @@ supabase/functions/.env
 # Chaves de assinatura
 *.keystore
 *.jks
+android/*.keystore
+android/*.jks
+android/app/
+android/build/

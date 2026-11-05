@@ -34,6 +34,14 @@ export default defineConfig({
           include: ['supabase/functions/**/*.test.ts'],
         },
       },
+      {
+        // Scripts de Node (gerar-assetlinks.mjs).
+        test: {
+          name: 'scripts',
+          environment: 'node',
+          include: ['scripts/**/*.test.ts'],
+        },
+      },
     ],
   },
 });

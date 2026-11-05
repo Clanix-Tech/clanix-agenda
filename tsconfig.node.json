@@ -29,6 +29,8 @@
     "vitest.config.ts",
     "vitest.integration.config.ts",
     "tests",
+    "scripts/**/*.test.ts",
+    "scripts/**/*.d.mts",
     "supabase/functions/**/handler.ts",
     "supabase/functions/**/*.test.ts",
     "src/types/database.ts"

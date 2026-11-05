@@ -1,0 +1,21 @@
+{
+  "host": "__DOMINIO__",
+  "name": "Agenda em Ordem",
+  "launcherName": "Agenda",
+  "packageId": "__PACOTE__",
+  "startUrl": "/",
+  "themeColor": "#0F2D5B",
+  "navigationColor": "#0F2D5B",
+  "backgroundColor": "#F8FAFC",
+  "display": "standalone",
+  "orientation": "portrait",
+  "enableNotifications": true,
+  "iconUrl": "https://__DOMINIO__/pwa-512x512.png",
+  "maskableIconUrl": "https://__DOMINIO__/maskable-icon-512x512.png",
+  "webManifestUrl": "https://__DOMINIO__/manifest.webmanifest",
+  "fullScopeUrl": "https://__DOMINIO__/",
+  "signingKey": {
+    "path": "./agenda-em-ordem.keystore",
+    "alias": "agenda-em-ordem"
+  }
+}

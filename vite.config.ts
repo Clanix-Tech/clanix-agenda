@@ -1,14 +1,36 @@
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { buildAssetLinks, lerFingerprints } from './scripts/gerar-assetlinks.mjs';
+
+// Com ANDROID_PACKAGE_ID e ANDROID_CERT_SHA256 no ambiente, o build publica
+// /.well-known/assetlinks.json (verificação do APK/TWA). Sem elas, o arquivo não existe.
+function assetLinksPlugin(): Plugin {
+  return {
+    name: 'agenda-assetlinks',
+    apply: 'build',
+    generateBundle() {
+      const packageId = process.env.ANDROID_PACKAGE_ID;
+      const sha256 = lerFingerprints(process.env.ANDROID_CERT_SHA256);
+      if (!packageId || sha256.length === 0) return;
+      this.emitFile({
+        type: 'asset',
+        fileName: '.well-known/assetlinks.json',
+        source: `${JSON.stringify(buildAssetLinks(packageId, sha256), null, 2)}
+`,
+      });
+    },
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    assetLinksPlugin(),
     VitePWA({
       // Service worker próprio (src/sw.ts): precache dos arquivos do build, push e clique na
       // notificação. `devOptions` fica desligado: o service worker só existe no build.
