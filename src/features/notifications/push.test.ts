@@ -13,6 +13,10 @@ import {
   detectDeviceState,
   dropOtherAccountSubscription,
   forgetThisDevice,
+  devicePlatform,
+  isIOSDevice,
+  isIOSSafari,
+  isStandalone,
   readDeviceState,
   sendTestNotification,
   subscribeThisDevice,
@@ -434,5 +438,51 @@ describe('dropOtherAccountSubscription (troca de conta)', () => {
     })) as unknown as typeof fake.from;
     await expect(dropOtherAccountSubscription(20)).resolves.toBeUndefined();
     expect(push.subscription()!.unsubscribe).not.toHaveBeenCalled();
+  });
+});
+
+describe('detecção do aparelho para o guia de instalação', () => {
+  const MAC_UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15';
+
+  it('iPhone, iPad que se apresenta como Mac e Mac de verdade', () => {
+    setup({ userAgent: IPHONE_SAFARI_UA });
+    expect(isIOSDevice()).toBe(true);
+    expect(devicePlatform()).toBe('iphone');
+    push?.restore();
+    setup({ userAgent: MAC_UA, maxTouchPoints: 5 });
+    expect(isIOSDevice()).toBe(true);
+    expect(devicePlatform()).toBe('iphone');
+    push?.restore();
+    setup({ userAgent: MAC_UA, maxTouchPoints: 0 });
+    expect(isIOSDevice()).toBe(false);
+    expect(devicePlatform()).toBe('computador');
+  });
+
+  it('Android e computador', () => {
+    setup({ userAgent: ANDROID_CHROME_UA });
+    expect(devicePlatform()).toBe('android');
+  });
+
+  it('Safari do iOS: só o Safari, não o Chrome do iPhone', () => {
+    setup({ userAgent: IPHONE_SAFARI_UA });
+    expect(isIOSSafari()).toBe(true);
+    push?.restore();
+    setup({
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/126.0.0.0 Mobile/15E148 Safari/604.1',
+    });
+    expect(isIOSSafari()).toBe(false);
+    push?.restore();
+    setup({ userAgent: ANDROID_CHROME_UA });
+    expect(isIOSSafari()).toBe(false);
+  });
+
+  it('modo instalado', () => {
+    setup({ userAgent: IPHONE_SAFARI_UA });
+    expect(isStandalone()).toBe(false);
+    push?.restore();
+    setup({ userAgent: IPHONE_SAFARI_UA, standalone: true });
+    expect(isStandalone()).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, setViewportWidth } from '@/test/render';
+import { IPHONE_SAFARI_UA, installFakePush } from '@/test/fakePush';
 import { AppShell } from './AppShell';
 import {
   NewAppointmentProvider,
@@ -88,5 +89,19 @@ describe('useNewAppointment', () => {
     expect(screen.getByText(/form 2026-11-02 09:00/)).toBeInTheDocument();
     await userEvent.click(screen.getByText('fechar'));
     expect(screen.queryByText(/form/)).not.toBeInTheDocument();
+  });
+
+  it('no Safari do iPhone mostra o aviso de instalação dentro do conteúdo, não por cima da navegação', async () => {
+    setViewportWidth(390);
+    const fake = installFakePush({ userAgent: IPHONE_SAFARI_UA });
+    try {
+      renderWithProviders(null, { routes, session: true });
+      const banner = screen.getByRole('complementary', { name: 'Instalar o app' });
+      expect(within(screen.getByRole('main')).getByText(/Instale o app/)).toBeInTheDocument();
+      expect(banner).not.toHaveClass('fixed');
+      expect(within(screen.getByTestId('bottom-nav')).queryByText(/Instale o app/)).toBeNull();
+    } finally {
+      fake.restore();
+    }
   });
 });

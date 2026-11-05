@@ -14,6 +14,7 @@ const Login = lazy(() => import('@/features/auth/pages/Login'));
 const Signup = lazy(() => import('@/features/auth/pages/Signup'));
 const ForgotPassword = lazy(() => import('@/features/auth/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/features/auth/pages/ResetPassword'));
+const InstallPage = lazy(() => import('@/features/install/InstallPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 const AgendaPage = lazy(() => import('@/features/calendar/pages/AgendaPage'));
 const ReschedulePage = lazy(() => import('@/features/appointments/pages/ReschedulePage'));
@@ -36,6 +37,8 @@ export const routes: RouteObject[] = [
       { path: '/cadastro', element: <Signup /> },
       { path: '/recuperar-senha', element: <ForgotPassword /> },
       { path: '/redefinir-senha', element: <ResetPassword /> },
+      // Guia público: acessível com ou sem login (fora do RequireAuth).
+      { path: '/instalar', element: <InstallPage /> },
       {
         element: <RequireAuth />,
         children: [

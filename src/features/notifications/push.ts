@@ -83,6 +83,31 @@ function isIPadAsMac(userAgent: string): boolean {
   return /Macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
 }
 
+/** iPhone, iPod ou iPad (inclusive o iPadOS que se apresenta como Mac). */
+export function isIOSDevice(): boolean {
+  const userAgent = navigator.userAgent;
+  return /iPhone|iPad|iPod/.test(userAgent) || isIPadAsMac(userAgent);
+}
+
+/** Safari do iPhone/iPad: os outros navegadores do iOS (Chrome, Firefox, Edge, Opera) ficam de fora. */
+export function isIOSSafari(): boolean {
+  return isIOSDevice() && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(navigator.userAgent);
+}
+
+/** Aberto pelo ícone da Tela de Início ou como app instalado. */
+export function isStandalone(): boolean {
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches === true ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
+/** Aparelho para escolher a seção do guia de instalação. */
+export function devicePlatform(): 'iphone' | 'android' | 'computador' {
+  if (isIOSDevice()) return 'iphone';
+  return /Android/.test(navigator.userAgent) ? 'android' : 'computador';
+}
+
 async function getRegistration(): Promise<ServiceWorkerRegistration | undefined> {
   if (!('serviceWorker' in navigator)) return undefined;
   return navigator.serviceWorker.getRegistration();
@@ -111,11 +136,6 @@ async function deleteRow(endpoint: string): Promise<void> {
 }
 
 async function readDeviceEnv(): Promise<DeviceEnv> {
-  const userAgent = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/.test(userAgent) || isIPadAsMac(userAgent);
-  const isStandalone =
-    window.matchMedia?.('(display-mode: standalone)').matches === true ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
   const hasPush = 'PushManager' in window;
   const hasNotification = 'Notification' in window;
   const registration = await getRegistration();
@@ -128,8 +148,8 @@ async function readDeviceEnv(): Promise<DeviceEnv> {
     hasSW: !!registration,
     hasPush,
     hasNotification,
-    isIOS,
-    isStandalone,
+    isIOS: isIOSDevice(),
+    isStandalone: isStandalone(),
     permission,
     hasSubscription: subscription ? await isRegisteredForMe(subscription.endpoint) : false,
   };

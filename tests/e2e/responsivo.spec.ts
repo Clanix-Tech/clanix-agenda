@@ -236,3 +236,19 @@ async function expectSheetFits(sheet: Locator) {
   expect(result.horizontal, 'áreas com rolagem horizontal no painel').toBe(0);
   expect(result.root[0]).toBeLessThanOrEqual(result.root[1]!);
 }
+
+test('/instalar sem login: sem rolagem lateral em 390 px e alvos de toque ≥ 44 px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/instalar');
+  await expect(page.getByRole('heading', { name: 'Instalar o app' })).toBeVisible();
+  for (const name of ['iPhone', 'Android', 'Computador']) {
+    await page.getByRole('tab', { name }).click();
+    await expectNoHorizontalScroll(page);
+    const box = (await page.getByRole('tab', { name }).boundingBox())!;
+    expect(box.height, `aba ${name}`).toBeGreaterThanOrEqual(44);
+  }
+  const back = (await page.getByRole('link', { name: /Voltar/ }).boundingBox())!;
+  expect(back.height).toBeGreaterThanOrEqual(44);
+});

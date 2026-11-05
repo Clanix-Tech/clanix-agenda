@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { Ban, Bell, BellOff, CircleCheck, Info, Share, SquarePlus } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
@@ -87,6 +88,12 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
             </p>
           )}
         </div>
+        <Link
+          to="/instalar"
+          className="inline-flex min-h-11 items-center self-start rounded-lg text-[15px] font-semibold text-[#1D4ED8] underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+        >
+          Instalar o app
+        </Link>
         {status}
       </div>
     </SectionCard>

@@ -121,6 +121,15 @@ describe('NotificationsSection: neste aparelho', () => {
     expect(screen.getByText(HINT)).toBeInTheDocument();
   });
 
+  it('tem o link Instalar o app para o guia', async () => {
+    setDevice('desativado');
+    await setup();
+    expect(screen.getByRole('link', { name: 'Instalar o app' })).toHaveAttribute(
+      'href',
+      '/instalar',
+    );
+  });
+
   it('iPhone sem instalar: guia de 3 passos e nenhum botão de ativar', async () => {
     setDevice('iphone-instalar');
     await setup();

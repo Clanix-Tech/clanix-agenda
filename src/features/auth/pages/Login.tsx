@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
@@ -94,6 +94,14 @@ export default function Login() {
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Ainda não tem conta? <AuthLink to="/cadastro">Criar conta</AuthLink>
+      </p>
+      <p className="mt-1 text-center text-sm">
+        <Link
+          to="/instalar"
+          className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          Como instalar o app
+        </Link>
       </p>
     </AuthLayout>
   );

@@ -27,6 +27,14 @@ describe('Login', () => {
     expect(screen.getByLabelText('Senha')).toHaveAttribute('autocomplete', 'current-password');
   });
 
+  it('tem o link Como instalar o app para o guia público', () => {
+    renderWithProviders(null, { routes, route: '/entrar' });
+    expect(screen.getByRole('link', { name: 'Como instalar o app' })).toHaveAttribute(
+      'href',
+      '/instalar',
+    );
+  });
+
   it('mostra e oculta a senha', async () => {
     renderWithProviders(null, { routes, route: '/entrar' });
     const senha = screen.getByLabelText('Senha');

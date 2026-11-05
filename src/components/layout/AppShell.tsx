@@ -6,6 +6,7 @@ import {
   type NewAppointmentProviderProps,
 } from '@/features/appointments/components/NewAppointmentProvider';
 import { AppointmentSheet } from '@/features/appointments/components/AppointmentSheet';
+import { IosInstallBanner } from '@/features/install/IosInstallBanner';
 import { SideRail } from './SideRail';
 import { BottomNav } from './BottomNav';
 import { PageFallback } from './PageFallback';
@@ -20,6 +21,7 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
         <main
           className={`min-w-0 flex-1 ${desktop ? '' : 'pb-[calc(100px+env(safe-area-inset-bottom))]'}`}
         >
+          <IosInstallBanner />
           <Suspense fallback={<PageFallback />}>
             <Outlet />
           </Suspense>

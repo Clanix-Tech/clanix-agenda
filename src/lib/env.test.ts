@@ -22,6 +22,7 @@ describe('parseEnv', () => {
       supabaseUrl: 'http://x.test',
       supabasePublishableKey: 'k',
       vapidPublicKey: null,
+      apkDownloadUrl: null,
     });
   });
   it('a chave VAPID pública é opcional: presente vira o valor, vazia vira null', () => {
@@ -29,5 +30,16 @@ describe('parseEnv', () => {
     expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: 'BAbc_-1' }).vapidPublicKey).toBe('BAbc_-1');
     expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: '' }).vapidPublicKey).toBeNull();
     expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: '  ' }).vapidPublicKey).toBeNull();
+  });
+  it('o link do APK é opcional e só aceita http/https', () => {
+    const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };
+    expect(
+      parseEnv({ ...base, VITE_APK_DOWNLOAD_URL: ' https://x.test/app.apk ' }).apkDownloadUrl,
+    ).toBe('https://x.test/app.apk');
+    expect(parseEnv({ ...base, VITE_APK_DOWNLOAD_URL: '' }).apkDownloadUrl).toBeNull();
+    expect(
+      parseEnv({ ...base, VITE_APK_DOWNLOAD_URL: 'javascript:alert(1)' }).apkDownloadUrl,
+    ).toBeNull();
+    expect(parseEnv({ ...base, VITE_APK_DOWNLOAD_URL: 'lixo' }).apkDownloadUrl).toBeNull();
   });
 });
