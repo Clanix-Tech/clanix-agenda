@@ -44,13 +44,22 @@ export function readLocalStatus(): LocalStatus {
   return { url, publishableKey, secretKey, mailpitUrl };
 }
 
+/** Segredos locais das Edge Functions (VAPID e CRON_SECRET), gerados por `npm run vapid:gerar`. */
+const FUNCTIONS_ENV_PATH = fileURLToPath(
+  new URL('../../../supabase/functions/.env', import.meta.url),
+);
+
+/** `supabase/functions/.env` existe: lembretes (push e cron) podem ser testados localmente. */
+export function hasLocalFunctionsEnv(): boolean {
+  return existsSync(FUNCTIONS_ENV_PATH);
+}
+
 /**
  * Chave pública VAPID de `supabase/functions/.env` (gerado por `npm run vapid:gerar`), ou `null`
  * se o arquivo não existir. Lê só a chave pública: a privada nunca sai daquele arquivo.
  */
 export function readLocalVapidPublicKey(): string | null {
-  const path = fileURLToPath(new URL('../../../supabase/functions/.env', import.meta.url));
-  if (!existsSync(path)) return null;
-  const match = /^VAPID_PUBLIC_KEY=(.+)$/m.exec(readFileSync(path, 'utf8'));
+  if (!hasLocalFunctionsEnv()) return null;
+  const match = /^VAPID_PUBLIC_KEY=(.+)$/m.exec(readFileSync(FUNCTIONS_ENV_PATH, 'utf8'));
   return match?.[1]?.trim() || null;
 }

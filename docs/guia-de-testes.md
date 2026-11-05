@@ -8,9 +8,16 @@ repositório.
 | Unitários | `npm test` | Não | Regras puras (horários, fuso, CSV), componentes e telas com um Supabase falso (Vitest + Testing Library, jsdom) e a lógica das Edge Functions (`supabase/functions/**/handler.ts`, ambiente node, dependências falsas). |
 | Banco (pgTAP) | `npm run db:test` | Sim | Recria o banco local (`supabase db reset`) e roda os testes SQL de `supabase/tests`: RLS, RPCs, regras de conflito e expediente. |
 | Integração | `npm run test:integration` | Sim | Chamadas reais à API local (RLS entre usuários, concorrência na criação de agendamentos) e à Edge Function `send-reminders` (exige `npm run vapid:gerar` e a pilha reiniciada depois; veja `docs/supabase-local.md`). |
-| Ponta a ponta | `npm run e2e` | Sim | O app de verdade no navegador (Playwright): computador, iPhone e Android. |
+| Ponta a ponta | `npm run e2e` | Sim | O app de verdade no navegador (Playwright): computador, iPhone e Android; o build com service worker; e o caminho do lembrete cron → pg_net → função → banco. |
 
-Antes de abrir um PR: `npm run typecheck && npm run lint && npm test && npm run db:test && npm run test:integration && npm run e2e`.
+Antes de abrir um PR:
+
+```bash
+npm run typecheck && npm run lint && npx prettier --check . && npm test && npm run db:test && npm run lembretes:local && npm run test:integration && npm run e2e
+```
+
+O `npm run lembretes:local` vem logo depois do `db:test` porque o reset apaga o Vault (a URL da
+função e o segredo do cron).
 
 ## Pré-requisitos
 
@@ -20,6 +27,11 @@ Antes de abrir um PR: `npm run typecheck && npm run lint && npm test && npm run 
    as portas são as deslocadas (4432x), API em `44321` e Mailpit em `44324`).
 4. Só para o e2e, os navegadores do Playwright (uma vez por máquina):
    `npx playwright install chromium webkit`.
+5. Para os testes de lembretes (integração da `send-reminders`, guia do iPhone e cron no e2e), uma
+   vez por máquina: `npm run vapid:gerar` e a pilha reiniciada (`npx supabase stop` e
+   `npx supabase start`); veja [`notificacoes.md`](notificacoes.md). Sem `supabase/functions/.env`,
+   esses testes do e2e são pulados com a mensagem do que falta; a integração da `send-reminders`
+   falha pedindo o arquivo.
 
 Atenção: `npm run db:test` apaga e recria o banco **local** deste projeto (usuários e agendamentos
 de teste somem). Não afeta outros projetos Supabase da máquina.
@@ -40,6 +52,10 @@ de teste somem). Não afeta outros projetos Supabase da máquina.
 | `chromium-desktop` | Chrome, 1440×900 | `Europe/Lisbon` (de propósito diferente do perfil) |
 | `webkit-iphone` | iPhone 15 (Safari/WebKit) | `America/Sao_Paulo` |
 | `chromium-android` | Pixel 7 (Chrome) | `America/Sao_Paulo` |
+| `pwa` | Chrome, 1440×900, no build (`vite build` + `vite preview` na porta `5175`) | da máquina |
+
+O projeto `pwa` roda só `pwa.spec.ts`, porque o service worker só existe no build; os outros três
+rodam todo o resto no servidor de desenvolvimento.
 
 O perfil de todo usuário de teste fica em `America/Sao_Paulo`; as datas e horas dos testes são
 calculadas nesse fuso (próximos dias úteis, dentro do expediente seg–sex 09–12 e 13–18), então o
@@ -48,12 +64,17 @@ resultado não depende do dia, da hora nem do fuso da máquina.
 ### Como o ambiente é montado
 
 - `playwright.config.ts` lê `npx supabase status -o json` e sobe o Vite em modo `test` na porta
-  `5174` (`vite --mode test --port 5174`), passando só `VITE_SUPABASE_URL` e
-  `VITE_SUPABASE_PUBLISHABLE_KEY`. Se já houver um servidor na 5174, ele é reaproveitado (fora do CI).
-- `tests/e2e/global-setup.ts` grava `.env.test.local` (ignorado pelo git) com essas duas variáveis
+  `5174` (`vite --mode test --port 5174`) e o build servido pelo preview na porta `5175`, passando só
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e, quando `supabase/functions/.env` existe,
+  `VITE_VAPID_PUBLIC_KEY`. Se já houver servidores nessas portas, eles são reaproveitados (fora do
+  CI).
+- `tests/e2e/global-setup.ts` grava `.env.test.local` (ignorado pelo git) com essas variáveis
   públicas e guarda a chave secreta **apenas na memória** do processo de teste. A chave secreta nunca
   é escrita em arquivo nem chega ao navegador; ela só é usada no Node para criar usuários (API admin)
   e conferir o banco (ex.: contar agendamentos).
+- Com `supabase/functions/.env`, o global-setup também grava no Vault local a URL da `send-reminders`
+  e o `CRON_SECRET` (a mesma lógica de `npm run lembretes:local`), para o cron funcionar mesmo logo
+  depois de um `db:test`.
 - Cada teste cria o próprio usuário com e-mail único (`e2e-<projeto>-<id>@example.com`) e o remove no
   final; nenhum estado é compartilhado, então os testes rodam em paralelo.
 - Até 4 navegadores ao mesmo tempo (2 no CI): o servidor de desenvolvimento do Vite entrega módulos
@@ -68,7 +89,9 @@ resultado não depende do dia, da hora nem do fuso da máquina.
 | `agendamento.spec.ts` | Novo agendamento pelo "+" com serviço favorito; aparece na Agenda (dia) e no Início como próximo; detalhes mostram o horário digitado (mesmo com o navegador em Lisboa); concluir, editar dados, voltar para agendado, remarcar para outro dia, cancelar com motivo e reativar; o banco termina com um registro, no novo horário. |
 | `conflito.spec.ts` | Com 14:00–15:00 ocupado, tentar 14:30 mostra quem ocupa e os 3 horários livres mais próximos; escolher uma sugestão salva. |
 | `conexao.spec.ts` | Sem internet ao salvar: "Sem conexão. Nada foi salvo — tente novamente.", campos preservados, nada no banco; com a internet de volta, "Tentar novamente" grava **uma** vez. Também o caso em que o banco grava mas a resposta se perde: o retry reconhece o próprio agendamento (RN17) e o banco fica com um registro. |
-| `responsivo.spec.ts` | Navegação inferior no celular e barra lateral no computador; nenhuma página com rolagem horizontal (`/`, `/agenda`, `/historico`, `/ajustes`, com nome de 120 caracteres); títulos na fonte da marca; barra "Confirmar remarcação" fora da navegação; interruptores do expediente (Ajustes e primeiro acesso) com área de toque ≥ 44×44 px que não encosta nos horários; painel de detalhes em 390 px com rótulos de ação inteiros. |
+| `notificacoes.spec.ts` | iPhone sem instalar: Ajustes › Notificações mostra o guia de 3 passos, nenhum "Ativar neste aparelho" e "Enviar notificação de teste" desabilitado. Computador: antecedência "1 hora" e "Ocultar nome" gravam no perfil e a prévia mostra `Atendimento às 14:00 · em 1 hora`. `/instalar` sem login abre sem rolagem horizontal nos três projetos. Lembrete de ponta a ponta (só no Node, uma vez): aparelho com endpoint `https://push.invalid/...` e atendimento cujo aviso cai na próxima virada de minuto; espera (até 120 s) o cron chamar a função pelo pg_net e a resposta 200 `{due ≥ 1, failed ≥ 1}` aparecer em `net._http_response` (consulta pela CLI, `supabase db query --local`), e confere que a reserva foi liberada e o aparelho continua cadastrado. A reserva dura poucos milissegundos (envio falha na hora), por isso o sinal é a resposta guardada pelo pg_net; com o cron parado, a URL errada ou o segredo trocado, o teste falha. |
+| `pwa.spec.ts` | Projeto `pwa` (build): manifesto instalável; service worker ativo sem respostas do Supabase no cache; sem internet, recarregar abre a casca do app com "Sem conexão." (sem e com sessão, com "Tentar novamente"). |
+| `responsivo.spec.ts` | Navegação inferior no celular e barra lateral no computador; nenhuma página com rolagem horizontal (`/`, `/agenda`, `/historico`, `/ajustes`, com nome de 120 caracteres); títulos na fonte da marca; barra "Confirmar remarcação" fora da navegação; interruptores do expediente (Ajustes e primeiro acesso) com área de toque ≥ 44×44 px que não encosta nos horários; painel de detalhes em 390 px com rótulos de ação inteiros; `/instalar` em 390 px com abas e "Voltar" ≥ 44 px. |
 | `capturas.spec.ts` | Opcional (pulado por padrão): capturas de tela para revisão visual. |
 
 ### Capturas de tela para revisão
@@ -94,3 +117,5 @@ O que o e2e não cobre e vale olhar a cada versão:
 - Gaveta arrastando para fechar (gesto de toque) no celular.
 - Leitor de tela (VoiceOver/TalkBack) nas telas de agenda e no formulário.
 - E-mails reais de recuperação de senha fora do ambiente local (SMTP de produção, Plano 04).
+- Instalação e lembretes em aparelhos reais (iPhone, Android, APK, Mac, Windows):
+  [`checklist-aparelhos.md`](checklist-aparelhos.md).
