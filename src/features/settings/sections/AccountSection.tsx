@@ -128,14 +128,10 @@ export function AccountSection({ profile }: { profile: Profile }) {
           </div>
         </form>
 
-        <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-6">
-          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Excluir conta</h3>
+        <div className="flex flex-col gap-2">
+          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
           <p className="text-[15px] text-[#475569]">
-            Apaga sua conta e todos os seus dados: clientes, atendimentos, histórico e aparelhos com
-            lembretes. Não dá para desfazer.
-          </p>
-          <p className="text-[15px] text-[#475569]">
-            Quer guardar uma cópia? Baixe antes seus atendimentos em uma planilha.
+            Baixe todos os seus atendimentos em uma planilha.
           </p>
           <div>
             <Button
@@ -158,6 +154,17 @@ export function AccountSection({ profile }: { profile: Profile }) {
               {exportError}
             </p>
           )}
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-6">
+          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Excluir conta</h3>
+          <p className="text-[15px] text-[#475569]">
+            Apaga sua conta e todos os seus dados: clientes, atendimentos, histórico e aparelhos com
+            lembretes. Não dá para desfazer.
+          </p>
+          <p className="text-[15px] text-[#475569]">
+            Se quiser, baixe seus dados acima antes de excluir.
+          </p>
           <div>
             <Button
               type="button"

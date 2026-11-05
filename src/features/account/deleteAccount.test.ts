@@ -57,6 +57,35 @@ describe('deleteAccount', () => {
     expect(await kindOf(deleteAccount(INPUT))).toBe('rede');
   });
 
+  it.each([
+    [
+      'AuthRetryableFetchError (sem rede)',
+      { name: 'AuthRetryableFetchError', status: 0, message: 'x' },
+    ],
+    ['AuthSessionMissingError', { name: 'AuthSessionMissingError', status: 400, message: 'x' }],
+  ])(
+    'rede falha e getUser também falha (%s) → "rede", nunca "excluído"',
+    async (_n, getUserError) => {
+      setup({
+        functions: { 'delete-account': () => ({ error: fetchError }) },
+        auth: { getUser: () => ({ error: getUserError }) },
+      });
+      expect(await kindOf(deleteAccount(INPUT))).toBe('rede');
+    },
+  );
+
+  it('rede falha e o Auth responde 403 "does not exist" → considera excluído', async () => {
+    setup({
+      functions: { 'delete-account': () => ({ error: fetchError }) },
+      auth: {
+        getUser: () => ({
+          error: { status: 403, message: 'User from sub claim in JWT does not exist' },
+        }),
+      },
+    });
+    await expect(deleteAccount(INPUT)).resolves.toBeUndefined();
+  });
+
   it('a função responde 500 → "falha" (sem consultar o Auth)', async () => {
     setup({
       functions: {
