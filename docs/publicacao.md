@@ -43,9 +43,18 @@ ambiente hospedado.
 
 ## 3. Segredos e funções
 
-1. Gere os valores **numa cópia separada do repositório**, nunca reaproveitando as chaves locais:
-   `npm run vapid:gerar` (ele imprime as chaves e a linha `VITE_VAPID_PUBLIC_KEY=...`). Gere também um
-   `CRON_SECRET` de 32 caracteres ou mais (veja [`notificacoes.md`](notificacoes.md), "Produção").
+1. Gere os 4 valores de produção **sem mexer nas chaves locais** (não use `npm run vapid:gerar`, que
+   é só para o desenvolvimento local, e nunca use `--forcar` nesta pasta):
+   - Par VAPID: `npx web-push generate-vapid-keys`. Ele mostra na tela a **Public Key** (vira
+     `VAPID_PUBLIC_KEY` e, no passo 7, `VITE_VAPID_PUBLIC_KEY`) e a **Private Key** (vira
+     `VAPID_PRIVATE_KEY`).
+   - `CRON_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
+     (43 caracteres; o banco exige 32 ou mais).
+   - `VAPID_SUBJECT`: `mailto:` mais o seu e-mail de contato real (pode ser o mesmo de
+     `VITE_PRIVACY_CONTACT_EMAIL`).
+
+   **Guarde os 4 valores num gerenciador de senhas** e nunca no repositório: a chave privada e o
+   `CRON_SECRET` não podem ser recuperados depois.
 2. Grave os segredos nas funções:
 
    ```
@@ -73,6 +82,8 @@ No painel do Supabase, abra o **SQL Editor** e rode (com os seus valores):
 ```sql
 select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<o mesmo CRON_SECRET>');
 ```
+
+Se o SQL Editor responder permissão negada ao chamar `set_reminder_config`, pare e peça ajuda.
 
 O SQL Editor **guarda o histórico** das consultas: depois de rodar, apague a consulta salva (que
 contém o segredo). Se o segredo vazar, troque nos dois lados (função e `set_reminder_config`). Veja
@@ -164,7 +175,7 @@ Sempre **faça um backup antes** (`npm run backup:producao`). Depois, conforme o
 - Banco: `npx supabase db push` (nunca `--include-seed`).
 - Funções: `npx supabase functions deploy send-reminders send-test-notification delete-account`.
 - Site: `npm run publicar:site`.
-- Antes de publicar funções, confira os tipos delas com o Deno. **Não rode `deno check` na raiz do
+- **Só se você alterar as funções**, confira os tipos delas com o Deno antes de publicar. **Não rode `deno check` na raiz do
   repositório**: o `package.json` faz o Deno resolver `npm:openai` pelo `node_modules` e dá um erro
   falso. Copie `supabase/functions` para uma pasta **fora** do repositório e rode, nessa cópia, via
   Docker: `docker run --rm -v "<pasta-da-cópia>:/app" -w /app denoland/deno:2.1.4 deno check <função>/index.ts`
