@@ -33,6 +33,10 @@ test('criar conta → primeiro acesso → Início vazio; sair e entrar de novo',
     await page.getByLabel('Confirmar senha').fill(password);
     await page.getByRole('button', { name: 'Criar conta' }).click();
 
+    // Com a confirmação de e-mail ligada, o cadastro pede o clique no link enviado.
+    await expect(page.getByRole('heading', { name: 'Confira seu e-mail' })).toBeVisible();
+    await page.goto(await waitForAuthLink(email));
+
     await expect(page).toHaveURL(/\/primeiro-acesso$/);
     await expect(page.getByRole('heading', { name: 'Quando você atende?' })).toBeVisible();
     await expect(
@@ -50,6 +54,31 @@ test('criar conta → primeiro acesso → Início vazio; sair e entrar de novo',
     await login(page, { email, password });
     await expect(page).toHaveURL(/:\d+\/$/);
     await expect(page.getByText(EMPTY)).toBeVisible();
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
+
+test('entrar antes de confirmar o e-mail mostra o aviso', async ({ page }, testInfo) => {
+  const email = uniqueEmail(`naoconfirmado-${testInfo.project.name}`);
+  const password = `Senha-${randomUUID()}`;
+  try {
+    await page.goto('/cadastro');
+    await page.getByLabel('Nome', { exact: true }).fill('Caio Pendente');
+    await page.getByLabel('E-mail').fill(email);
+    await page.getByLabel('Senha', { exact: true }).fill(password);
+    await page.getByLabel('Confirmar senha').fill(password);
+    await page.getByRole('button', { name: 'Criar conta' }).click();
+    await expect(page.getByRole('heading', { name: 'Confira seu e-mail' })).toBeVisible();
+
+    await page.goto('/entrar');
+    await page.getByLabel('E-mail').fill(email);
+    await page.getByLabel('Senha', { exact: true }).fill(password);
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+    await expect(
+      page.getByText('Confirme seu e-mail pelo link que enviamos antes de entrar.'),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/entrar$/);
   } finally {
     await deleteUserByEmail(email);
   }

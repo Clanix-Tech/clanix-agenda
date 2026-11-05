@@ -9,6 +9,7 @@ import { toAppError } from '@/lib/errors';
 import { useAuth } from '../AuthProvider';
 import { authErrorMessage } from '../authErrors';
 import { signupSchema } from '../schemas';
+import { CAPTCHA_HINT, useCaptcha } from '../captcha/useCaptcha';
 import {
   AuthInput,
   AuthLayout,
@@ -26,6 +27,7 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const busy = useRef(false);
+  const captcha = useCaptcha('cadastro');
   const {
     register,
     handleSubmit,
@@ -45,7 +47,7 @@ export default function Signup() {
       const { data, error: err } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { data: { display_name: values.name } },
+        options: { data: { display_name: values.name }, captchaToken: captcha.token ?? undefined },
       });
       if (err) setError(authErrorMessage(err));
       else if (data.session) void navigate('/', { replace: true });
@@ -54,6 +56,7 @@ export default function Signup() {
       setError(toAppError(e).message);
     } finally {
       busy.current = false;
+      captcha.reset();
     }
   };
 
@@ -94,9 +97,13 @@ export default function Signup() {
         <TextField label="Confirmar senha" error={errors.confirm}>
           {(a) => <PasswordInput {...a} autoComplete="new-password" {...register('confirm')} />}
         </TextField>
+        {captcha.element}
+        {captcha.required && !captcha.token && (
+          <p className="text-sm text-muted-foreground">{CAPTCHA_HINT}</p>
+        )}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (captcha.required && !captcha.token)}
           className="h-12 w-full rounded-xl text-base font-semibold"
         >
           {isSubmitting ? 'Criando conta…' : 'Criar conta'}

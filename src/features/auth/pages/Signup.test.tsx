@@ -4,6 +4,24 @@ import { renderWithProviders } from '@/test/render';
 import { createFakeSupabase } from '@/test/fakeSupabase';
 import Signup from './Signup';
 
+const captcha = vi.hoisted(() => ({
+  value: { required: false, token: null, error: null, reset: () => {}, element: null } as {
+    required: boolean;
+    token: string | null;
+    error: string | null;
+    reset: () => void;
+    element: unknown;
+  },
+}));
+vi.mock('../captcha/useCaptcha', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../captcha/useCaptcha')>()),
+  useCaptcha: () => captcha.value,
+}));
+
+beforeEach(() => {
+  captcha.value = { required: false, token: null, error: null, reset: () => {}, element: null };
+});
+
 const routes = [
   { path: '/cadastro', element: <Signup /> },
   { path: '/', element: <h1>Início</h1> },
@@ -97,5 +115,27 @@ describe('Signup', () => {
     await userEvent.dblClick(screen.getByRole('button', { name: 'Criar conta' }));
     await screen.findByText(/Enviamos um link/);
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('com CAPTCHA e token: envia captchaToken e reinicia o widget', async () => {
+    const reset = vi.fn();
+    captcha.value = { required: true, token: 'tok', error: null, reset, element: null };
+    const supabase = createFakeSupabase();
+    const spy = vi.spyOn(supabase.auth, 'signUp');
+    renderWithProviders(null, { routes, route: '/cadastro', supabase });
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'Criar conta' }));
+    await screen.findByText(/Enviamos um link de confirmação/);
+    expect(spy.mock.calls[0]![0]).toMatchObject({
+      options: { captchaToken: 'tok', data: { display_name: 'Camila Souza' } },
+    });
+    expect(reset).toHaveBeenCalledTimes(1);
+  });
+
+  it('com CAPTCHA sem token: bloqueia o envio e mostra a dica', () => {
+    captcha.value = { required: true, token: null, error: null, reset: () => {}, element: null };
+    renderWithProviders(null, { routes, route: '/cadastro' });
+    expect(screen.getByText('Conclua a verificação de segurança acima.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Criar conta' })).toBeDisabled();
   });
 });

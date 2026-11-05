@@ -13,6 +13,7 @@ function isNeutralClientError(err: unknown): boolean {
   return typeof status === 'number' && status >= 400 && status < 500;
 }
 import { forgotSchema } from '../schemas';
+import { CAPTCHA_HINT, useCaptcha } from '../captcha/useCaptcha';
 import { AuthInput, AuthLayout, AuthLink, FormError, TextField } from '../AuthLayout';
 
 type Values = z.infer<typeof forgotSchema>;
@@ -21,6 +22,7 @@ export default function ForgotPassword() {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const busy = useRef(false);
+  const captcha = useCaptcha('recuperar');
   const {
     register,
     handleSubmit,
@@ -34,6 +36,7 @@ export default function ForgotPassword() {
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: `${window.location.origin}/redefinir-senha`,
+        captchaToken: captcha.token ?? undefined,
       });
       // Só um erro do cliente (4xx, exceto limite de tentativas) vira a mensagem neutra: é o
       // que poderia revelar se o e-mail existe. Rede, limite, 5xx e erro desconhecido nunca
@@ -44,6 +47,7 @@ export default function ForgotPassword() {
       setError(toAppError(e).message);
     } finally {
       busy.current = false;
+      captcha.reset();
     }
   };
 
@@ -72,9 +76,13 @@ export default function ForgotPassword() {
               />
             )}
           </TextField>
+          {captcha.element}
+          {captcha.required && !captcha.token && (
+            <p className="text-sm text-muted-foreground">{CAPTCHA_HINT}</p>
+          )}
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (captcha.required && !captcha.token)}
             className="h-12 w-full rounded-xl text-base font-semibold"
           >
             {isSubmitting ? 'Enviando…' : 'Enviar link'}

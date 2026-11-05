@@ -295,14 +295,14 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
         listeners.add(cb);
         return { data: { subscription: { unsubscribe: () => listeners.delete(cb) } } };
       },
-      signInWithPassword(args: { email: string; password: string }) {
+      signInWithPassword(args: { email: string; password: string; options?: unknown }) {
         const o = override('signInWithPassword', args);
         if (o) return o;
         session = makeSession(args.email);
         emit('SIGNED_IN');
         return ok({ session, user: session.user });
       },
-      signUp(args: { email: string; password: string }) {
+      signUp(args: { email: string; password: string; options?: unknown }) {
         return (
           override('signUp', args) ??
           ok({ session: null, user: { id: 'user-new', email: args.email } })

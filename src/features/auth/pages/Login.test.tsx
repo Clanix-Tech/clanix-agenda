@@ -4,6 +4,24 @@ import { renderWithProviders } from '@/test/render';
 import { createFakeSupabase } from '@/test/fakeSupabase';
 import Login from './Login';
 
+const captcha = vi.hoisted(() => ({
+  value: { required: false, token: null, error: null, reset: () => {}, element: null } as {
+    required: boolean;
+    token: string | null;
+    error: string | null;
+    reset: () => void;
+    element: unknown;
+  },
+}));
+vi.mock('../captcha/useCaptcha', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../captcha/useCaptcha')>()),
+  useCaptcha: () => captcha.value,
+}));
+
+beforeEach(() => {
+  captcha.value = { required: false, token: null, error: null, reset: () => {}, element: null };
+});
+
 const routes = [
   { path: '/entrar', element: <Login /> },
   { path: '/', element: <h1>Início</h1> },
@@ -176,5 +194,27 @@ describe('Login', () => {
       '/recuperar-senha',
     );
     expect(screen.getByRole('link', { name: 'Criar conta' })).toHaveAttribute('href', '/cadastro');
+  });
+
+  it('com CAPTCHA sem token: bloqueia o envio e mostra a dica', async () => {
+    const reset = vi.fn();
+    captcha.value = { required: true, token: null, error: null, reset, element: null };
+    renderWithProviders(null, { routes, route: '/entrar' });
+    expect(screen.getByText('Conclua a verificação de segurança acima.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeDisabled();
+  });
+
+  it('com CAPTCHA e token: envia options.captchaToken e chama reset após o erro', async () => {
+    const reset = vi.fn();
+    captcha.value = { required: true, token: 'tok', error: null, reset, element: null };
+    const supabase = createFakeSupabase({ auth: { signInWithPassword: () => invalid } });
+    const spy = vi.spyOn(supabase.auth, 'signInWithPassword');
+    renderWithProviders(null, { routes, route: '/entrar', supabase });
+    expect(screen.queryByText('Conclua a verificação de segurança acima.')).not.toBeInTheDocument();
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'Entrar' }));
+    await screen.findByText('E-mail ou senha incorretos.');
+    expect(spy.mock.calls[0]![0]).toMatchObject({ options: { captchaToken: 'tok' } });
+    expect(reset).toHaveBeenCalledTimes(1);
   });
 });

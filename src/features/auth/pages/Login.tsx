@@ -10,6 +10,7 @@ import { useAuth } from '../AuthProvider';
 import { authErrorMessage } from '../authErrors';
 import { safeRedirectPath } from '../safeRedirect';
 import { loginSchema } from '../schemas';
+import { CAPTCHA_HINT, useCaptcha } from '../captcha/useCaptcha';
 import {
   AuthInput,
   AuthLayout,
@@ -31,6 +32,7 @@ export default function Login() {
   const target = safeRedirectPath(state?.from);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
+  const captcha = useCaptcha('login');
   const {
     register,
     handleSubmit,
@@ -50,6 +52,7 @@ export default function Login() {
       const { error: err } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
+        options: { captchaToken: captcha.token ?? undefined },
       });
       if (err) setError(authErrorMessage(err));
       else void navigate(target, { replace: true });
@@ -57,6 +60,7 @@ export default function Login() {
       setError(toAppError(e).message);
     } finally {
       busy.current = false;
+      captcha.reset();
     }
   };
 
@@ -84,9 +88,13 @@ export default function Login() {
         <div className="text-right text-sm">
           <AuthLink to="/recuperar-senha">Esqueci minha senha</AuthLink>
         </div>
+        {captcha.element}
+        {captcha.required && !captcha.token && (
+          <p className="text-sm text-muted-foreground">{CAPTCHA_HINT}</p>
+        )}
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || (captcha.required && !captcha.token)}
           className="h-12 w-full rounded-xl text-base font-semibold"
         >
           {isSubmitting ? 'Entrando…' : 'Entrar'}

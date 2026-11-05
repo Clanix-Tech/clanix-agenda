@@ -4,6 +4,24 @@ import { renderWithProviders } from '@/test/render';
 import { createFakeSupabase } from '@/test/fakeSupabase';
 import ForgotPassword from './ForgotPassword';
 
+const captcha = vi.hoisted(() => ({
+  value: { required: false, token: null, error: null, reset: () => {}, element: null } as {
+    required: boolean;
+    token: string | null;
+    error: string | null;
+    reset: () => void;
+    element: unknown;
+  },
+}));
+vi.mock('../captcha/useCaptcha', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../captcha/useCaptcha')>()),
+  useCaptcha: () => captcha.value,
+}));
+
+beforeEach(() => {
+  captcha.value = { required: false, token: null, error: null, reset: () => {}, element: null };
+});
+
 const routes = [{ path: '/recuperar-senha', element: <ForgotPassword /> }];
 const MSG = 'Se houver uma conta com esse e-mail, você vai receber um link.';
 
@@ -72,5 +90,27 @@ describe('ForgotPassword', () => {
     await send('abc');
     expect(await screen.findByText('Informe um e-mail válido.')).toBeInTheDocument();
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('com CAPTCHA e token: envia captchaToken junto do redirectTo e reinicia o widget', async () => {
+    const reset = vi.fn();
+    captcha.value = { required: true, token: 'tok', error: null, reset, element: null };
+    const supabase = createFakeSupabase();
+    const spy = vi.spyOn(supabase.auth, 'resetPasswordForEmail');
+    renderWithProviders(null, { routes, route: '/recuperar-senha', supabase });
+    await send('a@example.com');
+    await screen.findByText(MSG);
+    expect(spy).toHaveBeenCalledWith('a@example.com', {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+      captchaToken: 'tok',
+    });
+    expect(reset).toHaveBeenCalledTimes(1);
+  });
+
+  it('com CAPTCHA sem token: bloqueia o envio e mostra a dica', () => {
+    captcha.value = { required: true, token: null, error: null, reset: () => {}, element: null };
+    renderWithProviders(null, { routes, route: '/recuperar-senha' });
+    expect(screen.getByText('Conclua a verificação de segurança acima.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enviar link' })).toBeDisabled();
   });
 });

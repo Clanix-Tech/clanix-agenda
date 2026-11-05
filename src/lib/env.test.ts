@@ -23,7 +23,16 @@ describe('parseEnv', () => {
       supabasePublishableKey: 'k',
       vapidPublicKey: null,
       apkDownloadUrl: null,
+      turnstileSiteKey: null,
     });
+  });
+  it('a site key do Turnstile é opcional e aparada', () => {
+    const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };
+    expect(parseEnv({ ...base, VITE_TURNSTILE_SITE_KEY: ' 0x4AAA ' }).turnstileSiteKey).toBe(
+      '0x4AAA',
+    );
+    expect(parseEnv({ ...base, VITE_TURNSTILE_SITE_KEY: '  ' }).turnstileSiteKey).toBeNull();
+    expect(parseEnv(base).turnstileSiteKey).toBeNull();
   });
   it('a chave VAPID pública é opcional: presente vira o valor, vazia vira null', () => {
     const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };

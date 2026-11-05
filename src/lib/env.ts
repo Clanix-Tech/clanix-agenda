@@ -7,6 +7,8 @@ const schema = z.object({
   VITE_VAPID_PUBLIC_KEY: z.string().optional(),
   // Opcional: sem ela, o guia de instalação não oferece o download do APK.
   VITE_APK_DOWNLOAD_URL: z.string().optional(),
+  // Opcional: site key pública do Cloudflare Turnstile. Sem ela, não há CAPTCHA.
+  VITE_TURNSTILE_SITE_KEY: z.string().optional(),
 });
 
 export type Env = {
@@ -16,6 +18,8 @@ export type Env = {
   vapidPublicKey: string | null;
   /** Link do APK Android; `null` quando não há (ou não é uma URL http/https válida). */
   apkDownloadUrl: string | null;
+  /** Site key pública do Turnstile; `null` quando o CAPTCHA não está configurado. */
+  turnstileSiteKey: string | null;
 };
 
 function httpUrlOrNull(value: string | undefined): string | null {
@@ -41,6 +45,7 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
     supabasePublishableKey: result.data.VITE_SUPABASE_PUBLISHABLE_KEY,
     vapidPublicKey: result.data.VITE_VAPID_PUBLIC_KEY?.trim() || null,
     apkDownloadUrl: httpUrlOrNull(result.data.VITE_APK_DOWNLOAD_URL),
+    turnstileSiteKey: result.data.VITE_TURNSTILE_SITE_KEY?.trim() || null,
   };
 }
 

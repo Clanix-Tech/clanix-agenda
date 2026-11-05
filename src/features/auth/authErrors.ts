@@ -15,6 +15,10 @@ export function authErrorMessage(err: unknown): string {
       return 'Já existe uma conta com esse e-mail.';
     case 'weak_password':
       return WEAK;
+    case 'captcha_failed':
+      return 'Não foi possível confirmar que você não é um robô. Tente de novo.';
+    case 'email_not_confirmed':
+      return 'Confirme seu e-mail pelo link que enviamos antes de entrar.';
     case 'over_request_rate_limit':
     case 'over_email_send_rate_limit':
       return 'Muitas tentativas. Aguarde alguns minutos.';
