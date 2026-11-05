@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import type { PushTarget, SendResult } from '../_shared/webpush.ts';
+import { withDeadline } from '../_shared/deadline.ts';
 import { handleSendReminders, type Due, type SendRemindersDeps } from './handler.ts';
 
 const SECRET = 'segredo-do-cron-com-mais-de-32-caracteres';
@@ -236,6 +237,29 @@ describe('handleSendReminders', () => {
 
     expect(deps.release).toHaveBeenCalledWith('ap-a', dueA.starts_at);
     expect(await res.json()).toEqual({ due: 1, sent: 0, removed: 0, failed: 2 });
+  });
+
+  it('envio que nunca responde estoura o prazo, vira falha temporária e libera a reserva', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const neverEnds = () => withDeadline<SendResult>(new Promise(() => {}), 9_000, temporary());
+      const deps = makeDeps({ send: vi.fn(neverEnds) });
+
+      const pending = handleSendReminders(request(SECRET), deps);
+      // O prazo só começa quando o handler chega ao envio: avança até ele existir.
+      await vi.waitFor(() => expect(deps.send).toHaveBeenCalled());
+      await vi.advanceTimersByTimeAsync(9_000);
+      const res = await pending;
+
+      expect(deps.release).toHaveBeenCalledWith('ap-a', dueA.starts_at);
+      expect(await res.json()).toEqual({ due: 1, sent: 0, removed: 0, failed: 2 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('withDeadline: resposta antes do prazo vale', async () => {
+    await expect(withDeadline(Promise.resolve(ok()), 50, temporary())).resolves.toEqual(ok());
   });
 
   it('erro ao processar um lembrete → libera a reserva dele e segue para o próximo', async () => {

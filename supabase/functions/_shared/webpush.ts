@@ -1,6 +1,7 @@
 // Envio Web Push (RFC 8030/8291) com VAPID (RFC 8292). Roda só no Deno (Edge Function);
 // o Vitest nunca importa este arquivo em tempo de execução (handler.ts usa `import type`).
 import webpush from 'npm:web-push@3.6.7';
+import { withDeadline } from './deadline.ts';
 
 /** Uma assinatura (aparelho) do profissional, como gravada em `push_subscriptions`. */
 export type PushTarget = { id: string; endpoint: string; p256dh: string; auth: string };
@@ -14,6 +15,10 @@ export type SendResult = { ok: true } | { ok: false; gone: boolean };
 export type VapidConfig = { publicKey: string; privateKey: string; subject: string };
 
 const TTL_SECONDS = 3600;
+/** Tempo ocioso do socket (web-push). Não mede o tempo total: por isso há também o prazo abaixo. */
+const SOCKET_TIMEOUT_MS = 8_000;
+/** Prazo total do envio; estourou = falha temporária (a reserva é liberada). */
+const TOTAL_DEADLINE_MS = 9_000;
 
 export async function sendPush(
   target: PushTarget,
@@ -27,20 +32,28 @@ export async function sendPush(
     tag: payload.tag,
   });
   try {
-    await webpush.sendNotification(
-      { endpoint: target.endpoint, keys: { p256dh: target.p256dh, auth: target.auth } },
-      body,
-      {
-        vapidDetails: {
-          subject: vapid.subject,
-          publicKey: vapid.publicKey,
-          privateKey: vapid.privateKey,
+    const sending = webpush
+      .sendNotification(
+        { endpoint: target.endpoint, keys: { p256dh: target.p256dh, auth: target.auth } },
+        body,
+        {
+          vapidDetails: {
+            subject: vapid.subject,
+            publicKey: vapid.publicKey,
+            privateKey: vapid.privateKey,
+          },
+          TTL: TTL_SECONDS,
+          urgency: 'high',
+          timeout: SOCKET_TIMEOUT_MS,
         },
-        TTL: TTL_SECONDS,
-        urgency: 'high',
-      },
-    );
-    return { ok: true };
+      )
+      .then((): SendResult => ({ ok: true }));
+    // O envio abandonado pode rejeitar depois do prazo: sem isso viraria rejeição não tratada.
+    sending.catch(() => {});
+    return await withDeadline<SendResult>(sending, TOTAL_DEADLINE_MS, {
+      ok: false,
+      gone: false,
+    });
   } catch (error) {
     const status = statusOf(error);
     // Só id do aparelho, status HTTP e tipo do erro: nada do endpoint nem do conteúdo.
