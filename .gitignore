@@ -34,6 +34,7 @@ playwright/.cache
 .env.*
 !.env.example
 .env.test.local
+.env.backup.local
 
 # Supabase local
 supabase/.temp

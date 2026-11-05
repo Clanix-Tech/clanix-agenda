@@ -22,7 +22,8 @@
     "vapid:gerar": "node scripts/gerar-vapid.mjs",
     "lembretes:local": "node scripts/configurar-lembretes-local.mjs",
     "verificar:producao": "node scripts/verificar-producao.mjs",
-    "publicar:site": "node scripts/publicar-site.mjs"
+    "publicar:site": "node scripts/publicar-site.mjs",
+    "backup:producao": "node scripts/backup-producao.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
