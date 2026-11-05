@@ -1,7 +1,7 @@
 // Confere o ambiente de produção antes de publicar: variáveis do frontend, build e bundle.
 // Uso: npm run verificar:producao (lê .env.production.local, como o `vite build` faz).
 // Sai com código 1 e lista os problemas; com código 0, dist/ está pronto para publicar.
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
@@ -27,9 +27,24 @@ const REQUIRED = [
 
 /**
  * Trechos que nunca podem aparecer no site publicado. `sb_secret_` só conta seguido de um caractere
- * de chave: o supabase-js traz o prefixo sozinho (entre aspas) para reconhecer o tipo da chave.
+ * de chave (letra, número, `_` ou `-`): o supabase-js traz o prefixo sozinho (entre aspas) para
+ * reconhecer o tipo da chave.
  */
-const FORBIDDEN_IN_BUNDLE = [/sb_secret_[A-Za-z0-9]/, /service_role/, /-----BEGIN/, /PRIVATE KEY/];
+const FORBIDDEN_IN_BUNDLE = [
+  /sb_secret_[A-Za-z0-9_-]/,
+  /service_role/,
+  /-----BEGIN/,
+  /PRIVATE KEY/,
+];
+
+const LOCAL_HOSTS = new Set(['localhost', '0.0.0.0', '[::1]']);
+
+/** Endereço deste computador (o Supabase local), que nunca serve para o site publicado. */
+function isLocalHost(hostname) {
+  return (
+    LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost') || hostname.startsWith('127.')
+  );
+}
 
 /** `role` de um JWT (chaves legadas anon/service_role); `undefined` se não for JWT. */
 function jwtRole(token) {
@@ -43,7 +58,26 @@ function jwtRole(token) {
   }
 }
 
-export function checkProductionEnv(env) {
+/**
+ * `VAPID_PUBLIC_KEY` de `supabase/functions/.env` (as chaves LOCAIS de desenvolvimento), ou `null`
+ * se o arquivo não existir. Serve para pegar a chave local herdada por engano no build de produção.
+ */
+export function readLocalVapidPublicKey(root = process.cwd()) {
+  const path = join(root, 'supabase', 'functions', '.env');
+  if (!existsSync(path)) return null;
+  const match = /^[ \t]*VAPID_PUBLIC_KEY[ \t]*=(.*)$/m.exec(readFileSync(path, 'utf8'));
+  const value = match?.[1]
+    ?.trim()
+    .replace(/^(['"])(.*)\1$/, '$2')
+    .trim();
+  return value || null;
+}
+
+/**
+ * Problemas das variáveis do frontend para produção.
+ * `localVapidPublicKey`: chave pública VAPID LOCAL (de `supabase/functions/.env`), se houver.
+ */
+export function checkProductionEnv(env, { localVapidPublicKey = null } = {}) {
   const problems = [];
   const value = (name) => env[name]?.trim() ?? '';
 
@@ -62,6 +96,21 @@ export function checkProductionEnv(env) {
     if (protocol && protocol !== 'https:') {
       problems.push(`VITE_SUPABASE_URL precisa usar https:// (recebido ${protocol}//).`);
     }
+    const hostname = protocol ? new URL(url).hostname : '';
+    if (hostname && isLocalHost(hostname)) {
+      problems.push(
+        `VITE_SUPABASE_URL aponta para este computador (${hostname}): use a URL do projeto hospedado. ` +
+          'Ela falta no .env.production.local e veio do .env.local?',
+      );
+    }
+  }
+
+  const vapid = value('VITE_VAPID_PUBLIC_KEY');
+  if (vapid && localVapidPublicKey && vapid === localVapidPublicKey.trim()) {
+    problems.push(
+      'VITE_VAPID_PUBLIC_KEY é a chave LOCAL de desenvolvimento (a mesma de supabase/functions/.env): ' +
+        'use a chave pública de produção (veja docs/publicacao.md). Ela falta no .env.production.local e veio do .env.local?',
+    );
   }
 
   const key = value('VITE_SUPABASE_PUBLISHABLE_KEY');
@@ -115,8 +164,13 @@ function fail(title, problems) {
 export async function verificarProducao(root = process.cwd()) {
   const { build, loadEnv } = await import('vite');
   // Exatamente o que o `vite build` vai ver: arquivos .env* do modo production e o ambiente.
+  // Atenção: o loadEnv também lê o .env.local, então uma variável que falte no
+  // .env.production.local herda o valor de desenvolvimento. Por isso a URL local e a chave VAPID
+  // local são recusadas.
   const env = loadEnv('production', root, 'VITE_');
-  const envProblems = checkProductionEnv(env);
+  const envProblems = checkProductionEnv(env, {
+    localVapidPublicKey: readLocalVapidPublicKey(root),
+  });
   if (envProblems.length) {
     fail('Ambiente de produção com problemas (.env.production.local):', envProblems);
   }

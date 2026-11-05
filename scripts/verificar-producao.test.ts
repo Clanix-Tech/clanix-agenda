@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { checkProductionEnv, scanBundle } from './verificar-producao.mjs';
+import { checkProductionEnv, readLocalVapidPublicKey, scanBundle } from './verificar-producao.mjs';
 
 const VALID = {
   VITE_SUPABASE_URL: 'https://exemplo.supabase.co',
@@ -65,6 +65,27 @@ describe('checkProductionEnv', () => {
     ]);
   });
 
+  it.each([
+    'https://localhost:44321',
+    'https://127.0.0.1:44321',
+    'http://127.0.0.1:44321',
+    'https://api.localhost',
+  ])('URL do Supabase local (%s) é problema, mesmo com https', (url) => {
+    expect(
+      checkProductionEnv({ ...VALID, VITE_SUPABASE_URL: url }).some((p) =>
+        /VITE_SUPABASE_URL aponta para este computador/.test(p),
+      ),
+    ).toBe(true);
+  });
+
+  it('chave VAPID igual à local (supabase/functions/.env) é problema; diferente passa', () => {
+    expect(checkProductionEnv(VALID, { localVapidPublicKey: VALID.VITE_VAPID_PUBLIC_KEY })).toEqual(
+      [expect.stringMatching(/VITE_VAPID_PUBLIC_KEY.*LOCAL/)],
+    );
+    expect(checkProductionEnv(VALID, { localVapidPublicKey: 'BOutraChaveLocal' })).toEqual([]);
+    expect(checkProductionEnv(VALID, { localVapidPublicKey: null })).toEqual([]);
+  });
+
   it('variável VITE_ fora da lista permitida é problema', () => {
     expect(checkProductionEnv({ ...VALID, VITE_FOO: 'x' })).toEqual([
       expect.stringMatching(/VITE_FOO/),
@@ -94,6 +115,32 @@ describe('checkProductionEnv', () => {
   });
 });
 
+describe('readLocalVapidPublicKey', () => {
+  let root: string | undefined;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  it('lê VAPID_PUBLIC_KEY de supabase/functions/.env (com ou sem aspas)', () => {
+    root = mkdtempSync(join(tmpdir(), 'agenda-vapid-'));
+    mkdirSync(join(root, 'supabase', 'functions'), { recursive: true });
+    const file = join(root, 'supabase', 'functions', '.env');
+    writeFileSync(file, '# comentário\nVAPID_PUBLIC_KEY=BChaveLocal\nVAPID_PRIVATE_KEY=x\n');
+    expect(readLocalVapidPublicKey(root)).toBe('BChaveLocal');
+    writeFileSync(file, 'VAPID_PUBLIC_KEY="BChaveLocal"\r\n');
+    expect(readLocalVapidPublicKey(root)).toBe('BChaveLocal');
+  });
+
+  it('sem o arquivo (ou sem a chave) → null', () => {
+    root = mkdtempSync(join(tmpdir(), 'agenda-vapid-'));
+    expect(readLocalVapidPublicKey(root)).toBeNull();
+    mkdirSync(join(root, 'supabase', 'functions'), { recursive: true });
+    writeFileSync(join(root, 'supabase', 'functions', '.env'), 'CRON_SECRET=x\n');
+    expect(readLocalVapidPublicKey(root)).toBeNull();
+  });
+});
+
 describe('scanBundle', () => {
   let dir: string | undefined;
   afterEach(() => {
@@ -110,11 +157,15 @@ describe('scanBundle', () => {
     writeFileSync(join(dir, 'assets', 'c.js'), '-----BEGIN CERTIFICATE-----');
     writeFileSync(join(dir, 'assets', 'd.js'), 'PRIVATE KEY');
     writeFileSync(join(dir, 'assets', 'e.js'), 'const ok = "sb_publishable_abc";');
+    writeFileSync(join(dir, 'assets', 'f.js'), 'const k = "sb_secret_-abc";');
+    writeFileSync(join(dir, 'assets', 'g.js'), 'const k = "sb_secret__abc";');
     expect(scanBundle(dir).sort()).toEqual([
       'assets/a.js',
       'assets/b.js',
       'assets/c.js',
       'assets/d.js',
+      'assets/f.js',
+      'assets/g.js',
     ]);
   });
 
