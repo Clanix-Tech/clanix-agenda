@@ -406,7 +406,11 @@ function WeekStrip({ date, tz, status, onDate }: Props) {
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div role="group" aria-label="Dias da semana" className="grid grid-cols-7 gap-1">
+      <div
+        role="group"
+        aria-label="Dias da semana"
+        className="grid grid-cols-7 gap-0.5 max-[359px]:-mx-3 max-[359px]:gap-0"
+      >
         {days.map((d) => {
           const active = (byDay.get(d) ?? []).filter((r) => r.appt.status !== 'cancelado');
           const n = active.length;

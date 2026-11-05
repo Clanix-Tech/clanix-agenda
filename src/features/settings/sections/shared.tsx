@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 
 export const PRIMARY_BTN = 'h-11 bg-[#2563EB] px-5 font-bold text-white hover:bg-[#1D4ED8]';
 export const FIELD =
-  'h-11 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A]';
+  'h-11 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A] md:text-base';
 
 export function SectionCard({
   title,

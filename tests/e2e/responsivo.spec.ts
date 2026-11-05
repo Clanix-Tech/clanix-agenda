@@ -240,3 +240,61 @@ test('/instalar sem login: sem rolagem lateral em 390 px e alvos de toque ≥ 44
   const back = (await page.getByRole('link', { name: /Voltar/ }).boundingBox())!;
   expect(back.height).toBeGreaterThanOrEqual(44);
 });
+
+for (const size of [
+  { width: 320, height: 640 },
+  { width: 360, height: 740 },
+]) {
+  test(`${size.width}x${size.height}: células da faixa semanal e do mês têm ≥ 44 px`, async ({
+    page,
+    makeUser,
+  }) => {
+    const user = await makeUser(REALISTIC_USER);
+    const data = await seedRealistic(user);
+    await login(page, user);
+    await page.setViewportSize(size);
+
+    const targets: Array<[string, string]> = [
+      [`/agenda?visao=semana&data=${data.nextDay}`, '[aria-label="Dias da semana"] button'],
+      [`/agenda?visao=mes&data=${data.nextDay}`, 'main a[aria-label*="atendimento"]'],
+    ];
+    for (const [url, selector] of targets) {
+      await page.goto(url);
+      const cells = page.locator(selector);
+      await expect(cells.first()).toBeVisible();
+      const count = await cells.count();
+      expect(count, `células em ${url}`).toBeGreaterThanOrEqual(7);
+      for (let i = 0; i < count; i++) {
+        const box = (await cells.nth(i).boundingBox())!;
+        expect(box.width, `largura da célula ${i + 1} em ${url}`).toBeGreaterThanOrEqual(44);
+        expect(box.height, `altura da célula ${i + 1} em ${url}`).toBeGreaterThanOrEqual(44);
+      }
+      await expectNoHorizontalScroll(page);
+    }
+  });
+}
+
+test('800x1000: inputs de Ajustes têm fonte ≥ 16 px', async ({ page, makeUser }) => {
+  const user = await makeUser();
+  await login(page, user);
+  await page.setViewportSize({ width: 800, height: 1000 });
+  for (const path of ['/ajustes', '/ajustes/expediente', '/ajustes/agenda', '/ajustes/conta']) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
+    const fields = page.locator(
+      'main input:visible:not([type="checkbox"]):not([type="radio"]), main select:visible, main textarea:visible',
+    );
+    const sizes = await fields.evaluateAll((els) =>
+      els.map(
+        (e) =>
+          [
+            e.getAttribute('aria-label') ?? e.id ?? e.tagName,
+            parseFloat(getComputedStyle(e).fontSize),
+          ] as const,
+      ),
+    );
+    for (const [name, px] of sizes) {
+      expect(px, `font-size de "${name}" em ${path}`).toBeGreaterThanOrEqual(16);
+    }
+  }
+});

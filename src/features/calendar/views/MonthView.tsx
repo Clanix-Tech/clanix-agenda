@@ -68,13 +68,13 @@ export function MonthView({ date, tz, status }: Props) {
       <div>
         <div
           aria-hidden="true"
-          className="mb-1 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-[#64748B]"
+          className="mb-1 grid grid-cols-7 gap-0.5 max-[359px]:-mx-3 max-[359px]:gap-0 text-center text-[11px] font-semibold text-[#64748B]"
         >
           {weeks[0]!.map((d) => (
             <span key={d}>{weekdayDay(d).split(' ')[0]}</span>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 max-[359px]:-mx-3 max-[359px]:gap-0">
           {weeks.flat().map((d) => {
             const n = (byDay.get(d) ?? []).filter((a) => a.status !== 'cancelado').length;
             const closed = !openWeekdays.has(weekdayOf(d));

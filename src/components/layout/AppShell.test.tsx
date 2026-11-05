@@ -64,6 +64,21 @@ describe('AppShell', () => {
   });
 });
 
+describe('AppShell: atalho para o conteúdo', () => {
+  it('o primeiro Tab foca "Pular para o conteúdo" e ativá-lo move o foco para o main', async () => {
+    setViewportWidth(1280);
+    renderWithProviders(null, { routes, session: true });
+    await userEvent.tab();
+    const skip = screen.getByRole('link', { name: 'Pular para o conteúdo' });
+    expect(skip).toHaveFocus();
+    expect(skip).toHaveAttribute('href', '#conteudo');
+    await userEvent.keyboard('{Enter}');
+    const main = screen.getByRole('main');
+    expect(main).toHaveAttribute('id', 'conteudo');
+    expect(main).toHaveFocus();
+  });
+});
+
 describe('useNewAppointment', () => {
   it('abre com o prefill e renderForm recebe close()', async () => {
     function Opener() {

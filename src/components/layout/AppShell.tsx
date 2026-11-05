@@ -16,10 +16,23 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
   const desktop = useMediaQuery(DESKTOP_QUERY);
   return (
     <NewAppointmentProvider renderForm={renderForm}>
+      <a
+        href="#conteudo"
+        onClick={(e) => {
+          // Foco explícito: não depende do navegador mover o foco para o alvo do #.
+          e.preventDefault();
+          document.getElementById('conteudo')?.focus();
+        }}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-[#0F2D5B] focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-white focus:outline-2 focus:outline-offset-2 focus:outline-[#2563EB]"
+      >
+        Pular para o conteúdo
+      </a>
       <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A]">
         {desktop && <SideRail />}
         <main
-          className={`min-w-0 flex-1 ${desktop ? '' : 'pb-[calc(100px+env(safe-area-inset-bottom))]'}`}
+          id="conteudo"
+          tabIndex={-1}
+          className={`outline-none min-w-0 flex-1 ${desktop ? '' : 'pb-[calc(100px+env(safe-area-inset-bottom))]'}`}
         >
           <IosInstallBanner />
           <Suspense fallback={<PageFallback />}>
