@@ -514,11 +514,14 @@ describe('Conta e privacidade', () => {
     ).toBeInTheDocument();
   });
 
-  it('Sair encerra a sessão e não oferece exclusão de conta', async () => {
+  it('Sair encerra a sessão; Excluir minha conta abre o diálogo de confirmação', async () => {
     const user = userEvent.setup();
     const { fake } = setup({ route: '/ajustes/conta' });
     expect(await screen.findByRole('button', { name: 'Baixar meus dados (CSV)' })).toBeEnabled();
-    expect(screen.queryByText(/excluir/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Apaga sua conta e todos os seus dados/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Excluir minha conta' }));
+    expect(await screen.findByRole('button', { name: 'Excluir para sempre' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     await user.click(screen.getByRole('button', { name: 'Sair' }));
     await waitFor(() => expect(fake.calls.signOut).toHaveLength(1));
   });

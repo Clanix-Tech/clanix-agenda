@@ -10,6 +10,7 @@ import { authErrorMessage } from '@/features/auth/authErrors';
 import { resetSchema } from '@/features/auth/schemas';
 import { exportAppointmentsCsv, NO_FILTERS } from '@/features/history/exportCsv';
 import type { Profile } from '@/features/profile/api';
+import { DeleteAccountDialog } from '@/features/account/DeleteAccountDialog';
 import { FIELD, SaveButton, SectionCard } from './shared';
 
 function passwordMessage(err: unknown): string {
@@ -30,6 +31,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const exportBusy = useRef(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const changePassword = async (e: FormEvent) => {
     e.preventDefault();
@@ -126,10 +128,14 @@ export function AccountSection({ profile }: { profile: Profile }) {
           </div>
         </form>
 
-        <div className="flex flex-col gap-2">
-          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
+        <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-6">
+          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Excluir conta</h3>
           <p className="text-[15px] text-[#475569]">
-            Baixe todos os seus atendimentos em uma planilha.
+            Apaga sua conta e todos os seus dados: clientes, atendimentos, histórico e aparelhos com
+            lembretes. Não dá para desfazer.
+          </p>
+          <p className="text-[15px] text-[#475569]">
+            Quer guardar uma cópia? Baixe antes seus atendimentos em uma planilha.
           </p>
           <div>
             <Button
@@ -152,6 +158,15 @@ export function AccountSection({ profile }: { profile: Profile }) {
               {exportError}
             </p>
           )}
+          <div>
+            <Button
+              type="button"
+              className="h-11 bg-[#B91C1C] text-white hover:bg-[#991B1B]"
+              onClick={() => setDeleteOpen(true)}
+            >
+              Excluir minha conta
+            </Button>
+          </div>
         </div>
 
         <div>
@@ -160,6 +175,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
           </Button>
         </div>
       </div>
+      <DeleteAccountDialog open={deleteOpen} onOpenChange={setDeleteOpen} />
     </SectionCard>
   );
 }

@@ -7,7 +7,7 @@ type AuthListener = (event: string, session: Session | null) => void;
 type Operation = 'select' | 'insert' | 'update' | 'delete';
 
 type AuthMethod =
-  'signInWithPassword' | 'signUp' | 'resetPasswordForEmail' | 'updateUser' | 'signOut';
+  'signInWithPassword' | 'signUp' | 'resetPasswordForEmail' | 'updateUser' | 'signOut' | 'getUser';
 
 export type FakeSupabaseOptions = {
   rpc?: Record<string, Handler>;
@@ -313,6 +313,9 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
       },
       updateUser(args?: unknown) {
         return override('updateUser', args) ?? ok({ user: session?.user ?? null });
+      },
+      getUser() {
+        return override('getUser', undefined) ?? ok({ user: session?.user ?? null });
       },
       signOut(args?: unknown) {
         calls.signOut.push(args);

@@ -17,7 +17,7 @@ import {
   pushDeviceKey,
 } from '@/features/notifications/push';
 
-export type SignOutReason = 'usuario' | 'sessao';
+export type SignOutReason = 'usuario' | 'sessao' | 'conta_excluida';
 
 type AuthValue = {
   session: Session | null;
@@ -26,7 +26,7 @@ type AuthValue = {
   /** Por que a sessão terminou (`null` enquanto há sessão ou antes de qualquer saída). */
   signOutReason: SignOutReason | null;
   /** Saída pedida pelo usuário (sem aviso de expiração); antes, desliga os lembretes deste aparelho. */
-  signOut(): Promise<void>;
+  signOut(options?: { accountDeleted?: boolean }): Promise<void>;
   /** Sessão inválida (42501/401): sai só neste aparelho e mostra o aviso em "Entrar". */
   expireSession(): Promise<void>;
 };
@@ -104,9 +104,9 @@ export function AuthProvider({
       signOutReason,
       // Antes de sair, este aparelho deixa de receber os lembretes desta conta (melhor esforço:
       // com o banco fora do ar, sai mesmo assim depois do tempo limite).
-      signOut: async () => {
+      signOut: async (options) => {
         await forgetThisDevice().catch(() => {});
-        return run('usuario');
+        return run(options?.accountDeleted ? 'conta_excluida' : 'usuario');
       },
       expireSession: () => {
         if (inFlight.current) return inFlight.current;

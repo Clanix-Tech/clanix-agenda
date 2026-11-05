@@ -45,6 +45,13 @@ describe('Login', () => {
     expect(screen.getByLabelText('Senha')).toHaveAttribute('autocomplete', 'current-password');
   });
 
+  it('avisa que a conta foi excluída quando a URL tem ?conta=excluida', () => {
+    renderWithProviders(null, { routes, route: '/entrar?conta=excluida' });
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Sua conta e todos os seus dados foram excluídos.',
+    );
+  });
+
   it('tem o link Como instalar o app para o guia público', () => {
     renderWithProviders(null, { routes, route: '/entrar' });
     expect(screen.getByRole('link', { name: 'Como instalar o app' })).toHaveAttribute(

@@ -150,7 +150,10 @@ export const test = base.extend<Fixtures>({
 
 export async function deleteUser(id: string): Promise<void> {
   const { error } = await admin().auth.admin.deleteUser(id);
-  if (error) throw new Error(`Falha ao remover usuário de teste: ${error.message}`);
+  // Testes que excluem a própria conta pela tela deixam o usuário já inexistente.
+  if (error && error.code !== 'user_not_found') {
+    throw new Error(`Falha ao remover usuário de teste: ${error.message}`);
+  }
 }
 
 /** Remove um usuário criado pela própria tela de cadastro (procura pelo e-mail). */

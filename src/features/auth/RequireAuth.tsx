@@ -15,12 +15,12 @@ export function RequireAuth() {
   if (!session)
     return (
       <Navigate
-        to="/entrar"
+        to={signOutReason === 'conta_excluida' ? '/entrar?conta=excluida' : '/entrar'}
         replace
         state={{
           // R20: depois de "Sair" o próximo login começa no Início; link direto e sessão
           // expirada continuam voltando para onde a pessoa estava.
-          from: signOutReason === 'usuario' ? undefined : location,
+          from: signOutReason === 'sessao' || signOutReason === null ? location : undefined,
           reason: signOutReason === 'sessao' ? 'sessao' : undefined,
         }}
       />
