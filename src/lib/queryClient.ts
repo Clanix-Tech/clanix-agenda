@@ -21,7 +21,9 @@ export function createQueryClient(expireRef: ExpireRef): QueryClient {
         // `always`: offline a consulta falha como `rede` (ErrorState + aviso de conexão) em vez de
         // ficar pausada em "Carregando…" para sempre.
         networkMode: 'always',
-        retry: (count, err) => toAppError(err).kind === 'rede' && count < 2,
+        // Offline não adianta tentar de novo: mostra o erro de rede na hora.
+        retry: (count, err) =>
+          navigator.onLine !== false && toAppError(err).kind === 'rede' && count < 2,
       },
       // `always`: sem internet a gravação falha na hora (erro de rede → "Nada foi salvo" e
       // "Tentar novamente"), em vez de ficar pausada e gravar sozinha quando a conexão volta.
