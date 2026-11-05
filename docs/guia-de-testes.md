@@ -17,7 +17,7 @@ Antes de abrir um PR: `npm run typecheck && npm run lint && npm test && npm run 
 1. Node e dependências: `npm install`.
 2. Docker Desktop em execução.
 3. Supabase local deste projeto no ar: `npm run db:start` (detalhes em `docs/supabase-local.md`;
-   as portas são as deslocadas, API em `55321` e Mailpit em `55324`).
+   as portas são as deslocadas (4432x), API em `44321` e Mailpit em `44324`).
 4. Só para o e2e, os navegadores do Playwright (uma vez por máquina):
    `npx playwright install chromium webkit`.
 

@@ -16,11 +16,13 @@
 
 Rode `npx supabase status` (ou `npx supabase status -o env`) para ver URLs e chaves. Não grave chaves no repositório.
 
-Observação: as portas foram deslocadas em +1000 (API 55321, banco 55322, Studio 55323, Inbucket 55324) para a pilha rodar junto de outro projeto Supabase local. URLs e chaves reais vêm sempre de `npx supabase status`.
+Observação: as portas foram deslocadas (API 44321, banco 44322, Studio 44323, Inbucket 44324) para a pilha rodar junto de outro projeto Supabase local. URLs e chaves reais vêm sempre de `npx supabase status`.
+
+Por que 4432x: depois de reiniciar, o Windows reserva blocos da faixa dinâmica de portas (a partir de 49152 e blocos como 55248-55447, usados por Hyper-V/WinNAT), e o Docker não consegue publicar portas dentro deles ("An attempt was made to access a socket in a way forbidden by its access permissions"). Por isso a pilha usa portas abaixo dessa faixa. Para conferir os blocos reservados: `netsh interface ipv4 show excludedportrange protocol=tcp`.
 
 ## Edge Functions e lembretes (Web Push)
 
-A pilha local sobe o `edge_runtime` (`[edge_runtime] enabled = true` em `supabase/config.toml`) e serve `supabase/functions/*` em `http://127.0.0.1:55321/functions/v1/<nome>`. A função `send-reminders` tem `verify_jwt = false`: quem chama é o `pg_cron`, autenticado pelo header `x-cron-secret`.
+A pilha local sobe o `edge_runtime` (`[edge_runtime] enabled = true` em `supabase/config.toml`) e serve `supabase/functions/*` em `http://127.0.0.1:44321/functions/v1/<nome>`. A função `send-reminders` tem `verify_jwt = false`: quem chama é o `pg_cron`, autenticado pelo header `x-cron-secret`.
 
 Primeira vez (ou depois de apagar `supabase/functions/.env`):
 
@@ -30,7 +32,7 @@ Primeira vez (ou depois de apagar `supabase/functions/.env`):
 
 Depois de `npm run db:reset` ou `npm run db:test`, rode `npm run lembretes:local` de novo: o reset apaga o Vault. Depois de editar código em `supabase/functions`, reinicie a pilha (ou só o container `supabase_edge_runtime_agenda-em-ordem`): no Windows a mudança de arquivo não chega ao container e o runtime continua com o código antigo.
 
-URL que o banco alcança: o `pg_net` roda dentro do container do banco, então `127.0.0.1` não serve. Conferido com `net.http_post` + `net._http_response` (CLI 2.122, Docker Desktop no Windows): tanto `http://host.docker.internal:55321/functions/v1/send-reminders` quanto `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` respondem. O script usa a primeira (porta tirada de `API_URL`); a segunda é a alternativa se o Docker não tiver `host.docker.internal` (ex.: Docker Engine no Linux).
+URL que o banco alcança: o `pg_net` roda dentro do container do banco, então `127.0.0.1` não serve. Conferido com `net.http_post` + `net._http_response` (CLI 2.122, Docker Desktop no Windows): tanto `http://host.docker.internal:44321/functions/v1/send-reminders` quanto `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` respondem. O script usa a primeira (porta tirada de `API_URL`); a segunda é a alternativa se o Docker não tiver `host.docker.internal` (ex.: Docker Engine no Linux).
 
 Conferir o cron: `select status_code, content from net._http_response order by id desc limit 3;` no banco local deve mostrar `200` e `{"due":0,...}` a cada minuto.
 

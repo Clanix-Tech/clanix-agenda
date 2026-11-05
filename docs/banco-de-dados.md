@@ -68,7 +68,7 @@ Por causa do revoke global de privilégios padrão (`alter default privileges ..
 - Migração `20261104000200_reminders_cron.sql` habilita `pg_net` e `pg_cron` e agenda o job `send-reminders` (`* * * * *`), que executa `app_private.invoke_send_reminders()`. Essa função (schema `app_private`, sem acesso por API) lê `reminders_function_url` e `reminders_cron_secret` de `vault.decrypted_secrets`; se faltar algum, devolve `null` e não chama nada; senão faz `net.http_post` (corpo `{}`, header `x-cron-secret`, timeout 10 s) e devolve o id da requisição.
 - `set_reminder_config(p_function_url, p_cron_secret)` (somente `service_role`) grava ou atualiza os dois segredos no Vault. A URL precisa começar com `http://` ou `https://` e o segredo ter ao menos 32 caracteres (`22023` caso contrário).
 - Configurar (o segredo deve ser o mesmo `CRON_SECRET` da Edge Function; nunca versione):
-  - Local: `npm run lembretes:local` (lê o `CRON_SECRET` de `supabase/functions/.env` e grava a URL `http://host.docker.internal:55321/functions/v1/send-reminders`, conferida pelo `pg_net` do container do banco; `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` também funciona). Veja `docs/supabase-local.md`.
+  - Local: `npm run lembretes:local` (lê o `CRON_SECRET` de `supabase/functions/.env` e grava a URL `http://host.docker.internal:44321/functions/v1/send-reminders`, conferida pelo `pg_net` do container do banco; `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` também funciona). Veja `docs/supabase-local.md`.
   - Produção: no SQL Editor, `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<segredo>');` e o mesmo valor em `supabase secrets set CRON_SECRET=...`.
 - Sem configuração o job roda a cada minuto e não faz nada.
 
@@ -109,4 +109,4 @@ Pré-requisito: Docker em execução e a pilha local de pé (`npm run db:start`)
 - `npm run test:integration` roda os testes via API real (PostgREST + Auth) com `@supabase/supabase-js`: RLS, privilégios e concorrência (RN08). Cada teste cria usuários novos com e-mails únicos, então não exige reset. URL e chaves são lidas em tempo de execução de `npx supabase status -o json`; nunca ficam em arquivo.
 - `npm run db:types` regenera `src/types/database.ts` a partir do banco local. Rode depois de qualquer migração e faça commit do arquivo.
 
-Nota sobre portas: a pilha local usa portas deslocadas em +1000 (API 55321, banco 55322, Studio 55323) para conviver com outro projeto Supabase local. Não fixe portas nem chaves no código; consulte `npx supabase status`.
+Nota sobre portas: a pilha local usa portas deslocadas (API 44321, banco 44322, Studio 44323) para conviver com outro projeto Supabase local. Não fixe portas nem chaves no código; consulte `npx supabase status`.

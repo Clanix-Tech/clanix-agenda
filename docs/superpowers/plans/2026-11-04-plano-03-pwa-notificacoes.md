@@ -32,7 +32,7 @@
 - Atualização de versão em modo `prompt`: aviso "Nova versão disponível" com botão "Atualizar".
 - Nenhum dado de cliente em `localStorage`/`sessionStorage`/Cache Storage. Flags de interface (ex.: "não mostrar o aviso de instalação de novo") podem usar `localStorage`.
 - Toda função SQL nova é `SECURITY DEFINER` com `set search_path = ''` e precisa de `GRANT EXECUTE` explícito (o revoke global de privilégios padrão está ativo); funções do backend (`due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config`) só para `service_role`.
-- Supabase local usa portas +1000 (API 55321, DB 55322, Studio 55323, Mailpit 55324). Nunca parar nem mexer no projeto `gceu-conecta` do usuário; comandos `supabase` só a partir deste repositório. Chaves sempre lidas em tempo de execução de `npx supabase status -o json`.
+- Supabase local usa portas 4432x, fora da faixa dinâmica do Windows (API 44321, DB 44322, Studio 44323, Mailpit 44324). Nunca parar nem mexer no projeto `gceu-conecta` do usuário; comandos `supabase` só a partir deste repositório. Chaves sempre lidas em tempo de execução de `npx supabase status -o json`.
 
 ## Review Focus
 
