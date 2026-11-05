@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import {
   pushDeviceKey,
   readDeviceState,
+  renewSubscriptionIfKeyChanged,
   sendTestNotification,
   subscribeThisDevice,
   unsubscribeThisDevice,
@@ -45,6 +46,19 @@ export function usePushDevice() {
       active = false;
     };
   }, [queryClient, userId]);
+
+  // Aparelho ativado: se a chave VAPID do servidor mudou, reinscreve com a chave atual (melhor
+  // esforço; falhou, o estado continua como está e a próxima abertura tenta de novo).
+  const active = query.data === 'ativado';
+  useEffect(() => {
+    if (!active || !configured) return;
+    void renewSubscriptionIfKeyChanged()
+      .then((result) => {
+        if (result === 'renovada')
+          void queryClient.invalidateQueries({ queryKey: pushDeviceKey(userId) });
+      })
+      .catch(() => {});
+  }, [active, configured, queryClient, userId]);
 
   const lock = useRef(false);
   const [busy, setBusy] = useState(false);

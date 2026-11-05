@@ -11,6 +11,7 @@ import {
 import {
   deviceLabel,
   detectDeviceState,
+  ensureCurrentKey,
   dropOtherAccountSubscription,
   forgetThisDevice,
   devicePlatform,
@@ -262,6 +263,42 @@ describe('subscribeThisDevice', () => {
     expect((fake.calls.rpc[0]!.args as { p_endpoint: string }).p_endpoint).toBe(
       push.subscription()!.endpoint,
     );
+  });
+});
+
+describe('ensureCurrentKey (troca de chave VAPID)', () => {
+  const OTHER_KEY =
+    'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+
+  it('inscrição com outra chave → cancela, inscreve com a chave atual e registra', async () => {
+    const { push } = setup({
+      permission: 'granted',
+      subscribed: 'https://push.example/velho',
+      applicationServerKey: OTHER_KEY,
+    });
+    const old = push.subscription()!;
+    const register = vi.fn(async () => {});
+
+    const result = await ensureCurrentKey(push.registration as never, TEST_VAPID_KEY, register);
+
+    expect(result).toBe('renovada');
+    expect(old.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(push.subscribe).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledWith(push.subscription());
+    expect(push.subscription()!.endpoint).not.toBe('https://push.example/velho');
+  });
+
+  it('mesma chave → ok, sem efeitos', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: 'https://push.example/atual' });
+    const current = push.subscription()!;
+    const register = vi.fn(async () => {});
+
+    const result = await ensureCurrentKey(push.registration as never, TEST_VAPID_KEY, register);
+
+    expect(result).toBe('ok');
+    expect(current.unsubscribe).not.toHaveBeenCalled();
+    expect(push.subscribe).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
   });
 });
 

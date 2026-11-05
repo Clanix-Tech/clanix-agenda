@@ -1,8 +1,8 @@
 // Edge Function send-test-notification: chamada pelo app (Ajustes › Notificações) com o JWT do
-// usuário (`verify_jwt = true`). Só liga as dependências reais; a lógica está em handler.ts.
+// usuário (`verify_jwt = false`; o handler valida o usuário). Só liga as dependências reais; a lógica está em handler.ts.
 // Nada de chave secreta aqui: os aparelhos são lidos e apagados com o cliente do usuário, sob RLS.
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import 'jsr:@supabase/functions-js@2.119.0/edge-runtime.d.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { sendPush, type PushTarget } from '../_shared/webpush.ts';
 import { handleSendTestNotification, type UserDevices } from './handler.ts';
 

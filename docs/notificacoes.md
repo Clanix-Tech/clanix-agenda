@@ -82,8 +82,26 @@ Para conferir o cron e a URL que o banco alcança, veja "Edge Functions e lembre
 6. **Conferir**: `select status_code, content from net._http_response order by id desc limit 3;`
    deve mostrar `200` a cada minuto. Depois, siga o [checklist de aparelhos](checklist-aparelhos.md).
 
-Trocar o par VAPID invalida todos os aparelhos ativados: cada pessoa precisa ativar de novo. Trocar o
-`CRON_SECRET` exige atualizar os dois lados (secret da função e `set_reminder_config`).
+Trocar o `CRON_SECRET` exige atualizar os dois lados (secret da função e `set_reminder_config`).
+
+## Trocar as chaves VAPID
+
+**Quando trocar:** só se a chave privada vazar ou por política de segurança. Não é rotina.
+
+**Comandos:**
+
+- Local: `npm run vapid:gerar -- --forcar` (grava chaves novas em `supabase/functions/.env`) e reinicie o Supabase local.
+- Produção: gere o par com `npx web-push generate-vapid-keys`, rode
+  `npx supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=...`, coloque a chave pública nova
+  em `VITE_VAPID_PUBLIC_KEY` e publique o site de novo.
+
+**O que acontece:**
+
+- Quem abrir o app com os lembretes ativados é reinscrito sozinho na chave nova (o app compara a
+  chave da inscrição com a do build).
+- Quem não abrir o app: o serviço de push recusa os envios (400/401/403), cada recusa conta uma
+  falha no aparelho e, na 3ª, a assinatura é apagada. Essas pessoas precisam ativar de novo em
+  Ajustes › Notificações.
 
 ## Limites
 
@@ -96,7 +114,8 @@ Trocar o par VAPID invalida todos os aparelhos ativados: cada pessoa precisa ati
   Safari (é preciso entrar de novo depois de instalar).
 - **Falha temporária** (aparelho ou serviço de push fora do ar): a reserva é devolvida e o envio é
   tentado de novo a cada minuto até a hora do atendimento. Assinatura expirada (404/410) é apagada;
-  o aparelho precisa ser ativado de novo.
+  o aparelho precisa ser ativado de novo. Recusa permanente (400/401/403) conta uma falha no
+  aparelho; na 3ª seguida a assinatura é apagada. Um envio bem-sucedido zera a contagem.
 - Mais de um aparelho: todos os ativados recebem; basta um receber para o lembrete contar como enviado.
 
 ## Privacidade

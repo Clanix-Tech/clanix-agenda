@@ -23,6 +23,8 @@ export type FakePushOptions = {
   answer?: NotificationPermission;
   /** Endpoint de uma assinatura que o navegador já tem. */
   subscribed?: string;
+  /** `applicationServerKey` (base64url) da assinatura que o navegador já tem (padrão: `TEST_VAPID_KEY`). */
+  applicationServerKey?: string;
   userAgent?: string;
   /** Aberto pelo ícone da Tela de Início (iOS: `navigator.standalone`). */
   standalone?: boolean;
@@ -63,7 +65,10 @@ export function installFakePush(options: FakePushOptions = {}) {
   };
 
   if (options.subscribed) {
-    state.current = makeSubscription(options.subscribed, keyBytes(TEST_VAPID_KEY));
+    state.current = makeSubscription(
+      options.subscribed,
+      keyBytes(options.applicationServerKey ?? TEST_VAPID_KEY),
+    );
   }
 
   const subscribe = vi.fn(

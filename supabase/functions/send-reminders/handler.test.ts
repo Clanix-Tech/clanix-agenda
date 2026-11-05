@@ -42,7 +42,7 @@ function makeDeps(overrides: Partial<SendRemindersDeps> = {}) {
     targets: vi.fn<SendRemindersDeps['targets']>(async (ownerId) => devices[ownerId] ?? []),
     send: vi.fn<SendRemindersDeps['send']>(async () => ({ ok: true })),
     removeTargets: vi.fn<SendRemindersDeps['removeTargets']>(async () => {}),
-    touchTargets: vi.fn<SendRemindersDeps['touchTargets']>(async () => {}),
+    recordResults: vi.fn<SendRemindersDeps['recordResults']>(async () => 0),
     ...overrides,
   };
   return deps;
@@ -60,6 +60,7 @@ function request(secret?: string): Request {
 
 const ok = (): SendResult => ({ ok: true });
 const gone = (): SendResult => ({ ok: false, gone: true });
+const permanent = (): SendResult => ({ ok: false, gone: false, permanent: true });
 const temporary = (): SendResult => ({ ok: false, gone: false });
 
 let logs: MockInstance[];
@@ -131,8 +132,8 @@ describe('handleSendReminders', () => {
     for (const [, payload] of send.mock.calls) {
       expect(Object.keys(payload).sort()).toEqual(['body', 'tag', 'title', 'url']);
     }
-    expect(deps.touchTargets).toHaveBeenCalledWith(['cel-1', 'note-1']);
-    expect(deps.touchTargets).toHaveBeenCalledWith(['cel-2', 'note-2']);
+    expect(deps.recordResults).toHaveBeenCalledWith(['cel-1', 'note-1'], []);
+    expect(deps.recordResults).toHaveBeenCalledWith(['cel-2', 'note-2'], []);
     expect(deps.removeTargets).not.toHaveBeenCalled();
     expect(deps.release).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ due: 2, sent: 4, removed: 0, failed: 0 });
@@ -178,7 +179,7 @@ describe('handleSendReminders', () => {
 
     expect(send).toHaveBeenCalledTimes(2);
     expect(deps.removeTargets).toHaveBeenCalledWith(['cel-1']);
-    expect(deps.touchTargets).toHaveBeenCalledWith(['note-1']);
+    expect(deps.recordResults).toHaveBeenCalledWith(['note-1'], []);
     expect(deps.release).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ due: 1, sent: 1, removed: 1, failed: 0 });
   });
@@ -189,7 +190,7 @@ describe('handleSendReminders', () => {
     const res = await handleSendReminders(request(SECRET), deps);
 
     expect(deps.removeTargets).toHaveBeenCalledWith(['cel-1', 'note-1']);
-    expect(deps.touchTargets).not.toHaveBeenCalled();
+    expect(deps.recordResults).not.toHaveBeenCalled();
     expect(deps.release).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ due: 1, sent: 0, removed: 2, failed: 0 });
   });
@@ -201,7 +202,7 @@ describe('handleSendReminders', () => {
 
     expect(deps.release).toHaveBeenCalledWith('ap-a', dueA.starts_at);
     expect(deps.removeTargets).not.toHaveBeenCalled();
-    expect(deps.touchTargets).not.toHaveBeenCalled();
+    expect(deps.recordResults).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ due: 1, sent: 0, removed: 0, failed: 2 });
   });
 
@@ -212,7 +213,7 @@ describe('handleSendReminders', () => {
     const res = await handleSendReminders(request(SECRET), deps);
 
     expect(deps.release).not.toHaveBeenCalled();
-    expect(deps.touchTargets).toHaveBeenCalledWith(['note-1']);
+    expect(deps.recordResults).toHaveBeenCalledWith(['note-1'], []);
     expect(await res.json()).toEqual({ due: 1, sent: 1, removed: 0, failed: 1 });
   });
 
@@ -300,7 +301,7 @@ describe('handleSendReminders', () => {
       removeTargets: vi.fn(async () => {
         throw new Error('banco indisponível');
       }),
-      touchTargets: vi.fn(async () => {
+      recordResults: vi.fn(async () => {
         throw new Error('banco indisponível');
       }),
     });
@@ -310,6 +311,56 @@ describe('handleSendReminders', () => {
     expect(res.status).toBe(200);
     expect(deps.release).not.toHaveBeenCalled();
     expect(await res.json()).toEqual({ due: 1, sent: 1, removed: 1, failed: 0 });
+  });
+
+  it('permanente_conta_falha_e_libera', async () => {
+    const deps = makeDeps({
+      targets: vi.fn(async () => [target('cel-1')]),
+      send: vi.fn(async () => permanent()),
+    });
+
+    const res = await handleSendReminders(request(SECRET), deps);
+
+    expect(deps.recordResults).toHaveBeenCalledWith([], ['cel-1']);
+    expect(deps.release).toHaveBeenCalledWith('ap-a', dueA.starts_at);
+    expect(deps.removeTargets).not.toHaveBeenCalled();
+    expect(await res.json()).toEqual({ due: 1, sent: 0, removed: 0, failed: 1 });
+  });
+
+  it('sucesso_zera_falhas', async () => {
+    const deps = makeDeps({ targets: vi.fn(async () => [target('cel-1')]) });
+
+    await handleSendReminders(request(SECRET), deps);
+
+    expect(deps.recordResults).toHaveBeenCalledWith(['cel-1'], []);
+  });
+
+  it('no_maximo_5_em_paralelo', async () => {
+    const many = Array.from({ length: 12 }, (_, i): Due => ({
+      ...dueA,
+      appointment_id: `ap-${i}`,
+      owner_id: `dono-${i}`,
+    }));
+    let active = 0;
+    let peak = 0;
+    const send = vi.fn(async (): Promise<SendResult> => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active -= 1;
+      return ok();
+    });
+    const deps = makeDeps({
+      due: vi.fn(async () => many),
+      targets: vi.fn(async (ownerId) => [target(`cel-${ownerId}`)]),
+      send,
+    });
+
+    const res = await handleSendReminders(request(SECRET), deps);
+
+    expect(peak).toBe(5);
+    expect(send).toHaveBeenCalledTimes(12);
+    expect(await res.json()).toEqual({ due: 12, sent: 12, removed: 0, failed: 0 });
   });
 
   it('falha ao buscar devidos → 500 sem detalhes', async () => {

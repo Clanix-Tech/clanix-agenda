@@ -392,9 +392,10 @@ deno_version = 2
 [functions.send-reminders]
 verify_jwt = false
 
-# Chamada pelo app com o JWT do usuário; a função ainda confere que o token é de um usuário.
+# Chamada pelo app com o JWT do usuário. verify_jwt desligado: o handler valida o usuário
+# (o verify_jwt legado não funciona com as chaves JWT assimétricas do Supabase hospedado).
 [functions.send-test-notification]
-verify_jwt = true
+verify_jwt = false
 
 [analytics]
 enabled = true

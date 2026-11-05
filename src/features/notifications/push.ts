@@ -159,6 +159,54 @@ export async function readDeviceState(): Promise<DeviceState> {
   return detectDeviceState(await readDeviceEnv());
 }
 
+/** Grava a assinatura do navegador para o usuário atual (única porta: a RPC). */
+async function registerSubscription(subscription: PushSubscription): Promise<void> {
+  const { endpoint, keys } = subscription.toJSON();
+  const { error } = await supabase.rpc('register_push_subscription', {
+    p_endpoint: endpoint ?? '',
+    p_p256dh: keys?.p256dh ?? '',
+    p_auth: keys?.auth ?? '',
+    p_device_label: deviceLabel(navigator.userAgent, isIPadAsMac(navigator.userAgent)),
+  });
+  if (error) throw error;
+}
+
+/**
+ * Troca de chave VAPID: se a assinatura atual foi feita com outra chave, cancela, inscreve de novo
+ * com a chave atual e registra pelo `register`. Sem assinatura ou com a mesma chave: não faz nada.
+ */
+export async function ensureCurrentKey(
+  registration: ServiceWorkerRegistration,
+  vapidPublicKey: string,
+  register: (subscription: PushSubscription) => Promise<void>,
+): Promise<'ok' | 'renovada'> {
+  const existing = await registration.pushManager.getSubscription();
+  const applicationServerKey = base64UrlToBytes(vapidPublicKey);
+  if (!existing || sameBytes(existing.options.applicationServerKey, applicationServerKey)) {
+    return 'ok';
+  }
+  await existing.unsubscribe();
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey,
+  });
+  try {
+    await register(subscription);
+  } catch (error) {
+    await subscription.unsubscribe().catch(() => false);
+    throw error;
+  }
+  return 'renovada';
+}
+
+/** Para o `usePushDevice`: renova a assinatura deste aparelho se a chave VAPID mudou. */
+export async function renewSubscriptionIfKeyChanged(): Promise<'ok' | 'renovada'> {
+  const key = vapidPublicKey();
+  const registration = await getRegistration();
+  if (!key || !registration) return 'ok';
+  return ensureCurrentKey(registration, key, registerSubscription);
+}
+
 /**
  * Ativa os lembretes neste aparelho. Só pode ser chamada direto do clique: o pedido de permissão
  * acontece antes de qualquer `await` (exigência do iOS). Permissão não concedida: sai sem assinar
@@ -181,14 +229,9 @@ export function subscribeThisDevice(): Promise<void> {
       userVisibleOnly: true,
       applicationServerKey,
     });
-    const { endpoint, keys } = subscription.toJSON();
-    const { error } = await supabase.rpc('register_push_subscription', {
-      p_endpoint: endpoint ?? '',
-      p_p256dh: keys?.p256dh ?? '',
-      p_auth: keys?.auth ?? '',
-      p_device_label: deviceLabel(navigator.userAgent, isIPadAsMac(navigator.userAgent)),
-    });
-    if (error) {
+    try {
+      await registerSubscription(subscription);
+    } catch (error) {
       // Sem a confirmação do servidor este aparelho não pode aparecer como ativado.
       await subscription.unsubscribe().catch(() => false);
       throw error;

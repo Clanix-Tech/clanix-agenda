@@ -9,8 +9,11 @@ export type PushTarget = { id: string; endpoint: string; p256dh: string; auth: s
 /** Conteúdo lido pelo service worker. */
 export type PushPayload = { title: string; body: string; url: string; tag: string };
 
-/** `gone`: o serviço de push respondeu 404/410 (assinatura expirada ou cancelada). */
-export type SendResult = { ok: true } | { ok: false; gone: boolean };
+/**
+ * `gone`: o serviço de push respondeu 404/410 (assinatura expirada ou cancelada).
+ * `permanent`: respondeu 400/401/403 (ex.: chave VAPID trocada); conta falha no aparelho.
+ */
+export type SendResult = { ok: true } | { ok: false; gone: boolean; permanent?: boolean };
 
 export type VapidConfig = { publicKey: string; privateKey: string; subject: string };
 
@@ -65,7 +68,11 @@ export async function sendPush(
         erro: errorKind(error),
       }),
     );
-    return { ok: false, gone: status === 404 || status === 410 };
+    if (status === 404 || status === 410) return { ok: false, gone: true };
+    if (status === 400 || status === 401 || status === 403) {
+      return { ok: false, gone: false, permanent: true };
+    }
+    return { ok: false, gone: false };
   }
 }
 

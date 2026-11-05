@@ -22,10 +22,14 @@ export type SendRemindersDeps = {
   targets(ownerId: string): Promise<PushTarget[]>;
   send(t: PushTarget, p: PushPayload): Promise<SendResult>;
   removeTargets(ids: string[]): Promise<void>;
-  touchTargets(ids: string[]): Promise<void>;
+  /** Zera as falhas de quem recebeu, soma falha a quem recusou de vez; devolve quantos foram apagados. */
+  recordResults(okIds: string[], failedIds: string[]): Promise<number>;
 };
 
 type Counts = { sent: number; removed: number; failed: number };
+
+/** No máximo este número de lembretes processados ao mesmo tempo. */
+export const REMINDER_CONCURRENCY = 5;
 
 const TEMPORARY_FAILURE: SendResult = { ok: false, gone: false };
 
@@ -46,12 +50,17 @@ export async function handleSendReminders(
   }
 
   const total: Counts = { sent: 0, removed: 0, failed: 0 };
-  for (const reminder of due) {
-    const counts = await processReminder(reminder, deps);
-    total.sent += counts.sent;
-    total.removed += counts.removed;
-    total.failed += counts.failed;
-  }
+  let next = 0;
+  const worker = async () => {
+    while (next < due.length) {
+      const reminder = due[next++]!;
+      const counts = await processReminder(reminder, deps);
+      total.sent += counts.sent;
+      total.removed += counts.removed;
+      total.failed += counts.failed;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(REMINDER_CONCURRENCY, due.length) }, worker));
 
   if (due.length > 0) {
     console.info(JSON.stringify({ evento: 'lembretes_processados', due: due.length, ...total }));
@@ -92,27 +101,37 @@ async function processReminder(reminder: Due, deps: SendRemindersDeps): Promise<
 
   const delivered: string[] = [];
   const gone: string[] = [];
+  const permanent: string[] = [];
   let failed = 0;
   results.forEach((result, i) => {
     const targetId = targets[i]!.id;
     if (result.ok) delivered.push(targetId);
     else if (result.gone) gone.push(targetId);
-    else failed += 1;
+    else if (result.permanent) {
+      permanent.push(targetId);
+      failed += 1;
+    } else failed += 1;
   });
 
   // Manutenção dos aparelhos não pode desfazer um envio que já aconteceu.
   if (gone.length > 0) {
     await bestEffort('falha_ao_remover_aparelhos', id, () => deps.removeTargets(gone));
   }
-  if (delivered.length > 0) {
-    await bestEffort('falha_ao_atualizar_aparelhos', id, () => deps.touchTargets(delivered));
+  let deleted = 0;
+  if (delivered.length > 0 || permanent.length > 0) {
+    try {
+      deleted = await deps.recordResults(delivered, permanent);
+    } catch (error) {
+      logFailure('falha_ao_registrar_resultados', id, error);
+    }
   }
-  // Ninguém recebeu por falha temporária: devolve a reserva para tentar no próximo minuto.
+  // Ninguém recebeu e houve falha (temporária ou permanente): devolve a reserva para o próximo minuto.
+  // Aparelhos sumidos (404/410) não contam: não há para quem tentar de novo.
   if (delivered.length === 0 && failed > 0) {
     await bestEffort('falha_ao_liberar_reserva', id, () => deps.release(id, startsAt));
   }
 
-  return { sent: delivered.length, removed: gone.length, failed };
+  return { sent: delivered.length, removed: gone.length + deleted, failed };
 }
 
 async function bestEffort(event: string, id: string, action: () => Promise<void>): Promise<void> {

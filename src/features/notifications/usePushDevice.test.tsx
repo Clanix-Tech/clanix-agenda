@@ -78,6 +78,30 @@ afterEach(() => {
 const state = () => screen.getByTestId('state');
 
 describe('usePushDevice', () => {
+  it('aparelho ativado com chave VAPID antiga é reinscrito ao montar', async () => {
+    const { push, fake } = setup(
+      {
+        permission: 'granted',
+        subscribed: 'https://push.example/velho',
+        applicationServerKey:
+          'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U',
+      },
+      {
+        tables: {
+          push_subscriptions: [
+            { id: 'x', owner_id: 'user-1', endpoint: 'https://push.example/velho' },
+          ],
+        },
+      },
+    );
+    const old = push.subscription()!;
+    await waitFor(() => expect(old.unsubscribe).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(fake.calls.rpc.map((c) => c.name)).toEqual(['register_push_subscription']),
+    );
+    expect(push.subscription()!.endpoint).not.toBe('https://push.example/velho');
+  });
+
   it('mostra o estado real do aparelho (desativado) sem pedir permissão', async () => {
     const { push } = setup();
     await waitFor(() => expect(state()).toHaveTextContent('desativado'));
