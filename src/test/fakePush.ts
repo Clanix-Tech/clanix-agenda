@@ -42,6 +42,7 @@ export function installFakePush(options: FakePushOptions = {}) {
   const state = {
     permission: options.permission ?? 'default',
     current: null as FakeSubscription | null,
+    shown: [] as Array<{ close: ReturnType<typeof vi.fn<() => void>> }>,
   };
   let count = 0;
 
@@ -78,6 +79,8 @@ export function installFakePush(options: FakePushOptions = {}) {
   );
   const registration = {
     pushManager: { getSubscription: vi.fn(async () => state.current), subscribe },
+    /** Notificações exibidas (cada uma com `close`). */
+    getNotifications: vi.fn(async () => state.shown),
   };
 
   const requestPermission = vi.fn(async () => {

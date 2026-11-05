@@ -334,6 +334,21 @@ describe('forgetThisDevice (ao sair)', () => {
     await expect(forgetThisDevice(20)).resolves.toBeUndefined();
   });
 
+  it('fecha as notificações exibidas ao sair (privacidade)', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: endpoint });
+    const shown = [{ close: vi.fn() }, { close: vi.fn() }];
+    push.state.shown.push(...shown);
+    await forgetThisDevice();
+    for (const notification of shown) expect(notification.close).toHaveBeenCalledOnce();
+  });
+
+  it('getNotifications sem resposta não trava a saída', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: endpoint });
+    push.registration.getNotifications.mockImplementation(() => new Promise(() => {}));
+    await expect(forgetThisDevice(20)).resolves.toBeUndefined();
+    expect(push.subscription()).toBeNull();
+  });
+
   it('falha de rede ao apagar não impede cancelar a assinatura', async () => {
     const { push } = setup(
       { permission: 'granted', subscribed: endpoint },

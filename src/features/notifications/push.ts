@@ -210,9 +210,17 @@ export async function unsubscribeThisDevice(): Promise<void> {
   }
 }
 
+/** Fecha os lembretes ainda exibidos (podem mostrar nomes de clientes). Melhor esforço. */
+async function closeShownNotifications(): Promise<void> {
+  const registration = await getRegistration();
+  const shown = (await registration?.getNotifications()) ?? [];
+  for (const notification of shown) notification.close();
+}
+
 /**
- * Ao sair da conta: apaga a linha deste aparelho e cancela a assinatura do navegador, os dois ao
- * mesmo tempo (um não espera o outro). Tudo dentro do tempo limite: sair nunca trava. Nunca lança.
+ * Ao sair da conta: fecha as notificações exibidas, apaga a linha deste aparelho e cancela a
+ * assinatura do navegador, tudo ao mesmo tempo (um não espera o outro). Tudo dentro do tempo
+ * limite: sair nunca trava. Nunca lança.
  */
 export async function forgetThisDevice(timeoutMs = CLEANUP_TIMEOUT_MS): Promise<void> {
   const cleanup = async () => {
@@ -220,7 +228,8 @@ export async function forgetThisDevice(timeoutMs = CLEANUP_TIMEOUT_MS): Promise<
     if (!subscription) return;
     await Promise.allSettled([deleteRow(subscription.endpoint), subscription.unsubscribe()]);
   };
-  await withTimeout(cleanup(), timeoutMs).catch(() => {});
+  const closing = closeShownNotifications().catch(() => {});
+  await withTimeout(Promise.all([closing, cleanup()]), timeoutMs).catch(() => {});
 }
 
 /**
