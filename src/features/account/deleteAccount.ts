@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { toAppError } from '@/lib/errors';
 
-export type DeleteAccountErrorKind = 'senha' | 'rede' | 'falha';
+export type DeleteAccountErrorKind = 'senha' | 'captcha' | 'rede' | 'falha';
 
 export class DeleteAccountError extends Error {
   readonly kind: DeleteAccountErrorKind;
@@ -46,7 +46,14 @@ export async function deleteAccount(input: DeleteAccountInput): Promise<void> {
     options: { captchaToken: input.captchaToken ?? undefined },
   });
   if (signInError) {
-    if (field(signInError, 'code') === 'invalid_credentials') throw new DeleteAccountError('senha');
+    const code = field(signInError, 'code');
+    if (code === 'invalid_credentials') {
+      // Uma tentativa anterior pode ter apagado a conta sem a resposta chegar: aí a senha
+      // "não confere" porque o usuário já não existe. A sessão atual tira a dúvida.
+      if (await currentUserGone()) return;
+      throw new DeleteAccountError('senha');
+    }
+    if (code === 'captcha_failed') throw new DeleteAccountError('captcha');
     throw new DeleteAccountError(toAppError(signInError).kind === 'rede' ? 'rede' : 'falha');
   }
 
@@ -56,7 +63,16 @@ export async function deleteAccount(input: DeleteAccountInput): Promise<void> {
   if (toAppError(error).kind !== 'rede') throw new DeleteAccountError('falha');
 
   // A resposta pode ter se perdido depois de a conta já ter sido apagada.
-  const { error: userError } = await supabase.auth.getUser();
-  if (userError && isUserGone(userError)) return;
+  if (await currentUserGone()) return;
   throw new DeleteAccountError('rede');
+}
+
+/** Só `true` quando o Auth confirma que o usuário da sessão atual não existe mais. */
+async function currentUserGone(): Promise<boolean> {
+  try {
+    const { error } = await supabase.auth.getUser();
+    return !!error && isUserGone(error);
+  } catch {
+    return false;
+  }
 }

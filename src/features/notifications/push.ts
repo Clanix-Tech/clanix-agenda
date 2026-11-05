@@ -182,9 +182,11 @@ export async function ensureCurrentKey(
 ): Promise<'ok' | 'renovada'> {
   const existing = await registration.pushManager.getSubscription();
   const applicationServerKey = base64UrlToBytes(vapidPublicKey);
-  if (!existing || sameBytes(existing.options.applicationServerKey, applicationServerKey)) {
-    return 'ok';
-  }
+  if (!existing) return 'ok';
+  const currentKey = existing.options.applicationServerKey;
+  // Alguns navegadores não informam a chave (null): sem como comparar, mantém a inscrição
+  // em vez de trocá-la a cada abertura do app.
+  if (currentKey === null || sameBytes(currentKey, applicationServerKey)) return 'ok';
   await existing.unsubscribe();
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,

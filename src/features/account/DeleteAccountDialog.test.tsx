@@ -58,6 +58,32 @@ describe('DeleteAccountDialog', () => {
     expect(fake.calls.signOut).toHaveLength(0);
   });
 
+  it('a conta já tinha sido apagada (nova tentativa diz "senha incorreta") → sai e vai para a entrada', async () => {
+    const fake = setup({
+      auth: {
+        signInWithPassword: () => ({ error: invalid }),
+        getUser: () => ({ error: { status: 403, code: 'user_not_found', message: 'x' } }),
+      },
+    });
+    await confirm();
+    expect(await screen.findByRole('heading', { name: 'Entrar' })).toBeInTheDocument();
+    expect(fake.calls.signOut).toHaveLength(1);
+  });
+
+  it('CAPTCHA recusado mostra a mensagem do CAPTCHA', async () => {
+    setup({
+      auth: {
+        signInWithPassword: () => ({
+          error: { name: 'AuthApiError', status: 400, code: 'captcha_failed', message: 'x' },
+        }),
+      },
+    });
+    await confirm();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível confirmar que você não é um robô. Tente de novo.',
+    );
+  });
+
   it('sem conexão', async () => {
     setup({
       functions: {

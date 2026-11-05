@@ -29,6 +29,49 @@ describe('deleteAccount', () => {
     expect(fake.calls.functions).toHaveLength(0);
   });
 
+  it('senha "incorreta" porque a conta já foi apagada (resposta perdida e nova tentativa) → considera excluído', async () => {
+    const fake = setup({
+      auth: {
+        signInWithPassword: () => ({ error: invalid }),
+        getUser: () => ({ error: { status: 403, code: 'user_not_found', message: 'x' } }),
+      },
+    });
+    await expect(deleteAccount(INPUT)).resolves.toBeUndefined();
+    expect(fake.calls.functions).toHaveLength(0);
+  });
+
+  it('senha incorreta e a sessão atual ainda é válida → "senha"', async () => {
+    setup({
+      auth: {
+        signInWithPassword: () => ({ error: invalid }),
+        getUser: () => ({ data: { user: makeSession().user } }),
+      },
+    });
+    expect(await kindOf(deleteAccount(INPUT))).toBe('senha');
+  });
+
+  it('senha incorreta e o getUser falha por rede → "senha" (nunca "excluído")', async () => {
+    setup({
+      auth: {
+        signInWithPassword: () => ({ error: invalid }),
+        getUser: () => ({ error: { name: 'AuthRetryableFetchError', status: 0, message: 'x' } }),
+      },
+    });
+    expect(await kindOf(deleteAccount(INPUT))).toBe('senha');
+  });
+
+  it('CAPTCHA recusado na nova entrada → "captcha"', async () => {
+    const fake = setup({
+      auth: {
+        signInWithPassword: () => ({
+          error: { name: 'AuthApiError', status: 400, code: 'captcha_failed', message: 'x' },
+        }),
+      },
+    });
+    expect(await kindOf(deleteAccount(INPUT))).toBe('captcha');
+    expect(fake.calls.functions).toHaveLength(0);
+  });
+
   it('sucesso: entra com a senha (e o token do CAPTCHA) e chama a função por POST', async () => {
     let signInArgs: unknown;
     const fake = setup({

@@ -36,6 +36,14 @@ function Probe() {
   return <div data-testid="host">{captcha.element}</div>;
 }
 
+function ConditionalProbe({ show }: { show: boolean }) {
+  const captcha = useCaptcha('login');
+  useEffect(() => {
+    seen.snapshot = captcha;
+  });
+  return <div data-testid="host">{show ? captcha.element : null}</div>;
+}
+
 beforeEach(() => {
   env.key = null;
   loader.load.mockReset();
@@ -106,5 +114,39 @@ describe('useCaptcha', () => {
     await vi.waitFor(() => expect(api.render).toHaveBeenCalled());
     unmount();
     expect(api.remove).toHaveBeenCalledWith('w1');
+  });
+
+  it('o contêiner aparece depois (renderização condicional): renderiza ao aparecer', async () => {
+    env.key = 'site-key';
+    const { api, opts } = fakeApi();
+    loader.load.mockResolvedValue(api);
+    const { rerender } = render(<ConditionalProbe show={false} />);
+    // O script carrega com o contêiner ausente.
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(api.render).not.toHaveBeenCalled();
+
+    rerender(<ConditionalProbe show />);
+    await vi.waitFor(() => expect(api.render).toHaveBeenCalledTimes(1));
+    act(() => opts[0]!.callback!('tok'));
+    expect(last().token).toBe('tok');
+  });
+
+  it('o contêiner some: remove o widget e descarta o token; ao voltar, renderiza de novo', async () => {
+    env.key = 'site-key';
+    const { api, opts } = fakeApi();
+    loader.load.mockResolvedValue(api);
+    const { rerender } = render(<ConditionalProbe show />);
+    await vi.waitFor(() => expect(api.render).toHaveBeenCalledTimes(1));
+    act(() => opts[0]!.callback!('tok'));
+    expect(last().token).toBe('tok');
+
+    rerender(<ConditionalProbe show={false} />);
+    expect(api.remove).toHaveBeenCalledWith('w1');
+    expect(last().token).toBeNull();
+
+    rerender(<ConditionalProbe show />);
+    await vi.waitFor(() => expect(api.render).toHaveBeenCalledTimes(2));
   });
 });

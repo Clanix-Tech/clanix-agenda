@@ -288,6 +288,20 @@ describe('ensureCurrentKey (troca de chave VAPID)', () => {
     expect(push.subscription()!.endpoint).not.toBe('https://push.example/velho');
   });
 
+  it('navegador não informa a chave (applicationServerKey null) → ok, sem trocar a inscrição', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: 'https://push.example/atual' });
+    const current = push.subscription()!;
+    current.options.applicationServerKey = null;
+    const register = vi.fn(async () => {});
+
+    const result = await ensureCurrentKey(push.registration as never, TEST_VAPID_KEY, register);
+
+    expect(result).toBe('ok');
+    expect(current.unsubscribe).not.toHaveBeenCalled();
+    expect(push.subscribe).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+  });
+
   it('mesma chave → ok, sem efeitos', async () => {
     const { push } = setup({ permission: 'granted', subscribed: 'https://push.example/atual' });
     const current = push.subscription()!;

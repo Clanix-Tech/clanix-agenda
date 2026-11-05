@@ -19,19 +19,20 @@ export type Captcha = {
 
 export function useCaptcha(action: CaptchaAction): Captcha {
   const siteKey = getEnv().turnstileSiteKey;
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Ref de callback guardada em estado: o widget é renderizado quando o contêiner aparece
+  // (mesmo que apareça depois, como num diálogo que abre) e removido quando ele some.
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const widget = useRef<{ api: TurnstileApi; id: string } | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (!siteKey) return;
+    if (!siteKey || !container) return;
     let cancelled = false;
     loadTurnstile()
       .then((api) => {
-        const container = containerRef.current;
-        if (cancelled || !container) return;
+        if (cancelled) return;
         const id = api.render(container, {
           sitekey: siteKey,
           action,
@@ -56,8 +57,10 @@ export function useCaptcha(action: CaptchaAction): Captcha {
       const w = widget.current;
       widget.current = null;
       if (w) w.api.remove(w.id);
+      // Sem widget, o token antigo não vale mais.
+      setToken(null);
     };
-  }, [siteKey, action, attempt]);
+  }, [siteKey, action, attempt, container]);
 
   const reset = useCallback(() => {
     setToken(null);
@@ -77,7 +80,7 @@ export function useCaptcha(action: CaptchaAction): Captcha {
 
   const element = (
     <div>
-      <div ref={containerRef} className="flex min-h-[65px] justify-center" />
+      <div ref={setContainer} className="flex min-h-[65px] justify-center" />
       {error && (
         <div role="alert" className="mt-2 space-y-2 text-sm text-[#B91C1C]">
           <p>{error}</p>
