@@ -36,6 +36,17 @@ Detalhes em `docs/banco-de-dados.md` e `docs/supabase-local.md`.
 Como funciona, configuração em produção, limites e privacidade: `docs/notificacoes.md`. Roteiro em
 aparelhos reais: `docs/checklist-aparelhos.md`. APK Android: `docs/guia-apk-android.md`.
 
+### Publicação e segurança
+
+- `npm run verificar:producao` — confere variáveis, build e bundle (sem segredos) do `.env.production.local`
+- `npm run publicar:site` — verifica e publica o site no Cloudflare Pages (upload direto)
+- `npm run backup:producao` — backup do banco de produção (precisa do `.env.backup.local`)
+
+Passo a passo para quem nunca publicou: `docs/publicacao.md`. Mapa de segurança (requisito → onde →
+teste): `docs/seguranca.md`. Conferências antes de abrir ao público: `docs/checklist-lancamento.md`.
+Backup, restauração e projeto sempre ativo: `docs/backup-e-restauracao.md`. Privacidade e retenção:
+`docs/privacidade-e-retencao.md`.
+
 ### Testes ponta a ponta
 
 - `npm run e2e` — Playwright em computador (Chrome), iPhone (WebKit), Android (Chrome) e no build com

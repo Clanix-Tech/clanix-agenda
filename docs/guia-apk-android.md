@@ -10,6 +10,7 @@ Nada aqui gera chave ou APK dentro do repositório. Os valores `__DOMINIO__` e `
 - **Verificação de desenvolvedor do Google**: desde set/2026, no Brasil, distribuir um APK fora da Play Store exige que o desenvolvedor esteja verificado pelo Google. Faça a verificação antes de divulgar o arquivo.
 - **JDK e Android SDK**: o Bubblewrap oferece baixar os dois na primeira execução (aceite). Precisa de Node.js, que o projeto já usa.
 - Instalar o Bubblewrap: `npm install -g @bubblewrap/cli`.
+- Os comandos deste guia foram escritos sem rodar o Bubblewrap de verdade: ao gerar o APK, confira cada um contra `bubblewrap --help` (e `bubblewrap <comando> --help`) da versão instalada e corrija o guia se algo tiver mudado.
 
 ## 2. Gerar o projeto Android
 
@@ -63,6 +64,8 @@ O site precisa publicar `https://<dominio>/.well-known/assetlinks.json`. Duas fo
 - **À mão**: `node scripts/gerar-assetlinks.mjs saida.json` (usa as mesmas variáveis). Valida o pacote e as impressões e mostra erro em português se algo estiver errado.
 
 Depois, publique o site e confira que o endereço acima responde com o JSON.
+
+No plano gratuito, o endereço `https://<projeto>.pages.dev` do Cloudflare Pages serve para o `assetlinks.json`: use esse mesmo domínio (sem domínio próprio) como `<dominio>` aqui e no `bubblewrap init`. Se um dia trocar de endereço, gere o APK de novo. Veja [`publicacao.md`](publicacao.md).
 
 ## 6. Testar
 

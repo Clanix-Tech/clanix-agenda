@@ -183,6 +183,8 @@ Ao fim de cada etapa: o que foi feito, arquivos, testes executados e resultados,
 
 **Plano de serviços [Usuário]:** desenvolvimento no Supabase gratuito (e localmente via Supabase CLI + Docker); **lançamento no Supabase Pro** (backups diários; o plano gratuito não tem backup utilizável e pausa projetos inativos); **provedor de e-mail transacional** (ex.: Resend ou Brevo, plano gratuito no início) configurado como SMTP do Supabase Auth antes do lançamento, com confirmação de e-mail ativada.
 
+**Nota (decisão de 2026-11-05): lançar no plano gratuito e migrar para o Pro quando possível.** Fica valendo, no gratuito, o que compensa a falta de backup e a pausa por inatividade (Plano 04, Task 8): `npm run backup:producao` (semanal e antes de cada `db push`, retenção de 30 dias), chamada diária à função `ping` por um agendador externo gratuito e restauração de teste num projeto reserva (`docs/backup-e-restauracao.md`). O e-mail pode usar Gmail com senha de app (sem domínio) ou um provedor com domínio próprio; o site pode ficar no endereço `*.pages.dev` do Cloudflare Pages (`docs/publicacao.md`).
+
 Sem inventar valores; o projeto avança no que não depender deles.
 1. **Projeto Supabase** (URL e chave publicável; secrets das Edge Functions configurados pelo painel/CLI); upgrade para Pro antes do lançamento.
 2. **Domínio de produção com HTTPS** (necessário para PWA em produção, push e `assetlinks.json`).
