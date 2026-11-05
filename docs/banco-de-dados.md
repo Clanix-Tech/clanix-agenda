@@ -65,12 +65,21 @@ Por causa do revoke global de privilégios padrão (`alter default privileges ..
 
 ### Agendamento por minuto (pg_cron + pg_net + Vault)
 
-- Migração `20261104000200_reminders_cron.sql` habilita `pg_net` e `pg_cron` e agenda o job `send-reminders` (`* * * * *`), que executa `app_private.invoke_send_reminders()`. Essa função (schema `app_private`, sem acesso por API) lê `reminders_function_url` e `reminders_cron_secret` de `vault.decrypted_secrets`; se faltar algum, devolve `null` e não chama nada; senão faz `net.http_post` (corpo `{}`, header `x-cron-secret`, timeout 10 s) e devolve o id da requisição.
+- Migração `20261104000200_reminders_cron.sql` habilita `pg_net` e `pg_cron` e agenda o job `send-reminders` (`* * * * *`), que executa `app_private.invoke_send_reminders()`. Essa função (schema `app_private`, sem acesso por API) lê `reminders_function_url` e `reminders_cron_secret` de `vault.decrypted_secrets`; se faltar algum, devolve `null` e não chama nada; senão faz `net.http_post` (corpo `{}`, header `x-cron-secret`, timeout 30 s desde a migração de produção) e devolve o id da requisição.
 - `set_reminder_config(p_function_url, p_cron_secret)` (somente `service_role`) grava ou atualiza os dois segredos no Vault. A URL precisa começar com `http://` ou `https://` e o segredo ter ao menos 32 caracteres (`22023` caso contrário).
 - Configurar (o segredo deve ser o mesmo `CRON_SECRET` da Edge Function; nunca versione):
   - Local: `npm run lembretes:local` (lê o `CRON_SECRET` de `supabase/functions/.env` e grava a URL `http://host.docker.internal:44321/functions/v1/send-reminders`, conferida pelo `pg_net` do container do banco; `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` também funciona). Veja `docs/supabase-local.md`.
   - Produção: no SQL Editor, `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<segredo>');` e o mesmo valor em `supabase secrets set CRON_SECRET=...`. O SQL Editor guarda o histórico das consultas: apague a consulta salva depois de rodar `set_reminder_config`. Se o segredo vazar, troque nos dois lados: o Vault (com `set_reminder_config`) e o secret da função `CRON_SECRET`.
 - Sem configuração o job roda a cada minuto e não faz nada.
+
+### Endurecimento para produção (`20261105000100_producao.sql`)
+
+- `push_subscriptions.failure_count` (`int not null default 0`) conta falhas seguidas de envio.
+- `record_push_results(p_ok uuid[], p_failed uuid[])` (somente `service_role`) devolve quantas assinaturas apagou: zera `failure_count` e atualiza `last_used_at` dos ids de `p_ok`; soma 1 em `failure_count` dos de `p_failed` e apaga, entre eles, os que chegaram a 3 ou mais.
+- `ping()` devolve `'ok'` (`SECURITY DEFINER`, `search_path` vazio, não lê tabela) e tem `EXECUTE` para `anon` e `authenticated`; é a única função de `public` executável por `anon` (exceção explícita na invariante de `08_invariants`). A Task 8 a chama periodicamente para manter o projeto gratuito ativo.
+- Job `limpar-historico-cron` (`17 3 * * *`) apaga de `cron.job_run_details` o que tem mais de 7 dias.
+- Índices: `appointments_agendado_starts_at_idx` (parcial, `starts_at where status = 'agendado'`) e `appointment_history_owner_id_idx`.
+- Revogação no schema `net` (`pg_net`): `usage` no schema, todos os privilégios nas tabelas e `execute` nas funções, para `public`, `anon` e `authenticated`. Atenção: só o dono dos grants consegue revogá-los. No Supabase local o schema `net` pertence a `supabase_admin` e o `postgres` não revoga (a migração roda sem erro, mas sem efeito, e os testes correspondentes são pulados); a API também não expõe `net` (`db.schemas = public, graphql_public`). No hospedado, uma atualização da extensão `pg_net` pode devolver os grants: confira no checklist de publicação (Task 9) com `select has_schema_privilege('anon', 'net', 'usage')`.
 
 ## Códigos de erro
 
@@ -98,8 +107,9 @@ Além desses, as RPCs podem devolver erros crus `23514` (check violation) e `235
 | `favorite_services` | nada | `SELECT`, `DELETE`, `INSERT`/`UPDATE` por coluna (sem `owner_id`) | total |
 | `push_subscriptions` | nada | `SELECT` e `DELETE` próprios; escrita só via `register_push_subscription` | total |
 | `appointment_reminders` | nada | nada | acesso total |
-| RPCs | nada | `EXECUTE` (exceto `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config`) | total |
-| `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config` | nada | nada | `EXECUTE` |
+| RPCs | nada | `EXECUTE` (exceto `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config`, `record_push_results`) | total |
+| `due_reminders`, `claim_reminder`, `release_reminder`, `set_reminder_config`, `record_push_results` | nada | nada | `EXECUTE` |
+| `ping` | `EXECUTE` | `EXECUTE` | `EXECUTE` |
 
 ## Como testar
 

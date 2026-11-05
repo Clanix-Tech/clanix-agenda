@@ -145,14 +145,14 @@ isOneToOne: false
                   ]
                 },"push_subscriptions": {
                   Row: {
-                    "auth": string,"created_at": string,"device_label": string | null,"endpoint": string,"id": string,"last_used_at": string | null,"owner_id": string,"p256dh": string
+                    "auth": string,"created_at": string,"device_label": string | null,"endpoint": string,"failure_count": number,"id": string,"last_used_at": string | null,"owner_id": string,"p256dh": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "auth": string,"created_at"?: string,"device_label"?: string | null,"endpoint": string,"id"?: string,"last_used_at"?: string | null,"owner_id"?: string,"p256dh": string
+                    "auth": string,"created_at"?: string,"device_label"?: string | null,"endpoint": string,"failure_count"?: number,"id"?: string,"last_used_at"?: string | null,"owner_id"?: string,"p256dh": string
                   }
                   Update: {
-                    "auth"?: string,"created_at"?: string,"device_label"?: string | null,"endpoint"?: string,"id"?: string,"last_used_at"?: string | null,"owner_id"?: string,"p256dh"?: string
+                    "auth"?: string,"created_at"?: string,"device_label"?: string | null,"endpoint"?: string,"failure_count"?: number,"id"?: string,"last_used_at"?: string | null,"owner_id"?: string,"p256dh"?: string
                   }
                   Relationships: [
                     {
@@ -223,6 +223,9 @@ isOneToOne: false
               "appointment_id": string,"body": string,"owner_id": string,"starts_at": string,"title": string,"url": string
             }[]
                            },
+"ping":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "reactivate_appointment":
 { Args: { "p_id": string }; Returns: {
               "canceled_at": string | null,
@@ -246,6 +249,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"record_push_results":
+{ Args: { "p_failed": (string)[],"p_ok": (string)[] }; Returns: number
+                           },
 "register_push_subscription":
 { Args: { "p_auth": string,"p_device_label"?: string,"p_endpoint": string,"p_p256dh": string }; Returns: string
                            },
