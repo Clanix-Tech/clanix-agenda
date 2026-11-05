@@ -1,6 +1,7 @@
 import { expect, login, mainNav, test } from './support/fixtures.ts';
 
-// Projeto `pwa`: o service worker só existe no build, servido por `vite preview`.
+// Projeto `pwa`: o único com o service worker liberado (os aparelhos o bloqueiam para o
+// `page.route` interceptar as chamadas); todos usam o mesmo build servido pelo `vite preview`.
 
 test('manifesto tem os campos de um app instalável', async ({ request }) => {
   const res = await request.get('/manifest.webmanifest');

@@ -135,7 +135,23 @@ type Fixtures = {
   makeUser: (opts?: UserOptions) => Promise<TestUser>;
 };
 
+/**
+ * Mensagens de console de uma violação de CSP: o Chromium cita "Content Security Policy" (ex.:
+ * "Loading the script '…' violates the following Content Security Policy directive") e o WebKit
+ * começa com "Refused to".
+ */
+const CSP_VIOLATION = /Content Security Policy|Refused to/;
+
 export const test = base.extend<Fixtures>({
+  // Toda página falha o teste se o navegador bloquear algo pela CSP do build (dist/_headers).
+  page: async ({ page }, provide) => {
+    const violations: string[] = [];
+    page.on('console', (msg) => {
+      if (CSP_VIOLATION.test(msg.text())) violations.push(`[${msg.type()}] ${msg.text()}`);
+    });
+    await provide(page);
+    expect(violations, 'violações de CSP no console do navegador').toEqual([]);
+  },
   // eslint-disable-next-line no-empty-pattern -- assinatura exigida pelo Playwright
   makeUser: async ({}, provide, testInfo) => {
     const created: TestUser[] = [];

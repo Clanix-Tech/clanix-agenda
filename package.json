@@ -20,7 +20,9 @@
     "e2e:ui": "playwright test --ui",
     "db:types": "supabase gen types typescript --local > src/types/database.ts",
     "vapid:gerar": "node scripts/gerar-vapid.mjs",
-    "lembretes:local": "node scripts/configurar-lembretes-local.mjs"
+    "lembretes:local": "node scripts/configurar-lembretes-local.mjs",
+    "verificar:producao": "node scripts/verificar-producao.mjs",
+    "publicar:site": "node scripts/publicar-site.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
@@ -77,6 +79,7 @@
     "vitest": "^5.0.5",
     "web-push": "^3.6.7",
     "workbox-build": "^7.4.1",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "wrangler": "4.151.3"
   }
 }
