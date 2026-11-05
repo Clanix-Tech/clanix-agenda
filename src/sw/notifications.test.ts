@@ -1,4 +1,10 @@
-import { notificationOptions, parsePushData, resolveClickUrl } from './notifications';
+import {
+  notificationOptions,
+  openNotificationTarget,
+  parsePushData,
+  resolveClickUrl,
+  type WindowLike,
+} from './notifications';
 
 const valid = {
   title: 'Lembrete de atendimento',
@@ -48,5 +54,52 @@ describe('resolveClickUrl', () => {
     );
     expect(resolveClickUrl('https://app.test', 'https://evil.com/x')).toBe('https://app.test/');
     expect(resolveClickUrl('https://app.test', '//evil.com')).toBe('https://app.test/');
+  });
+});
+
+describe('openNotificationTarget', () => {
+  const origin = 'https://app.test';
+  const target = 'https://app.test/?atendimento=1';
+
+  function win(over: Partial<WindowLike> = {}) {
+    const w: WindowLike = {
+      url: 'https://app.test/agenda',
+      focus: vi.fn(async () => w),
+      navigate: vi.fn(async () => null),
+      ...over,
+    };
+    return w;
+  }
+  function clients(windows: WindowLike[]) {
+    return { matchAll: vi.fn(async () => windows), openWindow: vi.fn(async () => null) };
+  }
+
+  it('janela controlada: foca e navega, sem abrir outra', async () => {
+    const w = win();
+    const c = clients([w]);
+    await openNotificationTarget(c, origin, target);
+    expect(c.matchAll).toHaveBeenCalledWith({ type: 'window' });
+    expect(w.focus).toHaveBeenCalled();
+    expect(w.navigate).toHaveBeenCalledWith(target);
+    expect(c.openWindow).not.toHaveBeenCalled();
+  });
+
+  it('só janelas não controladas (matchAll vazio): abre uma janela nova', async () => {
+    const c = clients([]);
+    await openNotificationTarget(c, origin, target);
+    expect(c.openWindow).toHaveBeenCalledWith(target);
+  });
+
+  it('navigate rejeita: abre uma janela nova', async () => {
+    const w = win({ navigate: vi.fn(async () => Promise.reject(new Error('não controlada'))) });
+    const c = clients([w]);
+    await openNotificationTarget(c, origin, target);
+    expect(c.openWindow).toHaveBeenCalledWith(target);
+  });
+
+  it('janela de outro domínio é ignorada', async () => {
+    const c = clients([win({ url: 'https://outro.test/' })]);
+    await openNotificationTarget(c, origin, target);
+    expect(c.openWindow).toHaveBeenCalledWith(target);
   });
 });

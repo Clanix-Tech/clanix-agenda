@@ -62,3 +62,23 @@ test('sem internet, recarregar "/" ainda abre a casca do app com o aviso de sem 
   await expect(page.getByRole('button', { name: 'Entrar', exact: true })).toBeVisible();
   await expect(page.getByText('Sem conexão.')).toBeVisible();
 });
+
+test('logado e sem internet, recarregar "/" mostra o aviso e "Tentar novamente", sem carregar para sempre', async ({
+  page,
+  context,
+  makeUser,
+}) => {
+  const user = await makeUser();
+  await login(page, user);
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
+  await page.reload();
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByText('Sem conexão.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Tentar novamente' })).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByText('Carregando…')).toHaveCount(0);
+});

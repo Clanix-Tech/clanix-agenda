@@ -5,7 +5,13 @@ import {
   precacheAndRoute,
 } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { notificationOptions, parsePushData, resolveClickUrl } from './sw/notifications';
+import {
+  notificationOptions,
+  openNotificationTarget,
+  parsePushData,
+  resolveClickUrl,
+  type ClientsLike,
+} from './sw/notifications';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -45,15 +51,6 @@ self.addEventListener('notificationclick', (event) => {
     (event.notification.data as { url?: string } | null)?.url ?? '/',
   );
   event.waitUntil(
-    (async () => {
-      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const open = windows.find((w) => new URL(w.url).origin === self.location.origin);
-      if (open) {
-        const focused = await open.focus();
-        await focused.navigate(url);
-      } else {
-        await self.clients.openWindow(url);
-      }
-    })(),
+    openNotificationTarget(self.clients as unknown as ClientsLike, self.location.origin, url),
   );
 });

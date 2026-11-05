@@ -3,6 +3,7 @@ import { lazy } from 'react';
 import type { RouteObject } from 'react-router';
 import { AppShell } from '@/components/layout/AppShell';
 import { RootLayout } from '@/components/layout/RootLayout';
+import { RouteError } from '@/components/layout/RouteError';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { AppointmentForm } from '@/features/appointments/components/AppointmentForm';
 import type { NewAppointmentProviderProps } from '@/features/appointments/components/NewAppointmentProvider';
@@ -29,6 +30,7 @@ const renderNewAppointment: NewAppointmentProviderProps['renderForm'] = ({ prefi
 export const routes: RouteObject[] = [
   {
     element: <RootLayout />,
+    errorElement: <RouteError />,
     children: [
       { path: '/entrar', element: <Login /> },
       { path: '/cadastro', element: <Signup /> },

@@ -36,3 +36,39 @@ export function resolveClickUrl(origin: string, url: string): string {
   }
   return new URL('/', origin).href;
 }
+
+/** Parte de `WindowClient` de que a escolha da janela precisa (permite testar sem navegador). */
+export type WindowLike = {
+  url: string;
+  focus(): Promise<WindowLike>;
+  navigate(url: string): Promise<unknown>;
+};
+export type ClientsLike = {
+  /** Sem `includeUncontrolled`: devolve só as janelas que este service worker controla. */
+  matchAll(options: { type: 'window' }): Promise<readonly WindowLike[]>;
+  openWindow(url: string): Promise<unknown>;
+};
+
+/**
+ * Toque na notificação: foca uma janela do app controlada por este service worker e navega até
+ * a URL. `navigate()` rejeita em janela não controlada; por isso só as controladas entram na
+ * escolha. Se `focus()`/`navigate()` rejeitarem, ou não houver janela, abre uma nova.
+ */
+export async function openNotificationTarget(
+  clients: ClientsLike,
+  origin: string,
+  url: string,
+): Promise<void> {
+  const windows = await clients.matchAll({ type: 'window' });
+  const candidate = windows.find((w) => new URL(w.url).origin === origin);
+  if (candidate) {
+    try {
+      const focused = await candidate.focus();
+      await focused.navigate(url);
+      return;
+    } catch {
+      // cai na janela nova
+    }
+  }
+  await clients.openWindow(url);
+}

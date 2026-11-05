@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'sonner';
 import { AppToaster } from './AppToaster';
+import { TOAST_ACTION_CLASS } from '@/components/ui/sonner';
 import { UpdatePrompt } from './UpdatePrompt';
 
 const sw = vi.hoisted(() => ({
@@ -44,6 +45,14 @@ describe('UpdatePrompt', () => {
     expect(await screen.findByText('Nova versão disponível')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }));
     expect(sw.update).toHaveBeenCalledWith(true);
+  });
+
+  it('o botão "Atualizar" tem alvo de toque de pelo menos 44 px', async () => {
+    sw.needRefresh = true;
+    renderPrompt();
+    const button = await screen.findByRole('button', { name: 'Atualizar' });
+    expect(TOAST_ACTION_CLASS).toContain('!h-11');
+    for (const cls of TOAST_ACTION_CLASS.split(' ')) expect(button).toHaveClass(cls);
   });
 
   it('sem versão nova não mostra nada', () => {
