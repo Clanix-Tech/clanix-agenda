@@ -90,6 +90,11 @@ export default function PrivacyPage() {
               <b>Aparelhos com lembretes:</b> um endereço técnico para enviar as notificações e o
               nome do aparelho, se houver.
             </li>
+            <li>
+              <b>Registros técnicos de acesso:</b> quando você usa o app, as empresas que o hospedam
+              (Supabase e Cloudflare) registram dados como o endereço IP, a página ou o serviço
+              acessado e, nas entradas na conta, o e-mail e o horário.
+            </li>
           </ul>
           <p className={P}>
             Não usamos ferramentas de análise de uso nem de publicidade, e não vendemos dados.
@@ -129,15 +134,24 @@ export default function PrivacyPage() {
           <ul className={UL}>
             <li>Guardamos os dados enquanto sua conta existir.</li>
             <li>
-              Você pode excluir a conta quando quiser, em Ajustes. A exclusão é imediata e
-              definitiva: apaga a conta, os clientes, os atendimentos, o histórico e os aparelhos
-              com lembretes.
+              Você pode excluir a conta quando quiser, em Ajustes. A exclusão tira seus dados do app
+              na hora e não pode ser desfeita: apaga a conta, os clientes, os atendimentos, o
+              histórico e os aparelhos com lembretes.
             </li>
             <li>
-              Nossas cópias de segurança são apagadas em até 30 dias, então os dados excluídos
-              também somem delas nesse prazo.
+              Cada cópia de segurança é apagada em cerca de 30 dias, então os dados excluídos também
+              somem delas nesse prazo.
             </li>
-            <li>Os registros técnicos de funcionamento do app não contêm dados pessoais.</li>
+            <li>
+              Os registros do nosso próprio código guardam só números de identificação e códigos,
+              sem nome, telefone ou e-mail.
+            </li>
+            <li>
+              Já o Supabase e o Cloudflare guardam os registros técnicos de acesso (como endereço
+              IP, página acessada e entradas na conta com o e-mail) por um tempo limitado, definido
+              nas políticas deles. O endereço acessado pode incluir o que você digitou numa busca,
+              como o nome de um cliente.
+            </li>
           </ul>
         </Section>
 
@@ -145,7 +159,8 @@ export default function PrivacyPage() {
           <ul className={UL}>
             <li>
               <b>Acessar e levar seus dados:</b> em Ajustes › Conta e privacidade, use “Baixar meus
-              dados (CSV)”.
+              dados (CSV)”: o arquivo traz seus atendimentos, com os dados dos clientes. Os dados da
+              conta (nome, e-mail e preferências) você vê no próprio app, em Ajustes.
             </li>
             <li>
               <b>Corrigir:</b> edite os dados direto no app.

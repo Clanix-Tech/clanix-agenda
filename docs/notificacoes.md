@@ -97,15 +97,15 @@ Trocar o `CRON_SECRET` exige atualizar os dois lados (secret da função e `set_
 
 **Atenção:** grave os secrets e publique o site com a chave pública correspondente **um logo depois do
 outro**, e o par (`VAPID_PUBLIC_KEY` nos secrets e `VITE_VAPID_PUBLIC_KEY` no build) tem de casar. Se
-ficarem diferentes, todo envio é recusado, cada recusa conta uma falha e, na 3ª, a assinatura de cada
-aparelho é apagada. O passo a passo completo está em [`publicacao.md`](publicacao.md).
+ficarem diferentes, todo envio é recusado, cada recusa conta uma falha e, na 3ª recusa sem nenhum envio bem-sucedido no meio (as recusas podem acontecer no mesmo minuto quando há vários lembretes), a
+assinatura de cada aparelho é apagada. O passo a passo completo está em [`publicacao.md`](publicacao.md).
 
 **O que acontece:**
 
 - Quem abrir o app com os lembretes ativados é reinscrito sozinho na chave nova (o app compara a
   chave da inscrição com a do build).
 - Quem não abrir o app: o serviço de push recusa os envios (400/401/403), cada recusa conta uma
-  falha no aparelho e, na 3ª, a assinatura é apagada. Essas pessoas precisam ativar de novo em
+  falha no aparelho e, na 3ª recusa sem nenhum envio bem-sucedido no meio (as recusas podem acontecer no mesmo minuto quando há vários lembretes), a assinatura é apagada. Essas pessoas precisam ativar de novo em
   Ajustes › Notificações.
 
 ## Limites
@@ -120,7 +120,8 @@ aparelho é apagada. O passo a passo completo está em [`publicacao.md`](publica
 - **Falha temporária** (aparelho ou serviço de push fora do ar): a reserva é devolvida e o envio é
   tentado de novo a cada minuto até a hora do atendimento. Assinatura expirada (404/410) é apagada;
   o aparelho precisa ser ativado de novo. Recusa permanente (400/401/403) conta uma falha no
-  aparelho; na 3ª seguida a assinatura é apagada. Um envio bem-sucedido zera a contagem.
+  aparelho; na 3ª recusa sem nenhum envio bem-sucedido no meio (as recusas podem acontecer no mesmo minuto quando há vários lembretes), a assinatura é apagada. Um envio bem-sucedido zera a
+  contagem.
 - Mais de um aparelho: todos os ativados recebem; basta um receber para o lembrete contar como enviado.
 
 ## Privacidade

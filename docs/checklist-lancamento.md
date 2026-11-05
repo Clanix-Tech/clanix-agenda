@@ -32,6 +32,7 @@ teste. Passo a passo da publicação: [`publicacao.md`](publicacao.md). Mapa de 
 ## Backup e continuidade
 
 - [ ] Backup feito (`npm run backup:producao`) e guardado fora do repositório e fora de nuvem sem criptografia.
-- [ ] **Restauração testada** num projeto gratuito reserva ([`backup-e-restauracao.md`](backup-e-restauracao.md)); contagens conferidas.
+- [ ] **Restauração testada** num projeto gratuito reserva, seguindo a sequência de [`backup-e-restauracao.md`](backup-e-restauracao.md), seção 2: projeto novo → `db push` (estrutura) → `data.sql` (dados) → passos 3 a 7 de `publicacao.md` (secrets e funções, `set_reminder_config`, Auth, site publicado com a URL e a chave do projeto reserva) → contagens conferidas, `cron.job` com as 2 tarefas e, entrando no app, ajustes e horários de atendimento de um perfil iguais aos de produção.
+- [ ] Rotina de backup semanal combinada (quem roda e quando) e cópias externas com mais de 30 dias apagadas à mão.
 - [ ] Chamada diária ao `ping` configurada (cron-job.org) e respondendo `200` com `"ok"`.
 - [ ] E-mail da conta do Supabase monitorado (aviso de pausa por inatividade).

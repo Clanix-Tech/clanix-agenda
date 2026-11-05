@@ -72,7 +72,9 @@ ambiente hospedado.
 > secrets (`VAPID_PUBLIC_KEY`) e a do site (`VITE_VAPID_PUBLIC_KEY`, passo 7) têm de ser **o mesmo
 > par**. Grave os secrets e publique o site com a chave pública correspondente **um logo depois do
 > outro**. Se ficarem diferentes, todo envio é recusado, cada recusa conta uma falha no aparelho e,
-> na 3ª, a assinatura é apagada: todo mundo terá de ativar os lembretes de novo. Mais detalhes em
+> na 3ª recusa sem nenhum envio bem-sucedido no meio (as recusas podem acontecer no mesmo minuto
+> quando há vários lembretes), a assinatura é apagada: todo mundo terá de ativar os lembretes de
+> novo. Mais detalhes em
 > [`notificacoes.md`](notificacoes.md), "Trocar as chaves VAPID".
 
 ## 4. Ligar os lembretes
