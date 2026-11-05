@@ -84,6 +84,13 @@ describe('usePushDevice', () => {
     expect(push.requestPermission).not.toHaveBeenCalled();
   });
 
+  it('1ª visita: service worker registrado depois da 1ª leitura → relê e sai de "sem suporte"', async () => {
+    const { push } = setup({ sw: 'later' });
+    await waitFor(() => expect(state()).toHaveTextContent('sem-suporte'));
+    act(() => push.registerServiceWorker());
+    await waitFor(() => expect(state()).toHaveTextContent(/^desativado$/));
+  });
+
   it('activate pede a permissão só dentro do clique e chega a ativado depois da RPC', async () => {
     const user = userEvent.setup();
     const { fake } = setup();

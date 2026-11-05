@@ -24,8 +24,11 @@ export type DeviceEnv = {
 
 export type TestResult = { sent: number; removed: number };
 
-/** Tempo máximo para apagar a assinatura deste aparelho ao sair. */
-const SIGN_OUT_TIMEOUT_MS = 3000;
+/** Consulta do estado deste aparelho (por usuário). */
+export const pushDeviceKey = (userId: string | undefined) => ['push-device', userId] as const;
+
+/** Tempo máximo das limpezas de assinatura (ao sair e na troca de conta). */
+const CLEANUP_TIMEOUT_MS = 3000;
 
 export function detectDeviceState(env: DeviceEnv): DeviceState {
   // No iPhone, Web Push só existe no app instalado: antes disso o caminho é instalar.
@@ -188,14 +191,33 @@ export async function unsubscribeThisDevice(): Promise<void> {
 }
 
 /**
- * Ao sair da conta: apaga a linha deste aparelho (melhor esforço, com tempo limite) e cancela a
- * assinatura do navegador mesmo se o banco não responder. Nunca lança.
+ * Ao sair da conta: apaga a linha deste aparelho e cancela a assinatura do navegador, os dois ao
+ * mesmo tempo (um não espera o outro). Tudo dentro do tempo limite: sair nunca trava. Nunca lança.
  */
-export async function forgetThisDevice(timeoutMs = SIGN_OUT_TIMEOUT_MS): Promise<void> {
-  const subscription = await currentSubscription().catch(() => null);
-  if (!subscription) return;
-  await withTimeout(deleteRow(subscription.endpoint), timeoutMs).catch(() => {});
-  await subscription.unsubscribe().catch(() => false);
+export async function forgetThisDevice(timeoutMs = CLEANUP_TIMEOUT_MS): Promise<void> {
+  const cleanup = async () => {
+    const subscription = await currentSubscription();
+    if (!subscription) return;
+    await Promise.allSettled([deleteRow(subscription.endpoint), subscription.unsubscribe()]);
+  };
+  await withTimeout(cleanup(), timeoutMs).catch(() => {});
+}
+
+/**
+ * Troca de conta no mesmo navegador (ruling P11): se a assinatura deste navegador não é visível
+ * para o usuário atual (RLS), ela é de outra conta, que saiu sem limpar (ex.: sessão expirada).
+ * Cancela só no navegador: o serviço de push invalida o endpoint e o próximo envio para a linha
+ * antiga recebe 404/410 e é removido no servidor. Na dúvida (falha ao consultar), não mexe.
+ * Melhor esforço, com tempo limite; nunca lança.
+ */
+export async function dropOtherAccountSubscription(timeoutMs = CLEANUP_TIMEOUT_MS): Promise<void> {
+  const check = async () => {
+    const subscription = await currentSubscription();
+    if (!subscription) return;
+    if (await isRegisteredForMe(subscription.endpoint)) return;
+    await subscription.unsubscribe();
+  };
+  await withTimeout(check(), timeoutMs).catch(() => {});
 }
 
 /** Pede à Edge Function uma notificação de teste para os aparelhos do próprio usuário. */

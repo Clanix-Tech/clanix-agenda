@@ -11,6 +11,7 @@ import {
 import {
   deviceLabel,
   detectDeviceState,
+  dropOtherAccountSubscription,
   forgetThisDevice,
   readDeviceState,
   sendTestNotification,
@@ -138,6 +139,24 @@ describe('readDeviceState', () => {
   it('iPhone no Safari sem instalar → instalar', async () => {
     setup({ userAgent: IPHONE_SAFARI_UA, push: false, notification: false });
     expect(await readDeviceState()).toBe('iphone-instalar');
+  });
+
+  it('iPad com user agent de Mac (toque) no Safari, sem instalar → instalar', async () => {
+    setup({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15',
+      maxTouchPoints: 5,
+    });
+    expect(await readDeviceState()).toBe('iphone-instalar');
+  });
+
+  it('Mac de verdade (sem toque) segue o caminho normal', async () => {
+    setup({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15',
+      maxTouchPoints: 0,
+    });
+    expect(await readDeviceState()).toBe('desativado');
   });
 
   it('iPhone aberto pelo ícone → desativado', async () => {
@@ -299,6 +318,18 @@ describe('forgetThisDevice (ao sair)', () => {
     expect(sub.unsubscribe).toHaveBeenCalled();
   });
 
+  it('unsubscribe sem resposta: desiste no tempo limite (sair nunca trava)', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: endpoint });
+    push.subscription()!.unsubscribe.mockImplementation(() => new Promise(() => {}));
+    await expect(forgetThisDevice(20)).resolves.toBeUndefined();
+  });
+
+  it('service worker sem resposta: desiste no tempo limite', async () => {
+    const { push } = setup({ permission: 'granted', subscribed: endpoint });
+    push.registration.pushManager.getSubscription.mockImplementation(() => new Promise(() => {}));
+    await expect(forgetThisDevice(20)).resolves.toBeUndefined();
+  });
+
   it('falha de rede ao apagar não impede cancelar a assinatura', async () => {
     const { push } = setup(
       { permission: 'granted', subscribed: endpoint },
@@ -353,5 +384,55 @@ describe('sendTestNotification', () => {
       },
     );
     await expect(sendTestNotification()).rejects.toMatchObject({ kind: 'sessao' });
+  });
+});
+
+describe('dropOtherAccountSubscription (troca de conta)', () => {
+  const endpoint = 'https://push.example/deste-navegador';
+
+  it('assinatura do navegador sem linha visível para o usuário atual → cancela no navegador', async () => {
+    const { push } = setup(
+      { permission: 'granted', subscribed: endpoint },
+      { tables: { push_subscriptions: [] } },
+    );
+    const sub = push.subscription()!;
+    await dropOtherAccountSubscription();
+    expect(sub.unsubscribe).toHaveBeenCalled();
+  });
+
+  it('endpoint do próprio usuário → mantém a assinatura', async () => {
+    const { push } = setup(
+      { permission: 'granted', subscribed: endpoint },
+      { tables: { push_subscriptions: [{ id: 's1', owner_id: 'user-1', endpoint }] } },
+    );
+    const sub = push.subscription()!;
+    await dropOtherAccountSubscription();
+    expect(sub.unsubscribe).not.toHaveBeenCalled();
+  });
+
+  it('sem saber (falha ao consultar) → não mexe em nada', async () => {
+    const { push } = setup(
+      { permission: 'granted', subscribed: endpoint },
+      { errors: { push_subscriptions: { select: { message: 'TypeError: Failed to fetch' } } } },
+    );
+    const sub = push.subscription()!;
+    await expect(dropOtherAccountSubscription()).resolves.toBeUndefined();
+    expect(sub.unsubscribe).not.toHaveBeenCalled();
+  });
+
+  it('sem assinatura no navegador → nem consulta o banco', async () => {
+    const { fake } = setup();
+    const from = vi.spyOn(fake, 'from');
+    await dropOtherAccountSubscription();
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it('banco sem resposta → desiste no tempo limite', async () => {
+    const { push, fake } = setup({ permission: 'granted', subscribed: endpoint });
+    fake.from = (() => ({
+      select: () => ({ eq: () => ({ maybeSingle: () => new Promise(() => {}) }) }),
+    })) as unknown as typeof fake.from;
+    await expect(dropOtherAccountSubscription(20)).resolves.toBeUndefined();
+    expect(push.subscription()!.unsubscribe).not.toHaveBeenCalled();
   });
 });

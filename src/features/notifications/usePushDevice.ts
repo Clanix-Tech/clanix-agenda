@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { toAppError } from '@/lib/errors';
 import { useAuth } from '@/features/auth/AuthProvider';
 import {
+  pushDeviceKey,
   readDeviceState,
   sendTestNotification,
   subscribeThisDevice,
@@ -11,8 +12,6 @@ import {
   vapidPublicKey,
   type DeviceState,
 } from './push';
-
-export const pushDeviceKey = (userId: string | undefined) => ['push-device', userId] as const;
 
 const CHECK_FAILED = 'Não foi possível verificar este aparelho.';
 const TEST_NOT_DELIVERED =
@@ -31,6 +30,21 @@ export function usePushDevice() {
 
   // `staleTime: 0`: ao voltar para a aba (ex.: depois de liberar nas configurações) lê de novo.
   const query = useQuery({ queryKey, queryFn: readDeviceState, enabled: !!user, staleTime: 0 });
+
+  // 1ª visita: o app registra o service worker depois de montar (`immediate: false`), então a
+  // 1ª leitura pode não achar registro ("sem suporte"). Quando ele fica pronto, lê de novo.
+  // Sem service worker (vite dev, navegador sem suporte) `ready` nunca resolve: nada acontece.
+  const userId = user?.id;
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    let active = true;
+    void navigator.serviceWorker.ready.then(() => {
+      if (active) void queryClient.invalidateQueries({ queryKey: pushDeviceKey(userId) });
+    });
+    return () => {
+      active = false;
+    };
+  }, [queryClient, userId]);
 
   const lock = useRef(false);
   const [busy, setBusy] = useState(false);

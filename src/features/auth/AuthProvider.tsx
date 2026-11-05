@@ -11,7 +11,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { ExpireRef } from '@/lib/queryClient';
-import { forgetThisDevice } from '@/features/notifications/push';
+import {
+  dropOtherAccountSubscription,
+  forgetThisDevice,
+  pushDeviceKey,
+} from '@/features/notifications/push';
 
 export type SignOutReason = 'usuario' | 'sessao';
 
@@ -77,6 +81,16 @@ export function AuthProvider({
       data.subscription.unsubscribe();
     };
   }, [queryClient]);
+
+  // Uma vez por usuário que entra (inclusive ao abrir o app com sessão salva): assinatura deste
+  // navegador que pertence a outra conta é cancelada aqui. Não bloqueia a entrada (ruling P11).
+  const userId = session?.user.id;
+  useEffect(() => {
+    if (!userId) return;
+    void dropOtherAccountSubscription().then(() =>
+      queryClient.invalidateQueries({ queryKey: pushDeviceKey(userId) }),
+    );
+  }, [queryClient, userId]);
 
   const value = useMemo<AuthValue>(() => {
     const run = (reason: SignOutReason, options?: { scope: 'local' }) => {

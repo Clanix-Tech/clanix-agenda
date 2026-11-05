@@ -11,7 +11,8 @@ export const ANDROID_CHROME_UA =
 
 export type FakePushOptions = {
   /** Há registro de service worker (padrão: sim). */
-  sw?: boolean;
+  // `later`: sem registro até `registerServiceWorker()` (1ª visita: o app registra depois).
+  sw?: boolean | 'later';
   /** `PushManager` existe (padrão: sim). */
   push?: boolean;
   /** `Notification` existe (padrão: sim). */
@@ -25,6 +26,8 @@ export type FakePushOptions = {
   userAgent?: string;
   /** Aberto pelo ícone da Tela de Início (iOS: `navigator.standalone`). */
   standalone?: boolean;
+  /** `navigator.maxTouchPoints` (iPadOS se apresenta como Mac, mas tem toque). */
+  maxTouchPoints?: number;
 };
 
 export type FakeSubscription = {
@@ -88,10 +91,22 @@ export function installFakePush(options: FakePushOptions = {}) {
     own.push([target, key]);
   };
 
+  // Como no navegador: `ready` só resolve quando há um service worker ativo.
+  let registered = options.sw === undefined || options.sw === true;
+  let resolveReady!: (r: typeof registration) => void;
+  const ready = new Promise<typeof registration>((resolve) => (resolveReady = resolve));
+  if (registered) resolveReady(registration);
+  const registerServiceWorker = () => {
+    registered = true;
+    resolveReady(registration);
+  };
   define(navigator, 'serviceWorker', {
-    getRegistration: vi.fn(async () => (options.sw === false ? undefined : registration)),
-    ready: Promise.resolve(registration),
+    getRegistration: vi.fn(async () => (registered ? registration : undefined)),
+    ready,
   });
+  if (options.maxTouchPoints !== undefined) {
+    define(navigator, 'maxTouchPoints', options.maxTouchPoints);
+  }
   if (options.userAgent) define(navigator, 'userAgent', options.userAgent);
   if (options.standalone) define(navigator, 'standalone', true);
   if (options.push !== false) vi.stubGlobal('PushManager', function PushManager() {});
@@ -109,6 +124,8 @@ export function installFakePush(options: FakePushOptions = {}) {
     registration,
     requestPermission,
     subscribe,
+    /** Simula o app registrando o service worker depois da primeira leitura. */
+    registerServiceWorker,
     /** Assinatura atual do navegador (ou `null`). */
     subscription: () => state.current,
     restore() {

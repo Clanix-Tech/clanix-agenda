@@ -1,6 +1,6 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
 import { createFakeSupabase, makeSession, type FakeSupabaseOptions } from '@/test/fakeSupabase';
 import { installFakePush, type FakePush } from '@/test/fakePush';
@@ -70,6 +70,14 @@ describe('AuthProvider.signOut', () => {
     expect(subscription.unsubscribe).toHaveBeenCalled();
   });
 
+  it('unsubscribe que nunca responde não trava a saída (tempo limite de 3 s)', async () => {
+    const user = userEvent.setup();
+    const { fake, subscription } = setup();
+    subscription.unsubscribe.mockImplementation(() => new Promise(() => {}));
+    await user.click(await screen.findByRole('button', { name: 'Sair' }));
+    await waitFor(() => expect(fake.calls.signOut).toHaveLength(1), { timeout: 6000 });
+  });
+
   it('erro ao cancelar a assinatura no navegador não impede sair', async () => {
     const user = userEvent.setup();
     const { fake, subscription } = setup();
@@ -85,5 +93,40 @@ describe('AuthProvider.signOut', () => {
     await user.click(await screen.findByRole('button', { name: 'Sair' }));
     await waitFor(() => expect(fake.calls.signOut).toHaveLength(1));
     expect(screen.getByTestId('user')).toHaveTextContent('ninguém');
+  });
+});
+
+describe('AuthProvider: troca de conta no mesmo navegador', () => {
+  /** Nenhuma sessão no início; `signIn` simula outra conta entrando neste navegador. */
+  function setupSwitch(rows: Array<Record<string, unknown>>) {
+    push = installFakePush({ permission: 'granted', subscribed: ENDPOINT });
+    const subscription = push.subscription()!;
+    const fake = createFakeSupabase({ session: null, tables: { push_subscriptions: rows } });
+    const from = vi.spyOn(fake, 'from');
+    renderWithProviders(<SignOutButton />, { supabase: fake });
+    const signIn = () =>
+      act(async () => {
+        await fake.auth.signInWithPassword({ email: 'bruno@example.com', password: 'x' });
+      });
+    return { subscription, from, signIn };
+  }
+
+  it('assinatura deste navegador sem linha visível para quem entrou → cancelada no navegador', async () => {
+    const { subscription, signIn } = setupSwitch([]);
+    await screen.findByText('ninguém');
+    expect(subscription.unsubscribe).not.toHaveBeenCalled();
+    await signIn();
+    await waitFor(() => expect(subscription.unsubscribe).toHaveBeenCalled());
+  });
+
+  it('o endpoint é do usuário que entrou → a assinatura continua', async () => {
+    const { subscription, from, signIn } = setupSwitch([
+      { id: 's1', owner_id: 'user-1', endpoint: ENDPOINT },
+    ]);
+    await screen.findByText('ninguém');
+    await signIn();
+    await waitFor(() => expect(from).toHaveBeenCalledWith('push_subscriptions'));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(subscription.unsubscribe).not.toHaveBeenCalled();
   });
 });
