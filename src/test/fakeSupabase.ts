@@ -17,6 +17,8 @@ export type FakeSupabaseOptions = {
   auth?: Partial<Record<AuthMethod, Handler>>;
   /** Erro devolvido por operação de tabela: `{ appointments: { insert: { code: 'AE001' } } }`. */
   errors?: Record<string, Partial<Record<Operation, unknown>>>;
+  /** Edge Functions (`functions.invoke`): devolve `{ data }` ou `{ error }` (sem handler: `{}`). */
+  functions?: Record<string, Handler>;
 };
 
 export function makeSession(email = 'camila@example.com'): Session {
@@ -249,9 +251,14 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
   const tables: Record<string, Row[]> = structuredClone(options.tables ?? {});
   const listeners = new Set<AuthListener>();
   let session: Session | null = options.session ?? null;
-  const calls: { rpc: Array<{ name: string; args: unknown }>; signOut: unknown[] } = {
+  const calls: {
+    rpc: Array<{ name: string; args: unknown }>;
+    signOut: unknown[];
+    functions: Array<{ name: string; options: unknown }>;
+  } = {
     rpc: [],
     signOut: [],
+    functions: [],
   };
 
   const emit = (event: string) => listeners.forEach((l) => l(event, session));
@@ -274,6 +281,13 @@ export function createFakeSupabase(options: FakeSupabaseOptions = {}) {
     from(table: string) {
       const rows = (tables[table] ??= []);
       return new FakeQuery(rows, options.errors?.[table] ?? {});
+    },
+    functions: {
+      invoke(name: string, invokeOptions?: unknown) {
+        calls.functions.push({ name, options: invokeOptions });
+        const res = options.functions?.[name]?.(invokeOptions) ?? {};
+        return Promise.resolve({ data: res.data ?? null, error: res.error ?? null });
+      },
     },
     auth: {
       getSession: () => ok({ session }),

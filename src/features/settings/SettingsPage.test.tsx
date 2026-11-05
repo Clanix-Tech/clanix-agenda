@@ -12,6 +12,16 @@ import {
 } from '@/test/fakeSupabase';
 import SettingsPage from './SettingsPage';
 
+// Ambiente com a chave VAPID configurada (independe dos arquivos .env da máquina).
+vi.mock('@/lib/env', () => ({
+  getEnv: () => ({
+    supabaseUrl: 'http://supabase.test',
+    supabasePublishableKey: 'chave',
+    vapidPublicKey:
+      'BF2IWmoBx0EqrHwWhvvhWgH6G6eLaBFm8rTIuhMdhVA3PD0xGejXlybumP1Xy6_Xb4pdTnYaVlmvX6CzSk9oaMI',
+  }),
+}));
+
 vi.mock('sonner', async (importOriginal) => {
   const mod = await importOriginal<typeof import('sonner')>();
   return { ...mod, toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) };
@@ -418,13 +428,12 @@ describe('Expediente', () => {
 });
 
 describe('Notificações', () => {
-  it('não tem botão de ativar nem de teste e mostra o aviso', async () => {
+  it('sem service worker (jsdom, como no vite dev) mostra "sem suporte" e nenhum Ativar', async () => {
     setup({ route: '/ajustes/notificacoes' });
-    expect(
-      await screen.findByText('A ativação neste aparelho chega na próxima atualização.'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Este navegador não recebe notificações.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /ativar/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /teste/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enviar notificação de teste' })).toBeDisabled();
+    expect(screen.queryByText(/próxima atualização/)).not.toBeInTheDocument();
   });
 
   it('antecedência e ocultar nome gravam no perfil', async () => {

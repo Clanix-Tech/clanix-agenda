@@ -1,4 +1,6 @@
 import { execSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export interface LocalStatus {
   url: string;
@@ -40,4 +42,15 @@ export function readLocalStatus(): LocalStatus {
     throw new Error('Supabase local indisponível: rode `npm run db:start`.');
   }
   return { url, publishableKey, secretKey, mailpitUrl };
+}
+
+/**
+ * Chave pública VAPID de `supabase/functions/.env` (gerado por `npm run vapid:gerar`), ou `null`
+ * se o arquivo não existir. Lê só a chave pública: a privada nunca sai daquele arquivo.
+ */
+export function readLocalVapidPublicKey(): string | null {
+  const path = fileURLToPath(new URL('../../../supabase/functions/.env', import.meta.url));
+  if (!existsSync(path)) return null;
+  const match = /^VAPID_PUBLIC_KEY=(.+)$/m.exec(readFileSync(path, 'utf8'));
+  return match?.[1]?.trim() || null;
 }

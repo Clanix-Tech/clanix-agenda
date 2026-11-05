@@ -74,7 +74,10 @@ export function toAppError(err: unknown): AppError {
       if (k) return build(k);
     }
     if (obj.status === 401) return build('sessao');
-    if (obj.name === 'AuthRetryableFetchError') return build('rede');
+    // Auth ou Edge Function (`functions.invoke`) inalcançáveis.
+    if (obj.name === 'AuthRetryableFetchError' || obj.name === 'FunctionsFetchError') {
+      return build('rede');
+    }
     if (isFailedFetch(obj.message)) return build('rede');
   }
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return build('rede');

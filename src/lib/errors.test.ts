@@ -46,6 +46,8 @@ describe('toAppError', () => {
     [{ message: 'TypeError: NetworkError when attempting to fetch resource.' }],
     [{ message: 'TypeError: fetch failed' }],
     [{ name: 'AuthRetryableFetchError', status: 0, message: 'x' }],
+    // Edge Function inalcançável (supabase.functions.invoke)
+    [{ name: 'FunctionsFetchError', message: 'Failed to send a request to the Edge Function' }],
   ])('rede em outros navegadores: %j', (err) => {
     expect(toAppError(err).kind).toBe('rede');
   });

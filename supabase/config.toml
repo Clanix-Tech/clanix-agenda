@@ -392,6 +392,10 @@ deno_version = 2
 [functions.send-reminders]
 verify_jwt = false
 
+# Chamada pelo app com o JWT do usuário; a função ainda confere que o token é de um usuário.
+[functions.send-test-notification]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 44327

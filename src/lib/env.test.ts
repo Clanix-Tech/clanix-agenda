@@ -21,6 +21,13 @@ describe('parseEnv', () => {
     ).toEqual({
       supabaseUrl: 'http://x.test',
       supabasePublishableKey: 'k',
+      vapidPublicKey: null,
     });
+  });
+  it('a chave VAPID pública é opcional: presente vira o valor, vazia vira null', () => {
+    const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };
+    expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: 'BAbc_-1' }).vapidPublicKey).toBe('BAbc_-1');
+    expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: '' }).vapidPublicKey).toBeNull();
+    expect(parseEnv({ ...base, VITE_VAPID_PUBLIC_KEY: '  ' }).vapidPublicKey).toBeNull();
   });
 });

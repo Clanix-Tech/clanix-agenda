@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { readLocalStatus } from './tests/e2e/support/localStatus.ts';
+import { readLocalStatus, readLocalVapidPublicKey } from './tests/e2e/support/localStatus.ts';
 
 const PORT = 5174;
 const PWA_PORT = 5175;
@@ -18,9 +18,12 @@ function publicEnv(): { url: string; publishableKey: string } {
   return { url: status.url, publishableKey: status.publishableKey };
 }
 const supabase = publicEnv();
+// Chave pública VAPID (opcional): o servidor web sobe antes do global-setup gravar o .env.test.local.
+const vapidPublicKey = readLocalVapidPublicKey();
 const serverEnv = {
   VITE_SUPABASE_URL: supabase.url,
   VITE_SUPABASE_PUBLISHABLE_KEY: supabase.publishableKey,
+  ...(vapidPublicKey ? { VITE_VAPID_PUBLIC_KEY: vapidPublicKey } : {}),
 };
 
 export default defineConfig({

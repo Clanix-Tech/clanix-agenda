@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { ExpireRef } from '@/lib/queryClient';
+import { forgetThisDevice } from '@/features/notifications/push';
 
 export type SignOutReason = 'usuario' | 'sessao';
 
@@ -20,7 +21,7 @@ type AuthValue = {
   loading: boolean;
   /** Por que a sessão terminou (`null` enquanto há sessão ou antes de qualquer saída). */
   signOutReason: SignOutReason | null;
-  /** Saída pedida pelo usuário (sem aviso de expiração). */
+  /** Saída pedida pelo usuário (sem aviso de expiração); antes, desliga os lembretes deste aparelho. */
   signOut(): Promise<void>;
   /** Sessão inválida (42501/401): sai só neste aparelho e mostra o aviso em "Entrar". */
   expireSession(): Promise<void>;
@@ -87,7 +88,12 @@ export function AuthProvider({
       user: session?.user ?? null,
       loading,
       signOutReason,
-      signOut: () => run('usuario'),
+      // Antes de sair, este aparelho deixa de receber os lembretes desta conta (melhor esforço:
+      // com o banco fora do ar, sai mesmo assim depois do tempo limite).
+      signOut: async () => {
+        await forgetThisDevice().catch(() => {});
+        return run('usuario');
+      },
       expireSession: () => {
         if (inFlight.current) return inFlight.current;
         const p = run('sessao', { scope: 'local' })
