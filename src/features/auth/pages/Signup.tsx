@@ -109,6 +109,10 @@ export default function Signup() {
           {isSubmitting ? 'Criando conta…' : 'Criar conta'}
         </Button>
       </form>
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Ao criar sua conta, você concorda com a{' '}
+        <AuthLink to="/privacidade">Política de Privacidade</AuthLink>.
+      </p>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Já tem conta? <AuthLink to="/entrar">Entrar</AuthLink>
       </p>

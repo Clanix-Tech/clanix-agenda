@@ -117,6 +117,14 @@ export default function Login() {
           Como instalar o app
         </Link>
       </p>
+      <p className="text-center text-sm">
+        <Link
+          to="/privacidade"
+          className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          Política de Privacidade
+        </Link>
+      </p>
     </AuthLayout>
   );
 }

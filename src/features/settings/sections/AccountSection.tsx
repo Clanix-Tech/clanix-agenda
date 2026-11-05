@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useRef, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -132,6 +133,16 @@ export function AccountSection({ profile }: { profile: Profile }) {
           <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
           <p className="text-[15px] text-[#475569]">
             Baixe todos os seus atendimentos em uma planilha.
+          </p>
+          <p className="text-[15px] text-[#475569]">
+            Veja como cuidamos dos seus dados na{' '}
+            <Link
+              to="/privacidade"
+              className="rounded-sm font-semibold text-[#2563EB] underline underline-offset-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+            >
+              Política de Privacidade
+            </Link>
+            .
           </p>
           <div>
             <Button

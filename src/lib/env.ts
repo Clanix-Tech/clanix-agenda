@@ -9,6 +9,9 @@ const schema = z.object({
   VITE_APK_DOWNLOAD_URL: z.string().optional(),
   // Opcional: site key pública do Cloudflare Turnstile. Sem ela, não há CAPTCHA.
   VITE_TURNSTILE_SITE_KEY: z.string().optional(),
+  // Opcionais: quem responde pelo serviço, mostrado na Política de Privacidade.
+  VITE_PRIVACY_CONTROLLER_NAME: z.string().optional(),
+  VITE_PRIVACY_CONTACT_EMAIL: z.string().optional(),
 });
 
 export type Env = {
@@ -20,6 +23,10 @@ export type Env = {
   apkDownloadUrl: string | null;
   /** Site key pública do Turnstile; `null` quando o CAPTCHA não está configurado. */
   turnstileSiteKey: string | null;
+  /** Nome de quem responde pelo serviço; `null` quando não informado. */
+  privacyControllerName: string | null;
+  /** E-mail de contato para pedidos de privacidade; `null` quando ausente ou inválido. */
+  privacyContactEmail: string | null;
 };
 
 function httpUrlOrNull(value: string | undefined): string | null {
@@ -31,6 +38,12 @@ function httpUrlOrNull(value: string | undefined): string | null {
   } catch {
     return null;
   }
+}
+
+function emailOrNull(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  return z.email().safeParse(trimmed).success ? trimmed : null;
 }
 
 /** Função pura (testável). Lança `Configuração ausente: <NOME>` para o primeiro campo inválido. */
@@ -46,6 +59,8 @@ export function parseEnv(raw: Record<string, string | undefined>): Env {
     vapidPublicKey: result.data.VITE_VAPID_PUBLIC_KEY?.trim() || null,
     apkDownloadUrl: httpUrlOrNull(result.data.VITE_APK_DOWNLOAD_URL),
     turnstileSiteKey: result.data.VITE_TURNSTILE_SITE_KEY?.trim() || null,
+    privacyControllerName: result.data.VITE_PRIVACY_CONTROLLER_NAME?.trim() || null,
+    privacyContactEmail: emailOrNull(result.data.VITE_PRIVACY_CONTACT_EMAIL),
   };
 }
 

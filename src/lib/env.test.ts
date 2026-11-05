@@ -24,7 +24,25 @@ describe('parseEnv', () => {
       vapidPublicKey: null,
       apkDownloadUrl: null,
       turnstileSiteKey: null,
+      privacyControllerName: null,
+      privacyContactEmail: null,
     });
+  });
+  it('nome e e-mail do responsável são opcionais; e-mail inválido vira null', () => {
+    const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };
+    const ok = parseEnv({
+      ...base,
+      VITE_PRIVACY_CONTROLLER_NAME: '  Ana Silva ',
+      VITE_PRIVACY_CONTACT_EMAIL: ' ana@example.com ',
+    });
+    expect(ok.privacyControllerName).toBe('Ana Silva');
+    expect(ok.privacyContactEmail).toBe('ana@example.com');
+    expect(
+      parseEnv({ ...base, VITE_PRIVACY_CONTACT_EMAIL: 'nao-e-email' }).privacyContactEmail,
+    ).toBeNull();
+    expect(
+      parseEnv({ ...base, VITE_PRIVACY_CONTROLLER_NAME: ' ' }).privacyControllerName,
+    ).toBeNull();
   });
   it('a site key do Turnstile é opcional e aparada', () => {
     const base = { VITE_SUPABASE_URL: 'http://x.test', VITE_SUPABASE_PUBLISHABLE_KEY: 'k' };

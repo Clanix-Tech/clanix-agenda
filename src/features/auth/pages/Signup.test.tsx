@@ -46,6 +46,15 @@ const authError = (code: string, status = 422) => ({
 });
 
 describe('Signup', () => {
+  it('avisa que criar a conta vale como concordar com a Política de Privacidade', () => {
+    renderWithProviders(null, { routes, route: '/cadastro' });
+    const link = screen.getByRole('link', { name: 'Política de Privacidade' });
+    expect(link).toHaveAttribute('href', '/privacidade');
+    expect(link.parentElement).toHaveTextContent(
+      'Ao criar sua conta, você concorda com a Política de Privacidade.',
+    );
+  });
+
   it('envia display_name aparado e pede confirmação quando não há sessão', async () => {
     const supabase = createFakeSupabase();
     const spy = vi.spyOn(supabase.auth, 'signUp');

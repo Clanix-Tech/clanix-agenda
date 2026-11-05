@@ -74,6 +74,14 @@ export default function InstallPage() {
             <ComputerGuide />
           </TabsPrimitive.Content>
         </TabsPrimitive.Root>
+        <p className="text-center text-sm">
+          <Link
+            to="/privacidade"
+            className={`inline-flex min-h-11 items-center rounded-xl px-2 font-semibold text-[#2563EB] underline underline-offset-2 ${LINK_FOCUS}`}
+          >
+            Política de Privacidade
+          </Link>
+        </p>
       </main>
     </div>
   );
