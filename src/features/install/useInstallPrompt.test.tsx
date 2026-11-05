@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { startInstallPromptCapture } from './installPromptStore';
 import { useInstallPrompt } from './useInstallPrompt';
 
 function fireBeforeInstallPrompt(outcome: 'accepted' | 'dismissed') {
@@ -16,6 +17,20 @@ function fireBeforeInstallPrompt(outcome: 'accepted' | 'dismissed') {
 }
 
 describe('useInstallPrompt', () => {
+  // A loja é global: limpa o que o teste anterior deixou.
+  afterEach(() => {
+    act(() => {
+      window.dispatchEvent(new Event('appinstalled'));
+    });
+  });
+
+  it('evento que chegou antes de a tela montar continua valendo', () => {
+    startInstallPromptCapture();
+    fireBeforeInstallPrompt('accepted');
+    const { result } = renderHook(() => useInstallPrompt());
+    expect(result.current.canPrompt).toBe(true);
+  });
+
   it('sem o evento do navegador (Safari/Firefox) não pode pedir instalação', () => {
     const { result } = renderHook(() => useInstallPrompt());
     expect(result.current.canPrompt).toBe(false);

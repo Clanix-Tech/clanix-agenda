@@ -10,6 +10,7 @@ import {
   type FakePushOptions,
 } from '@/test/fakePush';
 import InstallPage from './InstallPage';
+import { startInstallPromptCapture } from './installPromptStore';
 
 const env = vi.hoisted(() => ({ apk: null as string | null }));
 vi.mock('@/lib/env', () => ({
@@ -31,6 +32,9 @@ function setup(options: FakePushOptions, apk: string | null = null, session = fa
   return renderWithProviders(<InstallPage />, { route: '/instalar', session });
 }
 afterEach(() => {
+  act(() => {
+    window.dispatchEvent(new Event('appinstalled'));
+  });
   fake?.restore();
   fake = undefined;
 });
@@ -111,5 +115,50 @@ describe('InstallPage', () => {
   it('com login o link de volta leva ao início', async () => {
     setup({ userAgent: ANDROID_CHROME_UA }, null, true);
     expect(await screen.findByRole('link', { name: /Voltar/ })).toHaveAttribute('href', '/');
+  });
+
+  function fire(prompt: () => Promise<void>) {
+    const event = new Event('beforeinstallprompt', { cancelable: true }) as Event & {
+      prompt: () => Promise<void>;
+      userChoice: Promise<{ outcome: string }>;
+    };
+    event.prompt = prompt;
+    event.userChoice = Promise.resolve({ outcome: 'accepted' });
+    act(() => {
+      window.dispatchEvent(event);
+    });
+  }
+
+  it('evento disparado antes de a página montar: o botão aparece', () => {
+    startInstallPromptCapture();
+    fire(async () => {});
+    setup({ userAgent: ANDROID_CHROME_UA });
+    expect(screen.getByRole('button', { name: 'Instalar app' })).toBeInTheDocument();
+  });
+
+  it('trocar para Computador e voltar para Android mantém o botão', async () => {
+    setup({ userAgent: ANDROID_CHROME_UA });
+    fire(async () => {});
+    await userEvent.click(tab('Computador'));
+    await userEvent.click(tab('Android'));
+    expect(screen.getByRole('button', { name: 'Instalar app' })).toBeInTheDocument();
+  });
+
+  it('depois de appinstalled o botão some e voltam os passos manuais', () => {
+    setup({ userAgent: ANDROID_CHROME_UA });
+    fire(async () => {});
+    act(() => {
+      window.dispatchEvent(new Event('appinstalled'));
+    });
+    expect(screen.queryByRole('button', { name: 'Instalar app' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Escolha/)).toBeInTheDocument();
+  });
+
+  it('se prompt() falhar, não estoura erro e mostra os passos manuais', async () => {
+    setup({ userAgent: ANDROID_CHROME_UA });
+    fire(() => Promise.reject(new Error('recusado')));
+    await userEvent.click(screen.getByRole('button', { name: 'Instalar app' }));
+    expect(screen.queryByRole('button', { name: 'Instalar app' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Escolha/)).toBeInTheDocument();
   });
 });

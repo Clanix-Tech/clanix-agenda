@@ -1,43 +1,33 @@
-import { useCallback, useEffect, useState } from 'react';
-
-/** Evento do Chrome/Edge/Android (ainda fora do tipo padrão do DOM). */
-type BeforeInstallPromptEvent = Event & {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-};
+import { useCallback, useSyncExternalStore } from 'react';
+import {
+  getInstallPromptSnapshot,
+  startInstallPromptCapture,
+  subscribeInstallPrompt,
+  takeInstallPrompt,
+} from './installPromptStore';
 
 /**
  * Instalação pelo navegador. `canPrompt` só fica verdadeiro depois que o navegador soltou o
- * `beforeinstallprompt` (Chrome/Edge/Android); no Safari e no Firefox nunca fica.
+ * `beforeinstallprompt` (Chrome/Edge/Android); no Safari e no Firefox nunca fica. O evento vem da
+ * loja global (capturado no início do app), então não se perde ao trocar de aba.
  */
 export function useInstallPrompt(): {
   canPrompt: boolean;
   prompt(): Promise<'accepted' | 'dismissed'>;
 } {
-  const [event, setEvent] = useState<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    const onBefore = (e: Event) => {
-      // Segura o aviso padrão do navegador: quem decide quando mostrar é o botão da tela.
-      e.preventDefault();
-      setEvent(e as BeforeInstallPromptEvent);
-    };
-    const onInstalled = () => setEvent(null);
-    window.addEventListener('beforeinstallprompt', onBefore);
-    window.addEventListener('appinstalled', onInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onBefore);
-      window.removeEventListener('appinstalled', onInstalled);
-    };
-  }, []);
+  startInstallPromptCapture();
+  const event = useSyncExternalStore(
+    subscribeInstallPrompt,
+    getInstallPromptSnapshot,
+    getInstallPromptSnapshot,
+  );
 
   const prompt = useCallback(async () => {
-    if (!event) return 'dismissed' as const;
-    // O evento só pode ser usado uma vez; o navegador solta outro se ainda der para instalar.
-    setEvent(null);
-    await event.prompt();
-    return (await event.userChoice).outcome;
-  }, [event]);
+    const taken = takeInstallPrompt();
+    if (!taken) return 'dismissed' as const;
+    await taken.prompt();
+    return (await taken.userChoice).outcome;
+  }, []);
 
   return { canPrompt: event !== null, prompt };
 }

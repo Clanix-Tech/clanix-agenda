@@ -123,6 +123,14 @@ function IPhoneGuide() {
 function AndroidGuide() {
   const { canPrompt, prompt } = useInstallPrompt();
   const apkUrl = getEnv().apkDownloadUrl;
+  // Se o navegador recusar o pedido, o botão some (o evento já foi usado) e ficam os passos manuais.
+  const install = async () => {
+    try {
+      await prompt();
+    } catch {
+      // sem ação: o guia manual aparece
+    }
+  };
   return (
     <div className="flex flex-col gap-4">
       <section aria-labelledby="guia-android" className={CARD}>
@@ -132,7 +140,7 @@ function AndroidGuide() {
         {canPrompt ? (
           <Button
             type="button"
-            onClick={() => void prompt()}
+            onClick={() => void install()}
             className="h-12 self-start rounded-[14px] bg-[#2563EB] px-6 text-[15px] font-bold text-white hover:bg-[#1D4ED8]"
           >
             <Download aria-hidden="true" />
