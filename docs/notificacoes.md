@@ -75,7 +75,9 @@ Para conferir o cron e a URL que o banco alcança, veja "Edge Functions e lembre
    `supabase/config.toml`: desligado na `send-reminders`, que é chamada pelo cron com o segredo).
 4. **Ligar o cron**: no SQL Editor,
    `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<mesmo CRON_SECRET>');`
-   (veja [`banco-de-dados.md`](banco-de-dados.md)).
+   (veja [`banco-de-dados.md`](banco-de-dados.md)). O SQL Editor guarda o histórico das consultas:
+   apague a consulta salva depois de rodar `set_reminder_config`. Se o segredo vazar, troque nos dois
+   lados: o Vault (com `set_reminder_config`) e o secret da função `CRON_SECRET`.
 5. **Frontend**: `VITE_VAPID_PUBLIC_KEY` no build, com o mesmo valor de `VAPID_PUBLIC_KEY`.
 6. **Conferir**: `select status_code, content from net._http_response order by id desc limit 3;`
    deve mostrar `200` a cada minuto. Depois, siga o [checklist de aparelhos](checklist-aparelhos.md).

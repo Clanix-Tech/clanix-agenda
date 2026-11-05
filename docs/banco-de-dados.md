@@ -69,7 +69,7 @@ Por causa do revoke global de privilégios padrão (`alter default privileges ..
 - `set_reminder_config(p_function_url, p_cron_secret)` (somente `service_role`) grava ou atualiza os dois segredos no Vault. A URL precisa começar com `http://` ou `https://` e o segredo ter ao menos 32 caracteres (`22023` caso contrário).
 - Configurar (o segredo deve ser o mesmo `CRON_SECRET` da Edge Function; nunca versione):
   - Local: `npm run lembretes:local` (lê o `CRON_SECRET` de `supabase/functions/.env` e grava a URL `http://host.docker.internal:44321/functions/v1/send-reminders`, conferida pelo `pg_net` do container do banco; `http://supabase_kong_agenda-em-ordem:8000/functions/v1/send-reminders` também funciona). Veja `docs/supabase-local.md`.
-  - Produção: no SQL Editor, `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<segredo>');` e o mesmo valor em `supabase secrets set CRON_SECRET=...`.
+  - Produção: no SQL Editor, `select public.set_reminder_config('https://<ref>.supabase.co/functions/v1/send-reminders', '<segredo>');` e o mesmo valor em `supabase secrets set CRON_SECRET=...`. O SQL Editor guarda o histórico das consultas: apague a consulta salva depois de rodar `set_reminder_config`. Se o segredo vazar, troque nos dois lados: o Vault (com `set_reminder_config`) e o secret da função `CRON_SECRET`.
 - Sem configuração o job roda a cada minuto e não faz nada.
 
 ## Códigos de erro

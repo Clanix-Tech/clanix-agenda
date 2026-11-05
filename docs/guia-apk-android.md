@@ -74,7 +74,7 @@ As notificações usam o mesmo Web Push do site: o TWA delega ao Chrome (`enable
 
 ## 8. Página de download
 
-Hospede o APK (por exemplo em um armazenamento de arquivos seu) e defina `VITE_APK_DOWNLOAD_URL` no build do site. Com ela definida, a página `/instalar` mostra o botão "Baixar o APK"; sem ela, o botão não aparece.
+Hospede o APK (por exemplo em um armazenamento de arquivos seu) e defina `VITE_APK_DOWNLOAD_URL` no build do site. Com ela definida, a página `/instalar` mostra o botão "Baixar o APK"; sem ela, o botão não aparece. Só defina `VITE_APK_DOWNLOAD_URL` depois da verificação de desenvolvedor do Google: antes disso o Android pode bloquear o APK ou mostrar um aviso.
 
 ## 9. Quando gerar um APK novo
 

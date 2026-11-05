@@ -17,7 +17,7 @@ aparelhos:
 - O app precisa estar publicado em **HTTPS** com os lembretes configurados (veja
   [`notificacoes.md`](notificacoes.md), "Produção"). No `localhost` só o computador local funciona;
   celulares na rede local não recebem push sem HTTPS.
-- Confira que o cron responde: `select status_code, content from net._http_response order by id desc limit 3;`
+- Confira que o cron responde, no SQL Editor do projeto de produção (a API não expõe essa tabela): `select status_code, content from net._http_response order by id desc limit 3;`
   mostra `200` a cada minuto.
 - Uma conta de teste com expediente que cubra o horário do teste, e uma segunda forma de acessar a
   mesma conta (outro aparelho ou navegador) para criar atendimentos enquanto o aparelho testado está
