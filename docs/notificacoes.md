@@ -95,6 +95,11 @@ Trocar o `CRON_SECRET` exige atualizar os dois lados (secret da função e `set_
   `npx supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=...`, coloque a chave pública nova
   em `VITE_VAPID_PUBLIC_KEY` e publique o site de novo.
 
+**Atenção:** grave os secrets e publique o site com a chave pública correspondente **um logo depois do
+outro**, e o par (`VAPID_PUBLIC_KEY` nos secrets e `VITE_VAPID_PUBLIC_KEY` no build) tem de casar. Se
+ficarem diferentes, todo envio é recusado, cada recusa conta uma falha e, na 3ª, a assinatura de cada
+aparelho é apagada. O passo a passo completo está em [`publicacao.md`](publicacao.md).
+
 **O que acontece:**
 
 - Quem abrir o app com os lembretes ativados é reinscrito sozinho na chave nova (o app compara a
