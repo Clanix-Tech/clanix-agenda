@@ -9,6 +9,7 @@ import { authErrorMessage, isNetworkError, isRateLimited } from '../authErrors';
 
 function isNeutralClientError(err: unknown): boolean {
   if (isNetworkError(err) || isRateLimited(err)) return false;
+  if ((err as { code?: unknown }).code === 'captcha_failed') return false;
   const status = (err as { status?: unknown }).status;
   return typeof status === 'number' && status >= 400 && status < 500;
 }

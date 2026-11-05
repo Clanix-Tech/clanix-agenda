@@ -113,4 +113,23 @@ describe('ForgotPassword', () => {
     expect(screen.getByText('Conclua a verificação de segurança acima.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enviar link' })).toBeDisabled();
   });
+
+  it('captcha_failed mostra o erro (nunca a mensagem neutra) e reinicia o widget', async () => {
+    const reset = vi.fn();
+    captcha.value = { required: true, token: 'tok', error: null, reset, element: null };
+    const supabase = createFakeSupabase({
+      auth: {
+        resetPasswordForEmail: () => ({
+          error: { name: 'AuthApiError', status: 400, code: 'captcha_failed', message: 'x' },
+        }),
+      },
+    });
+    renderWithProviders(null, { routes, route: '/recuperar-senha', supabase });
+    await send('a@example.com');
+    expect(
+      await screen.findByText('Não foi possível confirmar que você não é um robô. Tente de novo.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(MSG)).not.toBeInTheDocument();
+    expect(reset).toHaveBeenCalledTimes(1);
+  });
 });
