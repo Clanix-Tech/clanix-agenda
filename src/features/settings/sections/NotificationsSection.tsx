@@ -43,7 +43,7 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
           onChange={(v) => save({ reminder_minutes: v === 0 ? null : v })}
         />
         <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
-          <span className="text-[15px] font-medium text-[#0F172A]">
+          <span className="text-[15px] font-medium text-foreground">
             Ocultar nome do cliente na tela de bloqueio
           </span>
           <Switch
@@ -53,17 +53,19 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
           />
         </label>
         <div role="group" aria-label="Prévia do lembrete" className="flex flex-col gap-2">
-          <p className="text-xs font-bold tracking-wide text-[#475569] uppercase">Prévia</p>
+          <p className="text-xs font-bold tracking-wide text-foreground-secondary uppercase">
+            Prévia
+          </p>
           {minutes === null ? (
-            <p className="rounded-[18px] border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-[15px] text-[#475569]">
+            <p className="rounded-card border border-border bg-muted p-3 text-[15px] text-foreground-secondary">
               Os lembretes estão desligados.
             </p>
           ) : (
-            <div className="flex gap-2.5 rounded-[18px] border border-[#E2E8F0] bg-white/85 p-3">
+            <div className="flex gap-2.5 rounded-card border border-border bg-card p-3">
               <Logo variant="icone" size={36} />
-              <div className="min-w-0 flex-1 text-sm leading-snug text-[#0F172A]">
-                <div className="flex justify-between text-xs text-[#64748B]">
-                  <span className="font-semibold text-[#0F172A]">Clanix Agenda</span>
+              <div className="min-w-0 flex-1 text-sm leading-snug text-foreground">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">Clanix Agenda</span>
                   <span>agora</span>
                 </div>
                 <p className="font-semibold">Lembrete de atendimento</p>
@@ -78,19 +80,19 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
             variant="outline"
             disabled={!canTest || device.busy}
             onClick={device.sendTest}
-            className="h-12 rounded-[14px] border-[#E2E8F0] text-sm font-semibold text-[#0F2D5B] disabled:bg-[#F1F5F9] disabled:text-[#64748B] disabled:opacity-100"
+            className="h-12 rounded-control border-border text-sm font-semibold text-foreground disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
           >
             Enviar notificação de teste
           </Button>
           {!canTest && (
-            <p className="text-center text-xs text-[#64748B]">
+            <p className="text-center text-xs text-muted-foreground">
               Disponível depois de ativar neste aparelho.
             </p>
           )}
         </div>
         <Link
           to="/instalar"
-          className="inline-flex min-h-11 items-center self-start rounded-lg text-[15px] font-semibold text-[#1D4ED8] underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+          className="inline-flex min-h-11 items-center self-start rounded-lg text-[15px] font-semibold text-link underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           Instalar o app
         </Link>
@@ -115,14 +117,14 @@ function ThisDevice({ device }: { device: Device }) {
     );
   } else if (device.state === null) {
     body = device.error ? (
-      <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-[#B91C1C]">
+      <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-error">
         <span>{device.error}</span>
         <Button type="button" variant="outline" className="h-11" onClick={device.refresh}>
           Tentar novamente
         </Button>
       </div>
     ) : (
-      <p role="status" className="text-[15px] text-[#475569]">
+      <p role="status" className="text-[15px] text-foreground-secondary">
         Verificando este aparelho…
       </p>
     );
@@ -137,7 +139,7 @@ function ThisDevice({ device }: { device: Device }) {
           variant="outline"
           disabled={device.busy}
           onClick={device.deactivate}
-          className="h-11 self-start px-5 font-semibold text-[#0F2D5B]"
+          className="h-11 self-start px-5 font-semibold text-foreground"
         >
           Desativar neste aparelho
         </Button>
@@ -165,7 +167,7 @@ function ThisDevice({ device }: { device: Device }) {
         <DeviceStatus icon={<Ban />} tone="danger">
           Notificações bloqueadas neste navegador
         </DeviceStatus>
-        <p className="text-sm text-[#475569]">
+        <p className="text-sm text-foreground-secondary">
           Para liberar, abra as configurações do navegador para este site (no iPhone: Ajustes ›
           Notificações › Clanix Agenda), permita as notificações e volte a esta tela.
         </p>
@@ -182,14 +184,14 @@ function ThisDevice({ device }: { device: Device }) {
   return (
     <section
       aria-labelledby="neste-aparelho"
-      className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4"
+      className="flex flex-col gap-3 rounded-card border border-border bg-card p-4"
     >
-      <h3 id="neste-aparelho" className="font-display text-[15px] font-bold text-[#0F2D5B]">
+      <h3 id="neste-aparelho" className="font-display text-[15px] font-bold text-foreground">
         Neste aparelho
       </h3>
       {body}
       {device.state !== null && device.error && (
-        <p role="alert" className="text-sm text-[#B91C1C]">
+        <p role="alert" className="text-sm text-error">
           {device.error}
         </p>
       )}
@@ -198,9 +200,9 @@ function ThisDevice({ device }: { device: Device }) {
 }
 
 const TONES = {
-  ok: 'text-[#166534]',
-  neutral: 'text-[#334155]',
-  danger: 'text-[#B91C1C]',
+  ok: 'text-success-foreground',
+  neutral: 'text-foreground-secondary',
+  danger: 'text-error',
 } as const;
 
 /** Status com ícone + texto + cor. */
@@ -225,22 +227,22 @@ function DeviceStatus({
 
 /** Guia do T09: no iPhone, Web Push só funciona no app instalado na Tela de Início. */
 function InstallOnIPhone() {
-  const step = 'flex items-start gap-3 text-sm leading-snug text-[#0F172A]';
+  const step = 'flex items-start gap-3 text-sm leading-snug text-foreground';
   const badge =
-    'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-[#0F2D5B] text-sm font-extrabold text-white';
-  const inline = 'ml-1 inline size-4 align-[-3px] text-[#1D4ED8]';
+    'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-extrabold text-primary-foreground';
+  const inline = 'ml-1 inline size-4 align-[-3px] text-link';
   return (
     <section
       aria-labelledby="instalar-iphone"
-      className="flex flex-col gap-3.5 rounded-[18px] border border-[#BFDBFE] bg-[#E7F1FF] p-4"
+      className="flex flex-col gap-3.5 rounded-card border border-secondary-border bg-secondary p-4"
     >
       <div className="flex items-center gap-2.5">
-        <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-white text-[#1D4ED8]">
+        <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-card text-link">
           <Bell className="size-5" aria-hidden="true" />
         </span>
         <h3
           id="instalar-iphone"
-          className="font-display text-base leading-tight font-extrabold text-[#0F2D5B]"
+          className="font-display text-base leading-tight font-extrabold text-foreground"
         >
           No iPhone, instale o app para receber lembretes
         </h3>

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
-export const PRIMARY_BTN = 'h-11 bg-[#2563EB] px-5 font-bold text-white hover:bg-[#1D4ED8]';
+export const PRIMARY_BTN = 'h-11 px-5 font-bold';
 export const FIELD =
-  'h-11 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A] md:text-base';
+  'h-11 w-full rounded-field border border-input bg-card px-3 text-base text-foreground md:text-base';
 
 export function SectionCard({
   title,
@@ -17,13 +17,13 @@ export function SectionCard({
   return (
     <section
       aria-labelledby="secao-titulo"
-      className="flex flex-col gap-5 rounded-2xl border border-[#E2E8F0] bg-white p-5"
+      className="flex flex-col gap-5 rounded-card border border-border bg-card p-5"
     >
       <header>
-        <h2 id="secao-titulo" className="font-display text-xl font-extrabold text-[#0F2D5B]">
+        <h2 id="secao-titulo" className="font-display text-xl font-extrabold text-foreground">
           {title}
         </h2>
-        {description && <p className="mt-1 text-[15px] text-[#475569]">{description}</p>}
+        {description && <p className="mt-1 text-[15px] text-foreground-secondary">{description}</p>}
       </header>
       {children}
     </section>
@@ -48,12 +48,12 @@ export function ChoiceGroup<T extends string | number>({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1 text-sm font-semibold text-[#0F2D5B]">{legend}</legend>
+      <legend className="mb-1 text-sm font-semibold text-foreground">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <label
             key={String(o.value)}
-            className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg border border-[#E2E8F0] bg-white px-4 text-[15px] font-medium text-[#334155] has-[:checked]:border-[#2563EB] has-[:checked]:bg-[#E7F1FF] has-[:checked]:font-bold has-[:checked]:text-[#1D4ED8] has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-[#3B82F6]/50"
+            className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-control border border-input bg-card px-4 text-[15px] font-medium text-foreground-secondary has-[:checked]:border-ring has-[:checked]:bg-secondary has-[:checked]:font-bold has-[:checked]:text-secondary-foreground has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring"
           >
             <input
               type="radio"

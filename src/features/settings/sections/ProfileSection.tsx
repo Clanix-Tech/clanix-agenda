@@ -100,7 +100,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
             className={FIELD}
           />
           {nameError && (
-            <p id="perfil-nome-erro" role="alert" className="text-sm text-[#B91C1C]">
+            <p id="perfil-nome-erro" role="alert" className="text-sm text-error">
               {nameError}
             </p>
           )}
@@ -131,7 +131,7 @@ export function ProfileSection({ profile, onDirtyChange }: Props) {
           </select>
         </div>
         {error && (
-          <p role="alert" className="text-sm font-medium text-[#B91C1C]">
+          <p role="alert" className="text-sm font-medium text-error">
             {error} Seus dados continuam aqui; toque em Salvar para tentar novamente.
           </p>
         )}

@@ -20,22 +20,8 @@ import {
   useSaveFavorite,
   type FavoriteService,
 } from '@/features/favorites/api';
+import { FAVORITE_COLORS, colorLabel } from '@/features/favorites/colors';
 import { FIELD, PRIMARY_BTN, SectionCard } from './shared';
-
-/** Todas com contraste >= 3:1 sobre branco; a cor nunca vai sozinha (ponto + nome). */
-const FAVORITE_COLORS = [
-  { hex: '#2563EB', label: 'Azul' },
-  { hex: '#16A34A', label: 'Verde' },
-  { hex: '#B45309', label: 'Âmbar' },
-  { hex: '#DB2777', label: 'Rosa' },
-  { hex: '#7C3AED', label: 'Roxo' },
-  { hex: '#475569', label: 'Cinza' },
-];
-
-const colorLabel = (hex: string | null) =>
-  hex
-    ? (FAVORITE_COLORS.find((c) => c.hex.toLowerCase() === hex.toLowerCase())?.label ?? null)
-    : null;
 
 const DUPLICATE = 'Você já tem um serviço com esse nome.';
 
@@ -82,11 +68,11 @@ export function FavoritesSection() {
     return (
       <li
         key={f.id}
-        className="flex flex-wrap items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white p-3"
+        className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-card p-3"
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-[#0F172A]">{f.name}</p>
-          <p className="flex items-center gap-2 text-sm text-[#475569]">
+          <p className="truncate font-semibold text-foreground">{f.name}</p>
+          <p className="flex items-center gap-2 text-sm text-foreground-secondary">
             <span>{f.duration_minutes} min</span>
             {label && f.color && (
               <span className="inline-flex items-center gap-1.5">
@@ -112,7 +98,7 @@ export function FavoritesSection() {
         <Button
           type="button"
           variant="outline"
-          className="h-11 text-[#B91C1C]"
+          className="h-11 text-error"
           aria-label={`Remover ${f.name}`}
           onClick={() => {
             setRemoveError(null);
@@ -137,7 +123,7 @@ export function FavoritesSection() {
           </Button>
         </div>
         {favorites.data.length === 0 && (
-          <p className="text-[#64748B]">Você ainda não tem serviços favoritos.</p>
+          <p className="text-muted-foreground">Você ainda não tem serviços favoritos.</p>
         )}
         {active.length > 0 && (
           <ul aria-label="Serviços ativos" className="flex flex-col gap-2">
@@ -146,7 +132,9 @@ export function FavoritesSection() {
         )}
         {inactive.length > 0 && (
           <>
-            <h3 className="font-display text-base font-extrabold text-[#475569]">Inativos</h3>
+            <h3 className="font-display text-base font-extrabold text-foreground-secondary">
+              Inativos
+            </h3>
             <ul aria-label="Serviços inativos" className="flex flex-col gap-2">
               {inactive.map(row)}
             </ul>
@@ -172,7 +160,7 @@ export function FavoritesSection() {
             </DialogDescription>
           </DialogHeader>
           {removeError && (
-            <p role="alert" className="text-sm text-[#B91C1C]">
+            <p role="alert" className="text-sm text-error">
               {removeError}
             </p>
           )}
@@ -188,7 +176,8 @@ export function FavoritesSection() {
             <Button
               type="button"
               disabled={del.isPending}
-              className="h-11 bg-[#B91C1C] text-white hover:bg-[#991B1B]"
+              variant="destructive"
+              className="h-11"
               onClick={() => void confirmRemove()}
             >
               Remover
@@ -272,7 +261,7 @@ function FavoriteDialog({
               className={FIELD}
             />
             {errors.name && (
-              <p id="fav-nome-erro" role="alert" className="text-sm text-[#B91C1C]">
+              <p id="fav-nome-erro" role="alert" className="text-sm text-error">
                 {errors.name}
               </p>
             )}
@@ -291,18 +280,18 @@ function FavoriteDialog({
               className={`${FIELD} max-w-40`}
             />
             {errors.duration && (
-              <p role="alert" className="text-sm text-[#B91C1C]">
+              <p role="alert" className="text-sm text-error">
                 {errors.duration}
               </p>
             )}
           </div>
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-[#0F2D5B]">Cor</legend>
+            <legend className="mb-1 text-sm font-semibold text-foreground">Cor</legend>
             <div className="flex flex-wrap gap-2">
               {[{ hex: null, label: 'Sem cor' }, ...FAVORITE_COLORS].map((c) => (
                 <label
                   key={c.label}
-                  className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-3 text-[15px] text-[#334155] has-[:checked]:border-[#2563EB] has-[:checked]:bg-[#E7F1FF] has-[:checked]:font-bold has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-[#3B82F6]/50"
+                  className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-control border border-input bg-card px-3 text-[15px] text-foreground-secondary has-[:checked]:border-ring has-[:checked]:bg-secondary has-[:checked]:font-bold has-[:checked]:text-secondary-foreground has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring"
                 >
                   <input
                     type="radio"
@@ -324,11 +313,11 @@ function FavoriteDialog({
             </div>
           </fieldset>
           <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
-            <span className="text-[15px] font-medium text-[#0F172A]">Serviço ativo</span>
+            <span className="text-[15px] font-medium text-foreground">Serviço ativo</span>
             <Switch checked={active} onCheckedChange={setActive} aria-label="Serviço ativo" />
           </label>
           {error && (
-            <p role="alert" className="text-sm font-medium text-[#B91C1C]">
+            <p role="alert" className="text-sm font-medium text-error">
               {error}
             </p>
           )}

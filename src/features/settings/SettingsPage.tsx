@@ -15,6 +15,7 @@ import { DESKTOP_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 import { useProfile } from '@/features/profile/api';
 import { AccountSection } from './sections/AccountSection';
 import { AgendaPrefsSection } from './sections/AgendaPrefsSection';
+import { AppearanceSection } from './sections/AppearanceSection';
 import { FavoritesSection } from './sections/FavoritesSection';
 import { HoursSection } from './sections/HoursSection';
 import { NotificationsSection } from './sections/NotificationsSection';
@@ -24,6 +25,7 @@ const SECTIONS = [
   { slug: 'perfil', label: 'Perfil' },
   { slug: 'expediente', label: 'Expediente' },
   { slug: 'agenda', label: 'Agenda' },
+  { slug: 'aparencia', label: 'Aparência' },
   { slug: 'servicos', label: 'Serviços favoritos' },
   { slug: 'notificacoes', label: 'Notificações' },
   { slug: 'conta', label: 'Conta e privacidade' },
@@ -51,6 +53,7 @@ export default function SettingsPage() {
 
   const renderSection = () => {
     if (current === 'servicos') return <FavoritesSection />;
+    if (current === 'aparencia') return <AppearanceSection />;
     if (current === 'expediente') return <HoursSection onDirtyChange={onDirtyChange} />;
     if (profile.isPending) return <LoadingState label="Carregando…" />;
     if (profile.isError) {
@@ -80,7 +83,7 @@ export default function SettingsPage() {
       aria-label="Seções de ajustes"
       className={
         isDesktop
-          ? 'flex w-64 shrink-0 flex-col gap-1 self-start rounded-2xl border border-[#E2E8F0] bg-white p-2'
+          ? 'flex w-64 shrink-0 flex-col gap-1 self-start rounded-card border border-border bg-card p-2'
           : 'flex flex-col gap-2'
       }
     >
@@ -91,13 +94,13 @@ export default function SettingsPage() {
           aria-current={current === s.slug ? 'page' : undefined}
           className={
             isDesktop
-              ? 'flex min-h-11 items-center rounded-lg px-3 text-[15px] font-semibold text-[#334155] hover:bg-[#F1F5F9] aria-[current=page]:bg-[#E7F1FF] aria-[current=page]:text-[#1D4ED8]'
-              : 'flex min-h-14 items-center justify-between rounded-xl border border-[#E2E8F0] bg-white px-4 text-base font-semibold text-[#0F2D5B]'
+              ? 'flex min-h-11 items-center rounded-lg px-3 text-[15px] font-semibold text-foreground-secondary hover:bg-accent aria-[current=page]:bg-secondary aria-[current=page]:text-secondary-foreground focus-visible:outline-2 focus-visible:outline-ring'
+              : 'flex min-h-14 items-center justify-between rounded-xl border border-border bg-card px-4 text-base font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-ring'
           }
         >
           {s.label}
           {!isDesktop && (
-            <span aria-hidden="true" className="text-[#64748B]">
+            <span aria-hidden="true" className="text-muted-foreground">
               ›
             </span>
           )}
@@ -108,7 +111,7 @@ export default function SettingsPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 p-4 lg:p-8">
-      <h1 className="font-display text-[26px] font-extrabold text-[#0F2D5B]">Ajustes</h1>
+      <h1 className="font-display text-[26px] font-extrabold text-foreground">Ajustes</h1>
       {isDesktop ? (
         <div className="flex items-start gap-6">
           {nav}
@@ -119,7 +122,7 @@ export default function SettingsPage() {
           <Link
             to="/ajustes"
             aria-label="Voltar para Ajustes"
-            className="inline-flex min-h-11 w-fit items-center gap-1 text-[15px] font-semibold text-[#1D4ED8]"
+            className="inline-flex min-h-11 w-fit items-center gap-1 text-[15px] font-semibold text-link focus-visible:outline-2 focus-visible:outline-ring"
           >
             <span aria-hidden="true">‹</span> Ajustes
           </Link>
@@ -153,7 +156,7 @@ export default function SettingsPage() {
             </Button>
             <Button
               type="button"
-              className="h-11 bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              className="h-11"
               onClick={() => blocker.state === 'blocked' && blocker.proceed()}
             >
               Descartar

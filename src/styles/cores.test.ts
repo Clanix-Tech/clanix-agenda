@@ -11,19 +11,8 @@ const PERMITIDOS = new Set<string>([
   'src/features/favorites/colors.ts',
 ]);
 
-/** Ainda não migrados; as tarefas seguintes encolhem esta lista. */
-// Logo.tsx: a Tarefa 3 o reescreve com os SVG oficiais.
-const PENDENTES = new Set<string>([
-  'src/features/settings/SettingsPage.tsx',
-  'src/features/settings/sections/AccountSection.tsx',
-  'src/features/settings/sections/AgendaPrefsSection.tsx',
-  'src/features/settings/sections/FavoritesSection.tsx',
-  'src/features/settings/sections/HoursSection.tsx',
-  'src/features/settings/sections/NotificationsSection.tsx',
-  'src/features/settings/sections/ProfileSection.tsx',
-  'src/features/settings/sections/shared.tsx',
-  'src/features/settings/sections/useAutoSaveProfile.tsx',
-]);
+/** Migração concluída: nenhum arquivo pendente. */
+const PENDENTES = new Set<string>();
 
 const PADROES: RegExp[] = [
   /#[0-9A-Fa-f]{3,8}\b/,
@@ -74,17 +63,16 @@ describe('guarda de cores', () => {
     expect(ANEL_COM_ALFA.test('aria-invalid:ring-destructive/20')).toBe(false);
   });
 
-  it('nenhum arquivo fora de PERMITIDOS e PENDENTES usa cor literal', () => {
-    const ruins = arquivos.filter((f) => !PERMITIDOS.has(f) && !PENDENTES.has(f) && reprova(f));
+  it('nenhum arquivo fora de PERMITIDOS usa cor literal', () => {
+    const ruins = arquivos.filter((f) => !PERMITIDOS.has(f) && reprova(f));
     expect(ruins).toEqual([]);
   });
 
-  it('PENDENTES só lista arquivos que ainda reprovam (tire da lista os limpos)', () => {
-    const limpos = [...PENDENTES].filter((f) => !arquivos.includes(f) || !reprova(f));
-    expect(limpos).toEqual([]);
+  it('todos os arquivos foram migrados (PENDENTES vazio)', () => {
+    expect([...PENDENTES]).toEqual([]);
   });
 
-  it('anel de foco opaco (sem alfa) fora de input, select e textarea (PENDENTES migram nas suas tarefas)', () => {
+  it('anel de foco opaco (sem alfa) fora de input, select e textarea', () => {
     // Controles sem borda sólida precisam do anel a 3:1; só os campos usam o halo, porque a borda `border-ring` é o indicador.
     const campos = new Set([
       'src/components/ui/input.tsx',
@@ -92,7 +80,7 @@ describe('guarda de cores', () => {
       'src/components/ui/textarea.tsx',
     ]);
     const ruins = arquivos.filter(
-      (f) => !campos.has(f) && !PENDENTES.has(f) && ANEL_COM_ALFA.test(fontes[`/${f}`] ?? ''),
+      (f) => !campos.has(f) && ANEL_COM_ALFA.test(fontes[`/${f}`] ?? ''),
     );
     expect(ruins).toEqual([]);
   });

@@ -42,7 +42,7 @@ export function AgendaPrefsSection({ profile }: { profile: Profile }) {
             className={`${FIELD} max-w-40`}
           />
           {error && (
-            <p id="agenda-duracao-erro" role="alert" className="text-sm text-[#B91C1C]">
+            <p id="agenda-duracao-erro" role="alert" className="text-sm text-error">
               {error}
             </p>
           )}

@@ -84,7 +84,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
     <SectionCard title="Conta e privacidade">
       <div className="flex max-w-md flex-col gap-8">
         <form onSubmit={(e) => void changePassword(e)} noValidate className="flex flex-col gap-4">
-          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Alterar senha</h3>
+          <h3 className="font-display text-base font-extrabold text-foreground">Alterar senha</h3>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="conta-senha">Nova senha</Label>
             <Input
@@ -97,7 +97,7 @@ export function AccountSection({ profile }: { profile: Profile }) {
               className={FIELD}
             />
             {errors.password && (
-              <p role="alert" className="text-sm text-[#B91C1C]">
+              <p role="alert" className="text-sm text-error">
                 {errors.password}
               </p>
             )}
@@ -114,13 +114,13 @@ export function AccountSection({ profile }: { profile: Profile }) {
               className={FIELD}
             />
             {errors.confirm && (
-              <p role="alert" className="text-sm text-[#B91C1C]">
+              <p role="alert" className="text-sm text-error">
                 {errors.confirm}
               </p>
             )}
           </div>
           {error && (
-            <p role="alert" className="text-sm font-medium text-[#B91C1C]">
+            <p role="alert" className="text-sm font-medium text-error">
               {error}
             </p>
           )}
@@ -130,15 +130,15 @@ export function AccountSection({ profile }: { profile: Profile }) {
         </form>
 
         <div className="flex flex-col gap-2">
-          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Seus dados</h3>
-          <p className="text-[15px] text-[#475569]">
+          <h3 className="font-display text-base font-extrabold text-foreground">Seus dados</h3>
+          <p className="text-[15px] text-foreground-secondary">
             Baixe todos os seus atendimentos em uma planilha.
           </p>
-          <p className="text-[15px] text-[#475569]">
+          <p className="text-[15px] text-foreground-secondary">
             Veja como cuidamos dos seus dados na{' '}
             <Link
               to="/privacidade"
-              className="rounded-sm font-semibold text-[#2563EB] underline underline-offset-2 outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+              className="rounded-sm font-semibold text-link underline underline-offset-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
             >
               Política de Privacidade
             </Link>
@@ -156,30 +156,31 @@ export function AccountSection({ profile }: { profile: Profile }) {
             </Button>
           </div>
           {exporting && (
-            <p role="status" className="text-sm text-[#64748B]">
+            <p role="status" className="text-sm text-muted-foreground">
               Preparando o arquivo…
             </p>
           )}
           {exportError && (
-            <p role="alert" className="text-sm text-[#B91C1C]">
+            <p role="alert" className="text-sm text-error">
               {exportError}
             </p>
           )}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-[#E2E8F0] pt-6">
-          <h3 className="font-display text-base font-extrabold text-[#0F2D5B]">Excluir conta</h3>
-          <p className="text-[15px] text-[#475569]">
+        <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <h3 className="font-display text-base font-extrabold text-foreground">Excluir conta</h3>
+          <p className="text-[15px] text-foreground-secondary">
             Apaga sua conta e todos os seus dados: clientes, atendimentos, histórico e aparelhos com
             lembretes. Não dá para desfazer.
           </p>
-          <p className="text-[15px] text-[#475569]">
+          <p className="text-[15px] text-foreground-secondary">
             Se quiser, baixe seus dados acima antes de excluir.
           </p>
           <div>
             <Button
               type="button"
-              className="h-11 bg-[#B91C1C] text-white hover:bg-[#991B1B]"
+              variant="destructive"
+              className="h-11"
               onClick={() => setDeleteOpen(true)}
             >
               Excluir minha conta

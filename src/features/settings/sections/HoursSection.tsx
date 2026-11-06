@@ -85,12 +85,12 @@ function HoursForm({
       >
         <HoursEditor variant="full" value={shifts} onChange={setShifts} />
         {!valid && !mutation.isPending && (
-          <p role="status" className="text-sm text-[#64748B]">
+          <p role="status" className="text-sm text-muted-foreground">
             {empty ? 'Escolha ao menos um dia de atendimento.' : 'Corrija os horários destacados.'}
           </p>
         )}
         {error && (
-          <p role="alert" className="text-sm font-medium text-[#B91C1C]">
+          <p role="alert" className="text-sm font-medium text-error">
             {error}
           </p>
         )}

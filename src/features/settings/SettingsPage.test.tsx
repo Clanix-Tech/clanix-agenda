@@ -132,6 +132,7 @@ describe('SettingsPage navegação', () => {
       'Perfil',
       'Expediente',
       'Agenda',
+      'Aparência',
       'Serviços favoritos',
       'Notificações',
       'Conta e privacidade',
@@ -147,6 +148,12 @@ describe('SettingsPage navegação', () => {
     expect(screen.getByTestId('loc')).toHaveTextContent('/ajustes/notificacoes');
     await user.click(await screen.findByRole('link', { name: /Voltar para Ajustes/ }));
     expect(screen.getByTestId('loc')).toHaveTextContent(/^\/ajustes$/);
+  });
+
+  it('/ajustes/aparencia abre a seção sem depender do perfil', async () => {
+    setup({ route: '/ajustes/aparencia', errors: { profiles: { select: { code: 'XX000' } } } });
+    expect(await screen.findByRole('group', { name: 'Tema' })).toBeInTheDocument();
+    expect(screen.queryByText('Não foi possível carregar seus ajustes.')).not.toBeInTheDocument();
   });
 
   it('seção desconhecida volta para /ajustes', async () => {

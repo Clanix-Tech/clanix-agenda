@@ -94,18 +94,18 @@ export function useAutoSaveProfile(profile: Profile) {
 
   const status =
     phase === 'saving' ? (
-      <p role="status" className="text-sm text-[#64748B]">
+      <p role="status" className="text-sm text-muted-foreground">
         Salvando…
       </p>
     ) : phase === 'error' ? (
-      <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-[#B91C1C]">
+      <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-error">
         <span>{errorMessage}</span>
         <Button type="button" variant="outline" className="h-11" onClick={retry}>
           Tentar novamente
         </Button>
       </div>
     ) : phase === 'saved' ? (
-      <p role="status" className="text-sm font-medium text-[#166534]">
+      <p role="status" className="text-sm font-medium text-success-foreground">
         Salvo
       </p>
     ) : (

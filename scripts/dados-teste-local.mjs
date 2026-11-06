@@ -10,12 +10,13 @@ const EMAIL = 'teste@clanix.local';
 const SENHA = 'clanix-teste-123';
 const FUSO_OFFSET = '-03:00'; // America/Sao_Paulo (sem horário de verão desde 2019)
 
+// Cores = FAVORITE_COLORS de src/features/favorites/colors.ts (este script não importa TS: mantenha iguais).
 const SERVICOS = [
-  { name: 'Corte feminino', duration_minutes: 60, color: '#8A2BE2' },
-  { name: 'Escova', duration_minutes: 45, color: '#0284C7' },
+  { name: 'Corte feminino', duration_minutes: 60, color: '#7C3AED' },
+  { name: 'Escova', duration_minutes: 45, color: '#2563EB' },
   { name: 'Manicure', duration_minutes: 45, color: '#DB2777' },
-  { name: 'Coloração', duration_minutes: 120, color: '#4A00B8' },
-  { name: 'Design de sobrancelha', duration_minutes: 30, color: '#10B981' },
+  { name: 'Coloração', duration_minutes: 120, color: '#B45309' },
+  { name: 'Design de sobrancelha', duration_minutes: 30, color: '#16A34A' },
 ];
 
 const CLIENTES = [
