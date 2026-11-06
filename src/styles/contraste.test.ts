@@ -51,6 +51,14 @@ describe.each(Object.entries(temas))('contraste (%s)', (_nome, t) => {
     expect(r, `${fg} sobre ${bg}: ${r.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
   });
 
+  it.each([
+    ['primary-foreground', 'primary'],
+    ['card', 'muted-foreground'],
+  ])('polegar do switch (%s) sobre %s >= 3', (fg, bg) => {
+    const r = contrastRatio(v(t, fg), v(t, bg), v(t, 'background'));
+    expect(r, `${fg} sobre ${bg}: ${r.toFixed(2)}`).toBeGreaterThanOrEqual(3);
+  });
+
   it.each(['agenda', 'ring'])('%s sobre background e card >= 3', (fg) => {
     for (const bg of ['background', 'card']) {
       const r = contrastRatio(v(t, fg), v(t, bg));

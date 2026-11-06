@@ -87,4 +87,17 @@ describe('guarda de cores', () => {
     const limpos = [...PENDENTES].filter((f) => !arquivos.includes(f) || !reprova(f));
     expect(limpos).toEqual([]);
   });
+
+  it('anel de foco opaco (ring-ring sem alfa) fora de input, select e textarea (PENDENTES migram nas suas tarefas)', () => {
+    // Controles sem borda sólida precisam do anel a 3:1; só os campos usam o halo, porque a borda `border-ring` é o indicador.
+    const campos = new Set([
+      'src/components/ui/input.tsx',
+      'src/components/ui/select.tsx',
+      'src/components/ui/textarea.tsx',
+    ]);
+    const ruins = arquivos.filter(
+      (f) => !campos.has(f) && !PENDENTES.has(f) && /ring-ring\/\d+/.test(fontes[`/${f}`] ?? ''),
+    );
+    expect(ruins).toEqual([]);
+  });
 });

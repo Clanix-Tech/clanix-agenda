@@ -9,7 +9,7 @@ function Item({ to, label, icon: Icon, end }: NavItem) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex min-h-11 flex-col items-center gap-1 pt-1 text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
+        `flex min-h-11 flex-col items-center gap-1 pt-1 text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring ${
           isActive ? 'text-link' : 'text-muted-foreground'
         }`
       }
@@ -38,7 +38,7 @@ export function BottomNav() {
           type="button"
           aria-label="Novo agendamento"
           onClick={() => open()}
-          className="-mt-[26px] grid size-[58px] place-items-center rounded-full border-4 border-background bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="-mt-[26px] grid size-[58px] place-items-center rounded-full border-4 border-background bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           <Plus aria-hidden="true" className="size-[26px]" />
         </button>

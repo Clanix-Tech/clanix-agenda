@@ -27,7 +27,7 @@ export function SideRail() {
           type="button"
           aria-label="Novo agendamento"
           onClick={() => open()}
-          className="grid size-[52px] place-items-center rounded-2xl bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="grid size-[52px] place-items-center rounded-2xl bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           <Plus aria-hidden="true" className="size-6" />
         </button>
@@ -38,7 +38,7 @@ export function SideRail() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex min-h-14 w-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
+                `flex min-h-14 w-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring ${
                   isActive
                     ? 'bg-secondary text-secondary-foreground'
                     : 'text-muted-foreground hover:bg-muted'
@@ -55,7 +55,7 @@ export function SideRail() {
       <Link
         to="/ajustes"
         aria-label="Minha conta"
-        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-secondary font-display font-bold text-secondary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-secondary font-display font-bold text-secondary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
       >
         {initial(profile?.display_name, user?.email)}
       </Link>
