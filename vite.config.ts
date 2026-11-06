@@ -3,20 +3,26 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { buildAssetLinks, lerFingerprints } from './scripts/gerar-assetlinks.mjs';
 import { buildHeaders, headersFor, parseHeaders } from './scripts/gerar-headers.mjs';
 
-// Com ANDROID_PACKAGE_ID e ANDROID_CERT_SHA256 no ambiente, o build publica
-// /.well-known/assetlinks.json (verificação do APK/TWA). Sem elas, o arquivo não existe.
+// Com ANDROID_PACKAGE_ID e ANDROID_CERT_SHA256 (no ambiente ou nos arquivos .env* do modo, como o
+// .env.production.local), o build publica /.well-known/assetlinks.json (verificação do APK/TWA).
+// Sem elas, o arquivo não existe. Ler do .env evita que uma publicação esqueça as variáveis e o
+// APK volte a abrir com barra de endereço.
 function assetLinksPlugin(): Plugin {
+  let android: Record<string, string> = {};
   return {
     name: 'agenda-assetlinks',
     apply: 'build',
+    configResolved(config) {
+      android = loadEnv(config.mode, config.envDir || config.root, 'ANDROID_');
+    },
     generateBundle() {
-      const packageId = process.env.ANDROID_PACKAGE_ID;
-      const sha256 = lerFingerprints(process.env.ANDROID_CERT_SHA256);
+      const packageId = android.ANDROID_PACKAGE_ID;
+      const sha256 = lerFingerprints(android.ANDROID_CERT_SHA256);
       if (!packageId || sha256.length === 0) return;
       this.emitFile({
         type: 'asset',

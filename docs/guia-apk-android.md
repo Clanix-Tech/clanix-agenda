@@ -10,7 +10,11 @@ Nada aqui gera chave ou APK dentro do repositório. Os valores `__DOMINIO__` e `
 - **Verificação de desenvolvedor do Google**: desde set/2026, no Brasil, distribuir um APK fora da Play Store exige que o desenvolvedor esteja verificado pelo Google. Faça a verificação antes de divulgar o arquivo.
 - **JDK e Android SDK**: o Bubblewrap oferece baixar os dois na primeira execução (aceite). Precisa de Node.js, que o projeto já usa.
 - Instalar o Bubblewrap: `npm install -g @bubblewrap/cli`.
-- Os comandos deste guia foram escritos sem rodar o Bubblewrap de verdade: ao gerar o APK, confira cada um contra `bubblewrap --help` (e `bubblewrap <comando> --help`) da versão instalada e corrija o guia se algo tiver mudado.
+- Conferido de verdade em 06/11/2026 com o Bubblewrap 1.27.0 (`npx @bubblewrap/cli@1.27.0`), gerando o APK `br.com.clanix.agenda` para `clanix-agenda.pages.dev`. Pegadinhas encontradas:
+  - O Bubblewrap 1.27 exige **JDK 17** e **build-tools 36.1.0**, e valida o SDK procurando uma pasta `bin` (ou `tools`) na **raiz** do SDK. Com as ferramentas novas do Google (`cmdline-tools/latest/bin/android.exe sdk install build-tools/36.1.0 platforms/android-36`), crie `bin` na raiz como atalho (junction) para `cmdline-tools/latest/bin`. Os caminhos do JDK e do SDK ficam em `~/.bubblewrap/config.json`.
+  - `minSdkVersion` precisa ser **24** (Android 7.0): a biblioteca `androidbrowserhelper` não aceita menos.
+  - Em rede com inspeção de HTTPS, o Gradle falha com `PKIX path building failed`. Rode com `JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStoreType=Windows-ROOT` (o Java passa a usar os certificados confiáveis do Windows).
+  - Senhas sem pergunta interativa: `BUBBLEWRAP_KEYSTORE_PASSWORD` e `BUBBLEWRAP_KEY_PASSWORD`; `bubblewrap update --skipVersionUpgrade` gera o projeto a partir de um `twa-manifest.json` pronto, e `bubblewrap build --skipPwaValidation` compila e assina.
 
 ## 2. Gerar o projeto Android
 
@@ -52,14 +56,14 @@ bubblewrap fingerprint list
 
 O site precisa publicar `https://<dominio>/.well-known/assetlinks.json`. Duas formas:
 
-- **No build do site** (recomendado): defina as variáveis no ambiente de build e rode `npm run build`:
+- **No build do site** (recomendado): coloque as variáveis no `.env.production.local` (ou no ambiente de build) e publique com `npm run publicar:site`:
 
   ```
   ANDROID_PACKAGE_ID=<pacote>
   ANDROID_CERT_SHA256=<impressao>[,<outra>]
   ```
 
-  Com as duas definidas, `dist/.well-known/assetlinks.json` é gerado. Sem elas, o arquivo simplesmente não existe e o build segue normal.
+  Com as duas definidas, `dist/.well-known/assetlinks.json` é gerado. Sem elas, o arquivo simplesmente não existe e o build segue normal. Deixe-as no `.env.production.local`: se uma publicação sair sem elas, o APK volta a abrir com barra de endereço.
 
 - **À mão**: `node scripts/gerar-assetlinks.mjs saida.json` (usa as mesmas variáveis). Valida o pacote e as impressões e mostra erro em português se algo estiver errado.
 
