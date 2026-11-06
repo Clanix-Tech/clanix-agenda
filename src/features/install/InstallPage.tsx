@@ -22,7 +22,7 @@ const INLINE = 'ml-1 inline size-4 align-[-3px] text-link';
 const CARD = 'flex flex-col gap-4 rounded-[18px] border border-border bg-card p-4';
 const CARD_TITLE = 'font-display text-base leading-tight font-extrabold text-foreground';
 const LINK_FOCUS =
-  'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2';
+  'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 /** Guia público de instalação: abre na seção do aparelho em uso. Funciona com ou sem login. */
 export default function InstallPage() {

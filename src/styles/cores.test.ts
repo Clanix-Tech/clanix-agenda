@@ -116,4 +116,12 @@ describe('guarda de cores', () => {
     );
     expect(ruins).toEqual([]);
   });
+
+  it('ring-offset-<n> sempre com a cor do fundo (o padrão do Tailwind v4 é branco, quebra o escuro)', () => {
+    const ruins = arquivos.filter((f) => {
+      const t = fontes[`/${f}`] ?? '';
+      return /ring-offset-\d/.test(t) && !/ring-offset-(background|card)\b/.test(t);
+    });
+    expect(ruins).toEqual([]);
+  });
 });
