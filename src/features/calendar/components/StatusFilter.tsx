@@ -25,7 +25,11 @@ export function StatusFilter({
   const on = 'border-primary bg-primary text-primary-foreground';
   const off = 'border-border bg-card text-foreground-secondary';
   return (
-    <div role="group" aria-label="Filtrar por status" className="flex gap-2 overflow-x-auto">
+    <div
+      role="group"
+      aria-label="Filtrar por status"
+      className="-m-1 flex gap-2 overflow-x-auto p-1"
+    >
       <button
         type="button"
         aria-pressed={value === null}
