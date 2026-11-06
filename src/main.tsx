@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import './styles/index.css';
 import App from './App';
 import { startInstallPromptCapture } from './features/install/installPromptStore';
+import { initTheme } from './lib/theme';
+
+initTheme();
 
 // O navegador só avisa uma vez que dá para instalar: escuta desde o começo.
 startInstallPromptCapture();
