@@ -478,7 +478,7 @@ function FormBody(props: BodyProps) {
         form={formId}
         disabled={pending || blocked}
         aria-describedby={!pending ? blockedReason : undefined}
-        className="h-[52px] flex-[2] rounded-[14px] bg-primary text-[15px] font-bold text-primary-foreground hover:bg-primary-hover lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
+        className="h-[52px] flex-[2] rounded-[14px] text-[15px] font-bold lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
       >
         {pending ? 'Salvando…' : submitLabel}
       </Button>
@@ -754,7 +754,7 @@ function FormBody(props: BodyProps) {
                 type="button"
                 onClick={retry}
                 disabled={pending}
-                className="h-11 self-start rounded-xl bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
+                className="h-11 self-start rounded-xl px-5"
               >
                 Tentar novamente
               </Button>

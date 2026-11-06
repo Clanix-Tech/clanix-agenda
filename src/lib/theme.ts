@@ -43,8 +43,7 @@ let started = false;
 let stopListening: (() => void) | null = null;
 let snapshot: { preference: ThemePreference; resolved: ResolvedTheme } | null = null;
 
-function refresh(): void {
-  const preference = readThemePreference();
+function refresh(preference: ThemePreference = readThemePreference()): void {
   const resolved = resolveTheme(preference, systemPrefersDark());
   if (!snapshot || snapshot.preference !== preference || snapshot.resolved !== resolved) {
     snapshot = { preference, resolved };
@@ -60,7 +59,9 @@ export function initTheme(): void {
   if (typeof matchMedia !== 'function') return;
   const media = matchMedia(DARK_QUERY);
   const onChange = () => {
-    if (readThemePreference() === 'auto') refresh();
+    // Usa a escolha em memória: com storage bloqueado, ler de volta devolveria 'auto'.
+    const preference = snapshot?.preference ?? readThemePreference();
+    if (preference === 'auto') refresh(preference);
   };
   media.addEventListener('change', onChange);
   stopListening = () => media.removeEventListener('change', onChange);

@@ -119,7 +119,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             type="button"
             disabled={pending}
             onClick={() => void navigate(`/agenda/remarcar/${id}`)}
-            className={`${ACTION} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
+            className="h-auto min-h-[52px] rounded-[14px] border border-primary py-2 text-center text-sm leading-tight font-semibold whitespace-normal"
           >
             <Repeat aria-hidden="true" />
             Remarcar
@@ -228,11 +228,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
         <div role="alert" className="rounded-xl bg-error-surface p-3 text-sm text-error">
           <p>{error.message}</p>
           {blocked && status === 'cancelado' && onCreateNew && (
-            <Button
-              type="button"
-              onClick={onCreateNew}
-              className="mt-2 h-11 bg-primary text-primary-foreground hover:bg-primary-hover"
-            >
+            <Button type="button" onClick={onCreateNew} className="mt-2 h-11">
               Criar novo agendamento
             </Button>
           )}
@@ -268,12 +264,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             >
               Voltar
             </Button>
-            <Button
-              type="button"
-              disabled={pending}
-              className="h-11 bg-primary text-primary-foreground hover:bg-primary-hover"
-              onClick={confirmCopy.go}
-            >
+            <Button type="button" disabled={pending} className="h-11" onClick={confirmCopy.go}>
               {confirmCopy.label}
             </Button>
           </DialogFooter>

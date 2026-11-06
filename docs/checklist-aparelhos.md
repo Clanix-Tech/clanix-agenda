@@ -43,9 +43,14 @@ aparelhos:
    atendimento. O corpo deve ser só `Atendimento às HH:MM · em 15 min` (sem nome e sem serviço).
 8. **Sair**: saia da conta neste aparelho. Pelo outro acesso, crie um atendimento para daqui a 20 min
    e confirme que **este** aparelho não recebe nada (os demais aparelhos ativados recebem).
-9. **Só no iPhone — fontes**: títulos em Manrope e textos em Inter (pendência do Plano 02: no WebKit
+9. **Só no iPhone — fontes**: títulos em Sora e textos em Inter (pendência do Plano 02: no WebKit
    do Windows as fontes pareciam finas). Compare com a mesma tela no computador; nada deve cair
    para a fonte padrão do sistema.
+10. **Tema escuro, sem flash claro**: com o sistema em modo escuro, abra o app (e recarregue): a tela
+    não pode piscar clara antes de ficar escura. Repita com o sistema em modo claro e Ajustes ›
+    Aparência em "Escuro": o app abre escuro desde o primeiro quadro.
+11. **Só no iPhone — barra de status**: com o app instalado (tela cheia), a barra de status (hora,
+    bateria) fica legível nos temas claro e escuro, sem faixa de cor errada atrás dela.
 
 ## Registro
 
@@ -64,7 +69,9 @@ Versão / data: ________ Responsável: ________
 | 6. Tocar abre os detalhes | | | | | | |
 | 7. Ocultar nome | | | | | | |
 | 8. Sair: deixou de receber | | | | | | |
-| 9. Fontes Manrope/Inter | | — | — | — | — | — |
+| 9. Fontes Sora/Inter | | — | — | — | — | — |
+| 10. Tema escuro sem flash claro | | | | | | |
+| 11. Barra de status legível | | — | — | — | — | — |
 
 ## Se algo falhar
 

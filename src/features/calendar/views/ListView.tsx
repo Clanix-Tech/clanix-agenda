@@ -45,7 +45,7 @@ export function ListView({ date, tz, status }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar cliente ou serviço"
-        className="h-11 w-full rounded-[14px] border border-border bg-card pr-3 pl-10 text-base focus-visible:outline-2 focus-visible:outline-ring"
+        className="h-11 w-full rounded-[14px] border border-input bg-card pr-3 pl-10 text-base focus-visible:outline-2 focus-visible:outline-ring"
       />
     </label>
   );
@@ -82,10 +82,7 @@ export function ListView({ date, tz, status }: Props) {
           title="Nenhum atendimento por aqui."
           description={`Próximos 30 dias a partir de ${shortDM(date)}.`}
           action={
-            <Button
-              onClick={() => open({ date })}
-              className="h-11 bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
-            >
+            <Button onClick={() => open({ date })} className="h-11 px-5">
               Novo agendamento
             </Button>
           }
@@ -93,7 +90,7 @@ export function ListView({ date, tz, status }: Props) {
       ) : (
         [...groups.entries()].map(([day, list]) => (
           <section key={day} aria-label={heading(day, today)} className="flex flex-col gap-2">
-            <h2 className="px-1 font-display text-sm font-extrabold text-foreground">
+            <h2 className="px-1 font-display text-sm font-semibold text-foreground">
               {heading(day, today)}
             </h2>
             {list.map((a) => (

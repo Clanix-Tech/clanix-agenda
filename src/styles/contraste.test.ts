@@ -82,3 +82,10 @@ describe.each(Object.entries(temas))('contraste (%s)', (_nome, t) => {
     }
   });
 });
+
+describe('contorno de foco base', () => {
+  it('o outline padrão de index.css é opaco (alfa deixa o foco abaixo de 3:1)', () => {
+    expect(css).toMatch(/\boutline-ring\b(?!\/)/);
+    expect(css).not.toMatch(/outline-ring\/\d+/);
+  });
+});

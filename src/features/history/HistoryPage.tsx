@@ -27,7 +27,7 @@ import { useRecentChanges } from './useRecentChanges';
 
 const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 const FIELD =
-  'min-h-11 w-full rounded-xl border border-border bg-card px-3 text-base text-foreground';
+  'min-h-11 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground';
 const DEBOUNCE_MS = 300;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const STATUSES = Object.keys(statusMeta) as AppointmentStatus[];
@@ -312,9 +312,7 @@ export default function HistoryPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-foreground">
-            Histórico e busca
-          </h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">Histórico e busca</h1>
           <p className="text-sm text-muted-foreground">
             Encontre atendimentos por cliente, data, serviço ou status.
           </p>
@@ -434,7 +432,7 @@ export default function HistoryPage() {
           aria-labelledby="remarcacoes"
           className="rounded-card border border-border bg-card p-4"
         >
-          <h2 id="remarcacoes" className="mb-2 font-display text-lg font-bold text-foreground">
+          <h2 id="remarcacoes" className="mb-2 font-display text-lg font-semibold text-foreground">
             Remarcações e cancelamentos
           </h2>
           {recent.isPending ? (

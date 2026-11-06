@@ -66,6 +66,8 @@ Valores tirados de `clanix-brand/design-tokens/variables.css` e da seção 7 do 
 | `destructive` | `#B91C1C` | `#B91C1C` (fundo de botão); texto de erro `#FCA5A5` | erro e ações destrutivas |
 | `agenda` (acento do produto) | `#0284C7` | `#38BDF8` | só a linha do "agora" e detalhes pontuais do produto |
 
+O `input` (`#C8C3DC` claro / `#3F2385` escuro, cerca de 1,6 a 1,7:1) é mantido como exceção de marca: os campos sempre têm rótulo visível e a borda de foco tem pelo menos 5,9:1.
+
 `#EF4444` (danger-main do pacote) não serve como fundo de botão com texto branco (3,8:1), por isso o botão destrutivo fica `#B91C1C` nos dois temas.
 
 ### Status dos atendimentos (ícone + texto + cor)

@@ -20,7 +20,7 @@ export function SectionCard({
       className="flex flex-col gap-5 rounded-card border border-border bg-card p-5"
     >
       <header>
-        <h2 id="secao-titulo" className="font-display text-xl font-extrabold text-foreground">
+        <h2 id="secao-titulo" className="font-display text-xl font-semibold text-foreground">
           {title}
         </h2>
         {description && <p className="mt-1 text-[15px] text-foreground-secondary">{description}</p>}

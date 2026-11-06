@@ -186,7 +186,7 @@ function ThisDevice({ device }: { device: Device }) {
       aria-labelledby="neste-aparelho"
       className="flex flex-col gap-3 rounded-card border border-border bg-card p-4"
     >
-      <h3 id="neste-aparelho" className="font-display text-[15px] font-bold text-foreground">
+      <h3 id="neste-aparelho" className="font-display text-[15px] font-semibold text-foreground">
         Neste aparelho
       </h3>
       {body}
@@ -242,7 +242,7 @@ function InstallOnIPhone() {
         </span>
         <h3
           id="instalar-iphone"
-          className="font-display text-base leading-tight font-extrabold text-foreground"
+          className="font-display text-base leading-tight font-semibold text-foreground"
         >
           No iPhone, instale o app para receber lembretes
         </h3>

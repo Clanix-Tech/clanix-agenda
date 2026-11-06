@@ -20,7 +20,7 @@ const BADGE =
   'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-extrabold text-primary-foreground';
 const INLINE = 'ml-1 inline size-4 align-[-3px] text-link';
 const CARD = 'flex flex-col gap-4 rounded-card border border-border bg-card p-4';
-const CARD_TITLE = 'font-display text-base leading-tight font-extrabold text-foreground';
+const CARD_TITLE = 'font-display text-base leading-tight font-semibold text-foreground';
 const LINK_FOCUS =
   'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
@@ -44,7 +44,7 @@ export default function InstallPage() {
       </header>
       <main className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-6">
         <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-extrabold text-foreground">Instalar o app</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">Instalar o app</h1>
           <p className="text-[15px] text-foreground-secondary">
             Com o app instalado, a agenda abre pelo ícone e os lembretes chegam no seu aparelho.
           </p>

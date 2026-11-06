@@ -104,7 +104,7 @@ export default function Login() {
         <Button
           type="submit"
           disabled={isSubmitting || (captcha.required && !captcha.token)}
-          className="h-12 w-full rounded-xl bg-gradient-brand text-base font-semibold text-primary-foreground"
+          className="h-12 w-full rounded-xl bg-gradient-brand text-base hover:brightness-110 active:brightness-95 font-semibold text-primary-foreground"
         >
           {isSubmitting ? 'Entrando…' : 'Entrar'}
         </Button>

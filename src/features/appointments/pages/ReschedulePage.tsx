@@ -404,7 +404,7 @@ function Picker(p: PickerProps) {
               type="button"
               onClick={() => void submit()}
               disabled={pending}
-              className="mt-2 h-11 bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
+              className="mt-2 h-11 px-5"
             >
               Tentar novamente
             </Button>
@@ -421,7 +421,7 @@ function Picker(p: PickerProps) {
           type="button"
           disabled={!time || pending}
           onClick={() => void submit()}
-          className="mx-auto flex h-12 w-full max-w-xl bg-primary text-base text-primary-foreground hover:bg-primary-hover"
+          className="mx-auto flex h-12 w-full max-w-xl text-base"
         >
           {pending ? 'Remarcando…' : 'Confirmar remarcação'}
         </Button>

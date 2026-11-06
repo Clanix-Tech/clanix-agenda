@@ -161,7 +161,7 @@ export function AppointmentSheet() {
           }}
         />
         <section className="border-t border-border pt-3.5">
-          <h3 className="mb-3 font-display text-[15px] font-bold text-foreground">Histórico</h3>
+          <h3 className="mb-3 font-display text-[15px] font-semibold text-foreground">Histórico</h3>
           {history.isError ? (
             <ErrorState
               message={toAppError(history.error).message}

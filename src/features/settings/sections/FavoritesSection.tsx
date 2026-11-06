@@ -132,7 +132,7 @@ export function FavoritesSection() {
         )}
         {inactive.length > 0 && (
           <>
-            <h3 className="font-display text-base font-extrabold text-foreground-secondary">
+            <h3 className="font-display text-base font-semibold text-foreground-secondary">
               Inativos
             </h3>
             <ul aria-label="Serviços inativos" className="flex flex-col gap-2">

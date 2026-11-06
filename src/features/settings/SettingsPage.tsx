@@ -111,7 +111,7 @@ export default function SettingsPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 p-4 lg:p-8">
-      <h1 className="font-display text-[26px] font-extrabold text-foreground">Ajustes</h1>
+      <h1 className="font-display text-[26px] font-bold text-foreground">Ajustes</h1>
       {isDesktop ? (
         <div className="flex items-start gap-6">
           {nav}

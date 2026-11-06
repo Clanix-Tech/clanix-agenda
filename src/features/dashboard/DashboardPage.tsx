@@ -194,7 +194,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:max-w-[1280px] lg:px-8 lg:pt-8">
       <header>
-        <h1 className="font-display text-2xl font-extrabold text-foreground">
+        <h1 className="font-display text-2xl font-bold text-foreground">
           {greetingAt(now, tz)}
           {firstName ? `, ${firstName}` : ''}
         </h1>
@@ -273,7 +273,10 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="livres-hoje">
-            <h2 id="livres-hoje" className="mb-2 font-display text-lg font-bold text-foreground">
+            <h2
+              id="livres-hoje"
+              className="mb-2 font-display text-lg font-semibold text-foreground"
+            >
               Horários livres hoje
             </h2>
             {free.length === 0 ? (
@@ -301,7 +304,7 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="proximos">
-            <h2 id="proximos" className="mb-2 font-display text-lg font-bold text-foreground">
+            <h2 id="proximos" className="mb-2 font-display text-lg font-semibold text-foreground">
               Próximos atendimentos
             </h2>
             {upcoming.length === 0 ? (

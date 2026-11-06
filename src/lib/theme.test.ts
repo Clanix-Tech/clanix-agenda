@@ -106,6 +106,23 @@ describe('tema', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
+  it('com storage bloqueado, a escolha em memória sobrevive a mudança do sistema', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
+    systemDark(true);
+    initTheme();
+    setThemePreference('escuro');
+    act(() => systemDark(false));
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    const { result } = renderHook(() => useTheme());
+    expect(result.current.preference).toBe('escuro');
+    expect(result.current.resolved).toBe('dark');
+  });
+
   it('useTheme re-renderiza ao trocar a preferência', () => {
     const { result } = renderHook(() => useTheme());
     expect(result.current.preference).toBe('auto');

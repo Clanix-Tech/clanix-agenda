@@ -40,7 +40,7 @@ export default function FirstAccessPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-5 bg-background px-4 py-8">
       <header>
-        <h1 className="font-display text-[26px] leading-tight font-extrabold text-foreground">
+        <h1 className="font-display text-[26px] leading-tight font-bold text-foreground">
           Quando você atende?
         </h1>
         <p className="mt-2 text-[15px] leading-normal text-foreground-secondary">
@@ -66,7 +66,7 @@ export default function FirstAccessPage() {
         type="button"
         onClick={() => void confirm()}
         disabled={mutation.isPending || !valid}
-        className="h-[54px] w-full rounded-[14px] bg-gradient-brand text-base font-bold text-primary-foreground"
+        className="h-[54px] w-full rounded-[14px] bg-gradient-brand text-base hover:brightness-110 active:brightness-95 font-bold text-primary-foreground"
       >
         {mutation.isPending ? 'Salvando…' : 'Confirmar e começar'}
       </Button>

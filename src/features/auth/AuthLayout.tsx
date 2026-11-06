@@ -46,7 +46,7 @@ export function AuthLayout({
       </aside>
       <main className="flex flex-1 items-center justify-center px-4 py-8 lg:px-12">
         <div className="w-full max-w-sm">
-          <h1 className="font-display text-3xl font-extrabold text-foreground">{title}</h1>
+          <h1 className="font-display text-3xl font-bold text-foreground">{title}</h1>
           {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </div>
