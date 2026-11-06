@@ -49,3 +49,8 @@ android/*.keystore
 android/*.jks
 android/app/
 android/build/
+
+# Pacote da marca e companheiro visual (fora do git; o app versiona só os ativos que usa)
+clanix-brand/
+manual-marca/
+.superpowers/
