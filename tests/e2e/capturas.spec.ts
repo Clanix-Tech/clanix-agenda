@@ -155,7 +155,7 @@ async function newWithConflict(page: Page, day: string) {
   await mainNav(page).getByRole('button', { name: 'Novo agendamento' }).click();
   const form = page.getByRole('dialog', { name: 'Novo agendamento' });
   await form.getByLabel('Nome do cliente').fill('Sofia Martins');
-  await form.getByRole('button', { name: /^Corte feminino/ }).click();
+  await form.getByLabel('Serviço', { exact: true }).selectOption({ label: 'Corte feminino · 1h' });
   await form.getByLabel('Data', { exact: true }).fill(day);
   await form.getByLabel('Início', { exact: true }).fill('14:30');
   await expect(form.getByText('conflita com')).toBeVisible();

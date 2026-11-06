@@ -81,6 +81,7 @@ function setup(
     mode?: 'create' | 'edit';
     appointment?: Appointment;
     prefill?: { date?: string; startTime?: string };
+    favorites?: typeof favorites;
   } = {},
 ) {
   const fake = createFakeSupabase({
@@ -89,7 +90,7 @@ function setup(
     tables: {
       profiles: [profile as Row],
       business_hours: hours,
-      favorite_services: favorites,
+      favorite_services: opts.favorites ?? favorites,
       appointments: (opts.appointments ?? []) as unknown as Row[],
     },
   });
@@ -117,6 +118,8 @@ function setField(label: string, value: string) {
 }
 
 const startInput = () => screen.getByLabelText('Início') as HTMLInputElement;
+const serviceSelect = () => screen.getByLabelText('Serviço') as HTMLSelectElement;
+const pickService = (label: string) => user().selectOptions(serviceSelect(), label);
 const saveButton = () => screen.getByRole('button', { name: /Salvar agendamento|Salvando…/ });
 
 beforeEach(() => {
@@ -148,16 +151,26 @@ describe('AppointmentForm (novo)', () => {
     expect(startInput()).toHaveValue('15:30');
   });
 
-  it('escolher o favorito "Manicure 45 min" com início 13:00 mostra "Termina às 13:45"', async () => {
+  it('o serviço é uma lista: começa em "Escolha o serviço", traz os favoritos ativos e "Outro serviço…"', async () => {
     setup();
     await ready();
-    expect(screen.queryByRole('button', { name: /Antigo/ })).not.toBeInTheDocument();
-    await user().click(screen.getByRole('button', { name: 'Manicure 45 min' }));
+    const labels = Array.from(serviceSelect().options).map((o) => o.text);
+    expect(labels).toEqual([
+      'Escolha o serviço',
+      'Escova · 1h',
+      'Manicure · 45 min',
+      'Outro serviço…',
+    ]);
+    expect(serviceSelect()).toHaveDisplayValue('Escolha o serviço');
+    expect(screen.queryByRole('button', { name: /Manicure/ })).not.toBeInTheDocument();
+  });
+
+  it('escolher o favorito "Manicure · 45 min" com início 13:00 mostra "Termina às 13:45"', async () => {
+    setup();
+    await ready();
+    await pickService('Manicure · 45 min');
     setField('Início', '13:00');
-    expect(screen.getByRole('button', { name: 'Manicure 45 min' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(serviceSelect()).toHaveDisplayValue('Manicure · 45 min');
     expect(screen.getByLabelText('Duração')).toHaveValue('45');
     expect(screen.getByText('Termina às').parentElement).toHaveTextContent('13:45');
     expect(await screen.findByText('Horário livre, dentro do expediente')).toBeInTheDocument();
@@ -173,13 +186,33 @@ describe('AppointmentForm (novo)', () => {
     expect(labels()).toEqual(['15 min', '30 min', '45 min', '1 hora', '1h30', '2 horas']);
   });
 
-  it('"Outro" libera o campo de texto do serviço', async () => {
+  it('"Outro serviço…" libera o campo de texto do serviço e volta a escondê-lo ao escolher um favorito', async () => {
     setup();
     await ready();
     expect(screen.queryByLabelText('Nome do serviço')).not.toBeInTheDocument();
-    await user().click(screen.getByRole('button', { name: 'Outro' }));
+    await pickService('Outro serviço…');
     await user().type(screen.getByLabelText('Nome do serviço'), 'Sobrancelha');
     expect(screen.getByLabelText('Nome do serviço')).toHaveValue('Sobrancelha');
+    await pickService('Escova · 1h');
+    expect(screen.queryByLabelText('Nome do serviço')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Duração')).toHaveValue('60');
+  });
+
+  it('salvar sem escolher o serviço mostra o erro no campo Serviço', async () => {
+    const { fake } = setup();
+    const name = await ready();
+    await user().type(name, 'Patrícia');
+    await user().click(saveButton());
+    expect(serviceSelect()).toHaveAttribute('aria-invalid', 'true');
+    expect(serviceSelect()).toHaveAccessibleDescription(/serviço/i);
+    expect(fake.calls.rpc).toHaveLength(0);
+  });
+
+  it('sem favoritos, o serviço é só o campo de texto', async () => {
+    setup({ favorites: [] });
+    await ready();
+    expect(screen.queryByLabelText('Serviço')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Nome do serviço')).toBeInTheDocument();
   });
 
   it('fora do expediente mostra o aviso âmbar e ainda permite salvar', async () => {
@@ -249,7 +282,7 @@ describe('AppointmentForm (novo)', () => {
     });
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     await waitFor(() => expect(startInput()).toHaveValue('09:00'));
     // Outro aparelho cancelou depois que o dia entrou no cache.
     fake.tables.appointments![0]!.status = 'cancelado';
@@ -288,7 +321,7 @@ describe('AppointmentForm (novo)', () => {
     setup({ rpc: { create_appointment: () => ({ error: { code: 'AE001' } }) } });
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     setField('Início', '10:00');
     await user().click(saveButton());
     // Recusa do servidor (AE001): alerta.
@@ -307,7 +340,7 @@ describe('AppointmentForm (novo)', () => {
     const { fake } = setup();
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     await waitFor(() => expect(startInput()).toHaveValue('09:00'));
     const button = saveButton();
     fireEvent.click(button);
@@ -328,7 +361,7 @@ describe('AppointmentForm (novo)', () => {
     await user().type(name, 'Ana');
     await user().type(screen.getByLabelText(/Telefone/), ' 11 98888-7777 ');
     setField('Início', '10:00');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     await user().click(saveButton());
     await screen.findByText('fechado');
     expect(fake.calls.rpc[0]).toEqual({
@@ -370,7 +403,7 @@ describe('AppointmentForm (novo)', () => {
     const name = await ready();
     await user().type(name, 'Ana');
     setField('Início', '10:00');
-    await user().click(screen.getByRole('button', { name: 'Manicure 45 min' }));
+    await pickService('Manicure · 45 min');
     await user().type(screen.getByLabelText(/Observações/), 'Unha curta');
     await user().click(saveButton());
     expect(
@@ -415,7 +448,7 @@ describe('AppointmentForm (novo)', () => {
     const name = await ready();
     await user().type(name, 'Ana');
     setField('Início', '10:00');
-    await user().click(screen.getByRole('button', { name: 'Manicure 45 min' }));
+    await pickService('Manicure · 45 min');
     await user().click(saveButton());
     await screen.findByText('Sem conexão. Nada foi salvo — tente novamente.');
     await user().click(screen.getByRole('button', { name: 'Tentar novamente' }));
@@ -427,7 +460,7 @@ describe('AppointmentForm (novo)', () => {
     setup({ rpc: { create_appointment: () => ({ error: { code: 'AE002', hint: 'segredo' } }) } });
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     await user().click(saveButton());
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Esse horário está fora do seu expediente.',
@@ -440,7 +473,7 @@ describe('AppointmentForm (novo)', () => {
     const { fake } = setup();
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     setField('Início', '08:00');
     const check = await screen.findByRole('checkbox', {
       name: 'Este é um registro de atendimento que já aconteceu',
@@ -462,7 +495,7 @@ describe('AppointmentForm (novo)', () => {
     const { fake } = setup();
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     setField('Início', '09:30');
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(saveButton()).toBeEnabled();
@@ -488,7 +521,7 @@ describe('AppointmentForm (novo)', () => {
     const { fake } = setup();
     const name = await ready();
     await user().type(name, 'Ana');
-    await user().click(screen.getByRole('button', { name: 'Escova 1h' }));
+    await pickService('Escova · 1h');
     setField('Início', '10:00');
     timeFlags.throwOnBuild = true;
     await user().click(saveButton());
@@ -517,7 +550,7 @@ describe('AppointmentForm (novo)', () => {
     setup();
     const name = await ready();
     await user().type(name, 'Patrícia');
-    await user().click(screen.getByRole('button', { name: 'Manicure 45 min' }));
+    await pickService('Manicure · 45 min');
     setField('Início', '13:00');
     expect(document.querySelector('[data-slot="dialog-content"]')).not.toBeNull();
 
@@ -527,10 +560,7 @@ describe('AppointmentForm (novo)', () => {
     expect(screen.getByLabelText('Nome do cliente')).toHaveValue('Patrícia');
     expect(startInput()).toHaveValue('13:00');
     expect(screen.getByLabelText('Duração')).toHaveValue('45');
-    expect(screen.getByRole('button', { name: 'Manicure 45 min' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(serviceSelect()).toHaveDisplayValue('Manicure · 45 min');
 
     act(() => setViewportWidth(1280));
     expect(document.querySelector('[data-slot="dialog-content"]')).not.toBeNull();
@@ -562,18 +592,16 @@ describe('AppointmentForm (editar)', () => {
     await ready();
     expect(screen.getByRole('dialog', { name: 'Editar agendamento' })).toBeInTheDocument();
     expect(screen.getByLabelText('Nome do cliente')).toHaveValue('Ana');
-    expect(screen.getByRole('button', { name: 'Escova 1h' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(serviceSelect()).toHaveDisplayValue('Escova · 1h');
     expect(screen.queryByLabelText('Data')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Início')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Duração')).not.toBeInTheDocument();
   });
 
-  it('serviço que não é favorito abre em "Outro" com o texto', async () => {
+  it('serviço que não é favorito abre em "Outro serviço…" com o texto', async () => {
     setup({ mode: 'edit', appointment: { ...existing, service_name: 'Hidratação' } });
     await ready();
+    expect(serviceSelect()).toHaveDisplayValue('Outro serviço…');
     expect(screen.getByLabelText('Nome do serviço')).toHaveValue('Hidratação');
   });
 
@@ -586,7 +614,7 @@ describe('AppointmentForm (editar)', () => {
     const name = await ready();
     await user().clear(name);
     await user().type(name, 'Ana Paula');
-    await user().click(screen.getByRole('button', { name: 'Manicure 45 min' }));
+    await pickService('Manicure · 45 min');
     await user().click(screen.getByRole('button', { name: 'Salvar alterações' }));
     await screen.findByText('fechado');
     expect(fake.calls.rpc).toEqual([

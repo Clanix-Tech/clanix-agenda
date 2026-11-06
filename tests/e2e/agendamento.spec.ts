@@ -24,9 +24,9 @@ test('novo agendamento com favorito → Agenda e Início → concluir, editar, r
   await mainNav(page).getByRole('button', { name: 'Novo agendamento' }).click();
   const form = page.getByRole('dialog', { name: 'Novo agendamento' });
   await form.getByLabel('Nome do cliente').fill(CLIENT);
-  const favorite = form.getByRole('button', { name: /^Corte feminino/ });
-  await favorite.click();
-  await expect(favorite).toHaveAttribute('aria-pressed', 'true');
+  const service = form.getByLabel('Serviço', { exact: true });
+  await service.selectOption({ label: 'Corte feminino · 45 min' });
+  await expect(service.locator('option:checked')).toHaveText('Corte feminino · 45 min');
   await form.getByLabel('Data', { exact: true }).fill(day);
   await form.getByLabel('Início', { exact: true }).fill('14:00');
   await expect(form.getByLabel('Duração')).toHaveValue('45');

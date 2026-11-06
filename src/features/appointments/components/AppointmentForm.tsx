@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useForm, useWatch, type FieldError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleCheck, Plus, TriangleAlert } from 'lucide-react';
+import { CircleCheck, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -437,6 +437,13 @@ function FormBody(props: BodyProps) {
     requestAnimationFrame(() => otherRef.current?.focus());
   };
 
+  /** Valor da lista de serviços: id de um favorito ou `OTHER_SERVICE`. */
+  const pickService = (value: string) => {
+    if (value === OTHER_SERVICE) return pickOther();
+    const f = favorites.find((x) => x.id === value);
+    if (f) pickFavorite(f);
+  };
+
   const startRef = useRef<HTMLInputElement | null>(null);
   const pickSuggestion = (start: string) => {
     setValue('startTime', start, { shouldDirty: true, shouldValidate: formState.isSubmitted });
@@ -524,53 +531,37 @@ function FormBody(props: BodyProps) {
           </Field>
         </div>
 
-        <fieldset
-          className="flex flex-col gap-2"
-          aria-describedby={!otherOpen ? describe('service', errors.serviceName) : undefined}
-        >
-          <legend className={labelCls}>Serviço</legend>
+        {/* Lista (como Duração) em vez de um botão por favorito: com muitos serviços, os botões
+            enchiam a tela. "Outro serviço…" abre o campo de texto. */}
+        <div className="flex flex-col gap-2">
           {favorites.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {favorites.map((f) => {
-                const on = selectedFav?.id === f.id;
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => pickFavorite(f)}
-                    className={cn(chipCls, on && SELECTED)}
-                  >
-                    {f.name}{' '}
-                    <span
-                      className={cn(
-                        'font-medium',
-                        on ? 'text-primary-foreground' : 'text-muted-foreground',
-                      )}
-                    >
-                      {durationShort(f.duration_minutes)}
-                    </span>
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                aria-pressed={otherOpen}
-                onClick={pickOther}
-                className={cn(
-                  chipCls,
-                  'border-dashed text-link',
-                  otherOpen && cn('border-solid', SELECTED),
-                )}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${ids}-service-choice`} className={labelCls}>
+                Serviço
+              </Label>
+              <select
+                id={`${ids}-service-choice`}
+                value={otherOpen ? OTHER_SERVICE : (selectedFav?.id ?? '')}
+                onChange={(e) => pickService(e.target.value)}
+                aria-invalid={!otherOpen && !!errors.serviceName}
+                aria-describedby={!otherOpen ? describe('service', errors.serviceName) : undefined}
+                className={cn(inputCls, selectCls)}
               >
-                <Plus aria-hidden="true" className="size-3.5" />
-                Outro
-              </button>
+                <option value="" disabled>
+                  Escolha o serviço
+                </option>
+                {favorites.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name} · {durationShort(f.duration_minutes)}
+                  </option>
+                ))}
+                <option value={OTHER_SERVICE}>Outro serviço…</option>
+              </select>
             </div>
           )}
           {otherOpen ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor={`${ids}-service`} className={favorites.length ? 'sr-only' : labelCls}>
+              <Label htmlFor={`${ids}-service`} className={labelCls}>
                 Nome do serviço
               </Label>
               <Input
@@ -589,7 +580,7 @@ function FormBody(props: BodyProps) {
             </div>
           ) : null}
           <FieldErrorText id={errId('service')} error={errors.serviceName} />
-        </fieldset>
+        </div>
 
         {!isEdit && (
           <>
@@ -649,10 +640,7 @@ function FormBody(props: BodyProps) {
                   id={`${ids}-duration`}
                   aria-invalid={!!errors.durationMinutes}
                   aria-describedby={describe('duration', errors.durationMinutes)}
-                  className={cn(
-                    inputCls,
-                    'w-full border border-input bg-card px-3.5 text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring',
-                  )}
+                  className={cn(inputCls, selectCls)}
                   {...register('durationMinutes', { valueAsNumber: true })}
                 >
                   {options.map((m) => (
@@ -769,11 +757,11 @@ function FormBody(props: BodyProps) {
 const labelCls = 'block text-[13px] font-semibold text-foreground-secondary';
 const inputCls =
   'h-12 rounded-xl border-input bg-card px-3.5 text-base md:text-base lg:h-11 lg:text-[15px]';
-const chipCls =
-  'inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-[13px] font-semibold whitespace-nowrap text-foreground-secondary outline-none focus-visible:ring-[3px] focus-visible:ring-ring';
-// Chip selecionado (preenchimento sólido): o anel fica afastado, contra o fundo da página.
-const SELECTED =
-  'border-primary bg-primary text-primary-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+// Listas nativas (Serviço e Duração): mesma aparência dos campos de texto.
+const selectCls =
+  'w-full border border-input bg-card px-3.5 text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring aria-invalid:border-error';
+// Valor da opção "Outro serviço…" na lista de serviços (não colide com ids de favoritos, que são UUIDs).
+const OTHER_SERVICE = '__outro__';
 
 function Field({
   id,
