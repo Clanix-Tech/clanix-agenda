@@ -120,9 +120,9 @@ function DeleteAccountForm({
         />
       </div>
       {captcha.element}
-      {blocked && <p className="text-sm text-[#475569]">{CAPTCHA_HINT}</p>}
+      {blocked && <p className="text-sm text-foreground-secondary">{CAPTCHA_HINT}</p>}
       {error && (
-        <p role="alert" className="text-sm font-medium text-[#B91C1C]">
+        <p role="alert" className="text-sm font-medium text-error">
           {error}
         </p>
       )}
@@ -138,8 +138,9 @@ function DeleteAccountForm({
         </Button>
         <Button
           type="submit"
+          variant="destructive"
           disabled={pending || blocked}
-          className="h-11 bg-[#B91C1C] text-white hover:bg-[#991B1B]"
+          className="h-11"
         >
           {pending ? 'Excluindo…' : 'Excluir para sempre'}
         </Button>

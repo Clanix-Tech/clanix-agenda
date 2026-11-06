@@ -58,7 +58,7 @@ function describeEntry(entry: HistoryEntry, tz: string): { text: string; detail?
 
 export function HistoryList({ entries, timezone }: { entries: HistoryEntry[]; timezone: string }) {
   if (entries.length === 0) {
-    return <p className="text-sm text-[#64748B]">Sem registros ainda.</p>;
+    return <p className="text-sm text-muted-foreground">Sem registros ainda.</p>;
   }
   return (
     <ol className="m-0 flex list-none flex-col gap-3 p-0 text-[13px]">
@@ -66,11 +66,11 @@ export function HistoryList({ entries, timezone }: { entries: HistoryEntry[]; ti
         const { text, detail } = describeEntry(e, timezone);
         return (
           <li key={e.id} className="flex gap-2.5">
-            <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-[#3B82F6]" />
+            <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
             <span className="min-w-0 break-words">
               <span className="font-semibold">{text}</span>
-              {detail && <span className="block text-[#475569]">{detail}</span>}
-              <span className="block text-xs text-[#64748B]">
+              {detail && <span className="block text-foreground-secondary">{detail}</span>}
+              <span className="block text-xs text-muted-foreground">
                 {`${formatDateBR(e.created_at, timezone)} às ${formatTime(e.created_at, timezone)}`}
               </span>
             </span>

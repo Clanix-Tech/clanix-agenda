@@ -58,7 +58,7 @@ function Act({
 }
 
 const ACTION =
-  'h-auto min-h-[52px] rounded-[14px] border border-[#E2E8F0] bg-white py-2 text-center text-sm leading-tight font-semibold whitespace-normal';
+  'h-auto min-h-[52px] rounded-[14px] border border-border bg-card py-2 text-center text-sm leading-tight font-semibold whitespace-normal';
 
 /** Ações permitidas por status (design §6.1); nada além da tabela aprovada. */
 export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
@@ -97,7 +97,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
       icon={<Pencil aria-hidden="true" />}
       onClick={() => onEdit?.()}
       pending={pending}
-      className="text-[#0F2D5B]"
+      className="text-foreground"
     />
   );
   const backToScheduled = (
@@ -106,7 +106,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
       icon={<CalendarClock aria-hidden="true" />}
       onClick={() => void changeTo('agendado')}
       pending={pending}
-      className="text-[#1D4ED8]"
+      className="text-link"
     />
   );
 
@@ -119,7 +119,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             type="button"
             disabled={pending}
             onClick={() => void navigate(`/agenda/remarcar/${id}`)}
-            className={`${ACTION} border-[#2563EB] bg-[#2563EB] text-white hover:bg-[#1D4ED8]`}
+            className={`${ACTION} border-primary bg-primary text-primary-foreground hover:bg-primary-hover`}
           >
             <Repeat aria-hidden="true" />
             Remarcar
@@ -130,7 +130,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
               icon={<CheckCircle2 aria-hidden="true" />}
               onClick={() => void changeTo('concluido')}
               pending={pending}
-              className="border-[#BBF7D0] bg-[#F0FDF4] text-[#166534]"
+              className="border-success-border bg-success-surface text-success-foreground"
             />
           }
           {
@@ -139,7 +139,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
               icon={<UserX aria-hidden="true" />}
               onClick={() => setConfirm('faltou')}
               pending={pending}
-              className="text-[#92400E]"
+              className="text-warning-foreground"
             />
           }
           {edit}
@@ -149,7 +149,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
           variant="ghost"
           disabled={pending}
           onClick={() => setConfirm('cancelar')}
-          className="h-11 text-sm font-semibold text-[#B91C1C] hover:bg-[#FEF2F2] hover:text-[#B91C1C]"
+          className="h-11 text-sm font-semibold text-error hover:bg-error-surface hover:text-error"
         >
           <Ban aria-hidden="true" />
           Cancelar atendimento
@@ -165,7 +165,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             icon={<UserX aria-hidden="true" />}
             onClick={() => void changeTo('nao_compareceu')}
             pending={pending}
-            className="text-[#92400E]"
+            className="text-warning-foreground"
           />
         }
         {backToScheduled}
@@ -181,7 +181,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             icon={<CheckCircle2 aria-hidden="true" />}
             onClick={() => void changeTo('concluido')}
             pending={pending}
-            className="text-[#166534]"
+            className="text-success-foreground"
           />
         }
         {backToScheduled}
@@ -197,7 +197,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             icon={<RotateCcw aria-hidden="true" />}
             onClick={() => setConfirm('reativar')}
             pending={pending}
-            className="text-[#0F2D5B]"
+            className="text-foreground"
           />
         }
       </div>
@@ -225,13 +225,13 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
     <div className="flex flex-col gap-2">
       {actions}
       {error && (
-        <div role="alert" className="rounded-xl bg-[#FEF2F2] p-3 text-sm text-[#991B1B]">
+        <div role="alert" className="rounded-xl bg-error-surface p-3 text-sm text-error">
           <p>{error.message}</p>
           {blocked && status === 'cancelado' && onCreateNew && (
             <Button
               type="button"
               onClick={onCreateNew}
-              className="mt-2 h-11 bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              className="mt-2 h-11 bg-primary text-primary-foreground hover:bg-primary-hover"
             >
               Criar novo agendamento
             </Button>
@@ -271,7 +271,7 @@ export function StatusActions({ appointment, onEdit, onCreateNew }: Props) {
             <Button
               type="button"
               disabled={pending}
-              className="h-11 bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+              className="h-11 bg-primary text-primary-foreground hover:bg-primary-hover"
               onClick={confirmCopy.go}
             >
               {confirmCopy.label}

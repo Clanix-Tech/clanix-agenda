@@ -26,9 +26,9 @@ import {
 import { useRecentChanges } from './useRecentChanges';
 
 const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 const FIELD =
-  'min-h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A]';
+  'min-h-11 w-full rounded-xl border border-border bg-card px-3 text-base text-foreground';
 const DEBOUNCE_MS = 300;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const STATUSES = Object.keys(statusMeta) as AppointmentStatus[];
@@ -38,7 +38,7 @@ function Highlight({ text, term }: { text: string; term: string }) {
     <>
       {splitHighlight(text, term).map((p, i) =>
         p.match ? (
-          <mark key={i} className="rounded bg-[#FEF08A] px-0.5 text-inherit">
+          <mark key={i} className="rounded bg-warning-border px-0.5 text-foreground">
             {p.text}
           </mark>
         ) : (
@@ -167,7 +167,7 @@ export default function HistoryPage() {
       type="button"
       onClick={clearAll}
       className={cn(
-        'inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E2E8F0] bg-white px-5 text-sm font-semibold text-[#0F2D5B]',
+        'inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-5 text-sm font-semibold text-foreground',
         FOCUS,
       )}
     >
@@ -202,7 +202,7 @@ export default function HistoryPage() {
             type="button"
             onClick={() => update({ pagina: null })}
             className={cn(
-              'inline-flex min-h-11 items-center justify-center rounded-xl border border-[#E2E8F0] bg-white px-5 text-sm font-semibold text-[#0F2D5B]',
+              'inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-5 text-sm font-semibold text-foreground',
               FOCUS,
             )}
           >
@@ -221,7 +221,7 @@ export default function HistoryPage() {
   } else if (desktop) {
     results = (
       <table className="w-full text-left text-sm">
-        <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
+        <thead className="bg-muted text-xs text-muted-foreground">
           <tr>
             <th className="px-3 py-2">Data</th>
             <th className="px-3 py-2">Horário</th>
@@ -235,7 +235,7 @@ export default function HistoryPage() {
         </thead>
         <tbody>
           {rows.map((a) => (
-            <tr key={a.id} className="border-t border-[#E2E8F0]">
+            <tr key={a.id} className="border-t border-border">
               <td className="px-3 py-2 whitespace-nowrap">{formatDateBR(a.starts_at, tz)}</td>
               <td className="px-3 py-2 whitespace-nowrap">
                 {formatTime(a.starts_at, tz)} – {formatTime(a.ends_at, tz)}
@@ -253,7 +253,7 @@ export default function HistoryPage() {
                   aria-label={`Ver detalhes de ${a.client_name}, ${formatDateBR(a.starts_at, tz)} ${formatTime(a.starts_at, tz)}`}
                   onClick={() => openAppointment(a.id)}
                   className={cn(
-                    'min-h-11 rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
+                    'min-h-11 rounded-lg border border-border px-3 font-semibold text-foreground',
                     FOCUS,
                   )}
                 >
@@ -274,15 +274,15 @@ export default function HistoryPage() {
               type="button"
               onClick={() => openAppointment(a.id)}
               className={cn(
-                'flex min-h-[64px] w-full flex-col gap-1 rounded-[14px] border border-[#E2E8F0] bg-white p-3 text-left',
+                'flex min-h-[64px] w-full flex-col gap-1 rounded-[14px] border border-border bg-card p-3 text-left',
                 FOCUS,
               )}
             >
-              <span className="text-xs font-semibold text-[#64748B]">
+              <span className="text-xs font-semibold text-muted-foreground">
                 {formatDateBR(a.starts_at, tz)} · {formatTime(a.starts_at, tz)}
               </span>
-              <span className="font-semibold text-[#0F172A]">{nameCell(a)}</span>
-              <span className="flex items-center justify-between gap-2 text-sm text-[#475569]">
+              <span className="font-semibold text-foreground">{nameCell(a)}</span>
+              <span className="flex items-center justify-between gap-2 text-sm text-foreground-secondary">
                 <span className="truncate" title={a.service_name}>
                   {a.service_name}
                 </span>
@@ -301,7 +301,7 @@ export default function HistoryPage() {
       disabled={disabled}
       onClick={() => update({ pagina: to <= 1 ? null : String(to) }, { keepPage: true })}
       className={cn(
-        'min-h-11 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-semibold text-[#0F2D5B] disabled:opacity-50',
+        'min-h-11 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground disabled:opacity-50',
         FOCUS,
       )}
     >
@@ -313,8 +313,8 @@ export default function HistoryPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">Histórico e busca</h1>
-          <p className="text-sm text-[#64748B]">
+          <h1 className="font-display text-2xl font-extrabold text-foreground">Histórico e busca</h1>
+          <p className="text-sm text-muted-foreground">
             Encontre atendimentos por cliente, data, serviço ou status.
           </p>
         </div>
@@ -323,7 +323,7 @@ export default function HistoryPage() {
           disabled={exporting}
           onClick={() => void onExport()}
           className={cn(
-            'inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#2563EB] px-5 text-sm font-semibold text-white disabled:opacity-60',
+            'inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60',
             FOCUS,
           )}
         >
@@ -332,21 +332,21 @@ export default function HistoryPage() {
         </button>
       </header>
       {exportError && (
-        <p role="alert" className="rounded-xl bg-[#FEF2F2] px-4 py-3 text-sm text-[#991B1B]">
+        <p role="alert" className="rounded-xl bg-error-surface px-4 py-3 text-sm text-error">
           {exportError}
         </p>
       )}
 
       <section
         aria-label="Filtros"
-        className="flex flex-col gap-4 rounded-[18px] border border-[#E2E8F0] bg-white p-4"
+        className="flex flex-col gap-4 rounded-[18px] border border-border bg-card p-4"
       >
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#334155]">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-foreground-secondary">
           Buscar por nome do cliente
           <span className="relative block">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-[#64748B]"
+              className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
             />
             <input
               type="search"
@@ -363,7 +363,7 @@ export default function HistoryPage() {
           onChange={(v) => update({ status: v?.length ? v.join(',') : null })}
         />
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-1 text-sm font-semibold text-[#334155]">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-foreground-secondary">
             Serviço
             <select
               value={filters.service}
@@ -378,7 +378,7 @@ export default function HistoryPage() {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-sm font-semibold text-[#334155]">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-foreground-secondary">
             De
             <input
               type="date"
@@ -388,7 +388,7 @@ export default function HistoryPage() {
               className={cn(FIELD, 'font-normal', FOCUS)}
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm font-semibold text-[#334155]">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-foreground-secondary">
             Até
             <input
               type="date"
@@ -405,20 +405,20 @@ export default function HistoryPage() {
       <div className={cn('grid gap-5', desktop && 'grid-cols-[1fr_300px] items-start')}>
         <section
           aria-label="Resultados"
-          className="min-w-0 rounded-[18px] border border-[#E2E8F0] bg-white"
+          className="min-w-0 rounded-[18px] border border-border bg-card"
         >
           {search.data && (
             <p
               role="status"
-              className="border-b border-[#E2E8F0] px-4 py-3 font-display font-bold text-[#0F2D5B]"
+              className="border-b border-border px-4 py-3 font-display font-bold text-foreground"
             >
               {count} {count === 1 ? 'resultado' : 'resultados'}
             </p>
           )}
           {results}
           {rows.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E2E8F0] px-4 py-3">
-              <p className="text-sm text-[#64748B]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
+              <p className="text-sm text-muted-foreground">
                 Mostrando {firstShown}–{lastShown} de {count}
               </p>
               <div className="flex gap-2">
@@ -431,17 +431,17 @@ export default function HistoryPage() {
 
         <section
           aria-labelledby="remarcacoes"
-          className="rounded-[18px] border border-[#E2E8F0] bg-white p-4"
+          className="rounded-[18px] border border-border bg-card p-4"
         >
-          <h2 id="remarcacoes" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
+          <h2 id="remarcacoes" className="mb-2 font-display text-lg font-bold text-foreground">
             Remarcações e cancelamentos
           </h2>
           {recent.isPending ? (
-            <p className="text-sm text-[#64748B]">Carregando…</p>
+            <p className="text-sm text-muted-foreground">Carregando…</p>
           ) : recent.isError ? (
-            <p className="text-sm text-[#64748B]">Não foi possível carregar.</p>
+            <p className="text-sm text-muted-foreground">Não foi possível carregar.</p>
           ) : recent.data.length === 0 ? (
-            <p className="text-sm text-[#64748B]">Nenhuma remarcação ou cancelamento ainda.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma remarcação ou cancelamento ainda.</p>
           ) : (
             <ul className="flex flex-col gap-1">
               {recent.data.map((c) => (
@@ -450,15 +450,15 @@ export default function HistoryPage() {
                     type="button"
                     onClick={() => openAppointment(c.appointmentId)}
                     className={cn(
-                      'flex min-h-11 w-full flex-col rounded-lg px-2 py-1.5 text-left hover:bg-[#F8FAFC]',
+                      'flex min-h-11 w-full flex-col rounded-lg px-2 py-1.5 text-left hover:bg-accent',
                       FOCUS,
                     )}
                   >
-                    <span className="text-sm font-semibold text-[#0F2D5B]">
+                    <span className="text-sm font-semibold text-foreground">
                       {c.action === 'cancelado' ? 'Cancelado' : 'Remarcado'} ·{' '}
                       <span className="font-normal">{formatDateBR(c.at, tz)}</span>
                     </span>
-                    <span className="truncate text-sm text-[#475569]" title={c.clientName}>
+                    <span className="truncate text-sm text-foreground-secondary" title={c.clientName}>
                       {c.clientName}
                     </span>
                   </button>

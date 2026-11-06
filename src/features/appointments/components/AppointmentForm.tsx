@@ -469,7 +469,7 @@ function FormBody(props: BodyProps) {
         type="button"
         variant="outline"
         onClick={onDone}
-        className="h-[52px] flex-1 rounded-[14px] border-[#E2E8F0] text-[15px] font-semibold text-[#0F2D5B] lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
+        className="h-[52px] flex-1 rounded-[14px] border-border text-[15px] font-semibold text-foreground lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
       >
         Cancelar
       </Button>
@@ -478,7 +478,7 @@ function FormBody(props: BodyProps) {
         form={formId}
         disabled={pending || blocked}
         aria-describedby={!pending ? blockedReason : undefined}
-        className="h-[52px] flex-[2] rounded-[14px] bg-[#2563EB] text-[15px] font-bold text-white hover:bg-[#1D4ED8] lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
+        className="h-[52px] flex-[2] rounded-[14px] bg-primary text-[15px] font-bold text-primary-foreground hover:bg-primary-hover lg:h-11 lg:flex-none lg:rounded-xl lg:px-5"
       >
         {pending ? 'Salvando…' : submitLabel}
       </Button>
@@ -503,7 +503,7 @@ function FormBody(props: BodyProps) {
             id={`${ids}-phone`}
             label={
               <>
-                Telefone <small className="font-medium text-[#64748B]">(opcional)</small>
+                Telefone <small className="font-medium text-muted-foreground">(opcional)</small>
               </>
             }
             error={errors.clientPhone}
@@ -539,10 +539,10 @@ function FormBody(props: BodyProps) {
                     type="button"
                     aria-pressed={on}
                     onClick={() => pickFavorite(f)}
-                    className={cn(chipCls, on && 'border-[#0F2D5B] bg-[#0F2D5B] text-white')}
+                    className={cn(chipCls, on && SELECTED)}
                   >
                     {f.name}{' '}
-                    <span className={cn('font-medium', on ? 'text-[#CBD5E1]' : 'text-[#64748B]')}>
+                    <span className={cn('font-medium', on ? 'text-primary-foreground' : 'text-muted-foreground')}>
                       {durationShort(f.duration_minutes)}
                     </span>
                   </button>
@@ -554,8 +554,8 @@ function FormBody(props: BodyProps) {
                 onClick={pickOther}
                 className={cn(
                   chipCls,
-                  'border-dashed text-[#1D4ED8]',
-                  otherOpen && 'border-solid border-[#0F2D5B] bg-[#0F2D5B] text-white',
+                  'border-dashed text-link',
+                  otherOpen && cn('border-solid', SELECTED),
                 )}
               >
                 <Plus aria-hidden="true" className="size-3.5" />
@@ -622,7 +622,7 @@ function FormBody(props: BodyProps) {
                     errors.startTime,
                     showConflict ? conflictId : undefined,
                   )}
-                  className={cn(inputCls, showConflict && 'border-2 border-[#DC2626]')}
+                  className={cn(inputCls, showConflict && 'border-2 border-error')}
                   {...startInput}
                   ref={(el) => {
                     startInput.ref(el);
@@ -646,7 +646,7 @@ function FormBody(props: BodyProps) {
                   aria-describedby={describe('duration', errors.durationMinutes)}
                   className={cn(
                     inputCls,
-                    'w-full border border-[#CBD5E1] bg-white px-3.5 text-[#0F172A] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50',
+                    'w-full border border-input bg-card px-3.5 text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring',
                   )}
                   {...register('durationMinutes', { valueAsNumber: true })}
                 >
@@ -657,11 +657,11 @@ function FormBody(props: BodyProps) {
                   ))}
                 </select>
               </Field>
-              <div className="flex h-12 flex-col justify-center rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 lg:h-11">
-                <span className="text-[11px] font-semibold text-[#64748B]">Termina às</span>
+              <div className="flex h-12 flex-col justify-center rounded-xl border border-border bg-muted px-3.5 lg:h-11">
+                <span className="text-[11px] font-semibold text-muted-foreground">Termina às</span>
                 <output
                   htmlFor={`${ids}-start ${ids}-duration`}
-                  className="font-display text-[17px] leading-tight font-extrabold text-[#0F2D5B]"
+                  className="font-display text-[17px] leading-tight font-extrabold text-foreground"
                 >
                   {endTime ?? '--:--'}
                 </output>
@@ -669,7 +669,7 @@ function FormBody(props: BodyProps) {
             </div>
 
             {isPast && (
-              <div className="flex flex-col gap-2 rounded-[14px] border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-sm text-[#92400E]">
+              <div className="flex flex-col gap-2 rounded-[14px] border border-warning-border bg-warning-surface px-3.5 py-3 text-sm text-warning-foreground">
                 {!confirmPast && (
                   <p id={pastId}>
                     Esse horário já passou. Para salvar, confirme que é o registro de um atendimento
@@ -679,7 +679,7 @@ function FormBody(props: BodyProps) {
                 <label className="flex min-h-11 cursor-pointer items-center gap-3 font-semibold">
                   <input
                     type="checkbox"
-                    className="size-5 accent-[#2563EB]"
+                    className="size-5 accent-primary"
                     {...register('confirmPast')}
                   />
                   Este é um registro de atendimento que já aconteceu
@@ -721,7 +721,7 @@ function FormBody(props: BodyProps) {
           id={`${ids}-notes`}
           label={
             <>
-              Observações <small className="font-medium text-[#64748B]">(opcional)</small>
+              Observações <small className="font-medium text-muted-foreground">(opcional)</small>
             </>
           }
           error={errors.notes}
@@ -733,7 +733,7 @@ function FormBody(props: BodyProps) {
             placeholder="Alguma preferência ou cuidado?"
             aria-invalid={!!errors.notes}
             aria-describedby={describe('notes', errors.notes)}
-            className="min-h-[76px] resize-none rounded-xl border-[#CBD5E1] bg-white px-3.5 py-3 text-base md:text-base lg:text-[15px]"
+            className="min-h-[76px] resize-none rounded-xl border-input bg-card px-3.5 py-3 text-base md:text-base lg:text-[15px]"
             {...register('notes')}
           />
         </Field>
@@ -741,7 +741,7 @@ function FormBody(props: BodyProps) {
         {visibleFailure && (
           <div
             role="alert"
-            className="flex flex-col gap-3 rounded-[14px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3.5 text-sm font-medium text-[#991B1B]"
+            className="flex flex-col gap-3 rounded-[14px] border border-error-border bg-error-surface px-4 py-3.5 text-sm font-medium text-error"
           >
             <p>{visibleFailure.message}</p>
             {visibleFailure.kind === 'rede' && (
@@ -749,7 +749,7 @@ function FormBody(props: BodyProps) {
                 type="button"
                 onClick={retry}
                 disabled={pending}
-                className="h-11 self-start rounded-xl bg-[#2563EB] px-5 text-white hover:bg-[#1D4ED8]"
+                className="h-11 self-start rounded-xl bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
               >
                 Tentar novamente
               </Button>
@@ -761,11 +761,14 @@ function FormBody(props: BodyProps) {
   );
 }
 
-const labelCls = 'block text-[13px] font-semibold text-[#334155]';
+const labelCls = 'block text-[13px] font-semibold text-foreground-secondary';
 const inputCls =
-  'h-12 rounded-xl border-[#CBD5E1] bg-white px-3.5 text-base md:text-base lg:h-11 lg:text-[15px]';
+  'h-12 rounded-xl border-input bg-card px-3.5 text-base md:text-base lg:h-11 lg:text-[15px]';
 const chipCls =
-  'inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 text-[13px] font-semibold whitespace-nowrap text-[#334155] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50';
+  'inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-[13px] font-semibold whitespace-nowrap text-foreground-secondary outline-none focus-visible:ring-[3px] focus-visible:ring-ring';
+// Chip selecionado (preenchimento sólido): o anel fica afastado, contra o fundo da página.
+const SELECTED =
+  'border-primary bg-primary text-primary-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 function Field({
   id,
@@ -796,7 +799,7 @@ function Field({
 function FieldErrorText({ id, error }: { id: string; error?: FieldError }) {
   if (!error?.message) return null;
   return (
-    <p id={id} className="text-sm font-medium text-[#B91C1C]">
+    <p id={id} className="text-sm font-medium text-error">
       {error.message}
     </p>
   );
@@ -820,7 +823,7 @@ function Availability({
     return (
       <div
         role="status"
-        className="flex items-center gap-2.5 rounded-[14px] border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-sm font-semibold text-[#92400E]"
+        className="flex items-center gap-2.5 rounded-[14px] border border-warning-border bg-warning-surface px-3.5 py-3 text-sm font-semibold text-warning-foreground"
       >
         <TriangleAlert aria-hidden="true" className="size-5 shrink-0" />
         Fora do seu expediente
@@ -830,7 +833,7 @@ function Availability({
   return (
     <div
       role="status"
-      className="flex items-center gap-2.5 rounded-[14px] border border-[#BBF7D0] bg-[#F0FDF4] px-3.5 py-3 text-sm font-semibold text-[#166534]"
+      className="flex items-center gap-2.5 rounded-[14px] border border-success-border bg-success-surface px-3.5 py-3 text-sm font-semibold text-success-foreground"
     >
       <CircleCheck aria-hidden="true" className="size-5 shrink-0" />
       Horário livre, dentro do expediente

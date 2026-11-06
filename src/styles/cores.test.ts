@@ -14,16 +14,6 @@ const PERMITIDOS = new Set<string>([
 /** Ainda não migrados; as tarefas seguintes encolhem esta lista. */
 // Logo.tsx: a Tarefa 3 o reescreve com os SVG oficiais.
 const PENDENTES = new Set<string>([
-  'src/features/account/DeleteAccountDialog.tsx',
-  'src/features/appointments/components/AppointmentForm.tsx',
-  'src/features/appointments/components/AppointmentSheet.tsx',
-  'src/features/appointments/components/CancelDialog.tsx',
-  'src/features/appointments/components/ConflictPanel.tsx',
-  'src/features/appointments/components/HistoryList.tsx',
-  'src/features/appointments/components/StatusActions.tsx',
-  'src/features/appointments/pages/ReschedulePage.tsx',
-  'src/features/dashboard/DashboardPage.tsx',
-  'src/features/history/HistoryPage.tsx',
   'src/features/settings/SettingsPage.tsx',
   'src/features/settings/sections/AccountSection.tsx',
   'src/features/settings/sections/AgendaPrefsSection.tsx',

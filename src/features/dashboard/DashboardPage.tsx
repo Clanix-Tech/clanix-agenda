@@ -27,16 +27,19 @@ import { dayLabel, greetingAt, whenLabel } from './domain/labels';
 
 const NOW_PLUS_DAYS = 14;
 const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+// Sobre o card em gradiente o anel precisa do tom claro, que contrasta com o roxo.
+const FOCUS_ON_BRAND =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground';
 
 function Kpi({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
-    <div className="rounded-[18px] border border-[#E2E8F0] bg-white p-3.5">
-      <p className="text-xs font-semibold text-[#64748B]">{label}</p>
-      <p className="font-display text-[28px] leading-tight font-extrabold text-[#0F2D5B]">
+    <div className="rounded-[18px] border border-border bg-card p-3.5">
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <p className="font-display text-[28px] leading-tight font-extrabold text-foreground">
         {value}
       </p>
-      {hint && <p className="text-xs text-[#64748B]">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -57,11 +60,11 @@ function MiniCalendar({
   return (
     <section
       aria-label="Calendário do mês"
-      className="rounded-[18px] border border-[#E2E8F0] bg-white p-4"
+      className="rounded-[18px] border border-border bg-card p-4"
     >
       <div
         aria-hidden="true"
-        className="mb-1 grid grid-cols-7 text-center text-[11px] font-semibold text-[#64748B]"
+        className="mb-1 grid grid-cols-7 text-center text-[11px] font-semibold text-muted-foreground"
       >
         {weeks[0]!.map((d) => (
           <span key={d}>{weekdayDay(d).split(' ')[0]}</span>
@@ -81,10 +84,10 @@ function MiniCalendar({
                 'flex size-11 flex-col items-center justify-center rounded-lg text-sm font-semibold',
                 FOCUS,
                 d === today
-                  ? 'bg-[#0F2D5B] text-white'
+                  ? 'bg-primary text-primary-foreground'
                   : muted || d.slice(0, 7) !== month
-                    ? 'text-[#64748B]'
-                    : 'text-[#0F2D5B]',
+                    ? 'text-muted-foreground'
+                    : 'text-foreground',
               )}
             >
               <span aria-hidden="true">{Number(d.slice(8, 10))}</span>
@@ -92,7 +95,7 @@ function MiniCalendar({
                 aria-hidden="true"
                 className={cn(
                   'size-1 rounded-full',
-                  n > 0 ? (d === today ? 'bg-white' : 'bg-[#3B82F6]') : 'bg-transparent',
+                  n > 0 ? (d === today ? 'bg-primary-foreground' : 'bg-primary') : 'bg-transparent',
                 )}
               />
             </Link>
@@ -180,7 +183,7 @@ export default function DashboardPage() {
       type="button"
       onClick={() => open()}
       className={cn(
-        'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#2563EB] px-5 text-sm font-semibold text-white',
+        'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground',
         FOCUS,
       )}
     >
@@ -192,18 +195,18 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 pt-5 pb-6 lg:max-w-[1280px] lg:px-8 lg:pt-8">
       <header>
-        <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">
+        <h1 className="font-display text-2xl font-extrabold text-foreground">
           {greetingAt(now, tz)}
           {firstName ? `, ${firstName}` : ''}
         </h1>
-        <p className="text-sm text-[#64748B]">
+        <p className="text-sm text-muted-foreground">
           {formatLongDate(now.toISOString(), tz)} · {nowLocal.date.slice(8, 10)}/
           {nowLocal.date.slice(5, 7)}/{nowLocal.date.slice(0, 4)}
         </p>
       </header>
 
       {rows.length === 0 ? (
-        <div className="rounded-[18px] border border-[#E2E8F0] bg-white">
+        <div className="rounded-[18px] border border-border bg-card">
           <EmptyState
             title="Sua agenda está livre. Que tal marcar o primeiro atendimento?"
             action={newBtn}
@@ -212,9 +215,9 @@ export default function DashboardPage() {
       ) : next ? (
         <section
           aria-label="Próximo atendimento"
-          className="rounded-[22px] bg-[#0F2D5B] p-5 text-white"
+          className="rounded-[22px] bg-gradient-brand p-5 text-primary-foreground"
         >
-          <p className="text-xs font-semibold tracking-wide text-[#CBD5E1] uppercase">
+          <p className="text-xs font-semibold tracking-wide text-primary-foreground uppercase">
             Próximo atendimento
           </p>
           <p className="mt-1 font-display text-2xl font-extrabold">
@@ -223,7 +226,7 @@ export default function DashboardPage() {
           <p title={next.client_name} className="mt-2 truncate text-lg font-semibold">
             {next.client_name}
           </p>
-          <p title={next.service_name} className="truncate text-sm text-[#CBD5E1]">
+          <p title={next.service_name} className="truncate text-sm text-primary-foreground">
             {next.service_name}
           </p>
           <div className="mt-4 flex flex-wrap gap-2.5">
@@ -231,8 +234,8 @@ export default function DashboardPage() {
               type="button"
               onClick={() => openAppointment(next.id)}
               className={cn(
-                'min-h-11 rounded-xl bg-white px-5 text-sm font-semibold text-[#0F2D5B]',
-                FOCUS,
+                'min-h-11 rounded-xl bg-primary-foreground px-5 text-sm font-semibold text-primary-active',
+                FOCUS_ON_BRAND,
               )}
             >
               Ver detalhes
@@ -240,8 +243,8 @@ export default function DashboardPage() {
             <Link
               to={`/agenda/remarcar/${next.id}`}
               className={cn(
-                'inline-flex min-h-11 items-center rounded-xl border border-white/60 px-5 text-sm font-semibold text-white',
-                FOCUS,
+                'inline-flex min-h-11 items-center rounded-xl border border-primary-foreground/60 px-5 text-sm font-semibold text-primary-foreground',
+                FOCUS_ON_BRAND,
               )}
             >
               Remarcar
@@ -249,8 +252,8 @@ export default function DashboardPage() {
           </div>
         </section>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-6 text-center">
-          <p className="text-[#334155]">Nenhum atendimento agendado nos próximos 14 dias.</p>
+        <div className="flex flex-col items-center gap-3 rounded-[18px] border border-border bg-card p-6 text-center">
+          <p className="text-foreground-secondary">Nenhum atendimento agendado nos próximos 14 dias.</p>
           {newBtn}
         </div>
       )}
@@ -269,11 +272,11 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="livres-hoje">
-            <h2 id="livres-hoje" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
+            <h2 id="livres-hoje" className="mb-2 font-display text-lg font-bold text-foreground">
               Horários livres hoje
             </h2>
             {free.length === 0 ? (
-              <p className="text-sm text-[#64748B]">Sem horários livres hoje.</p>
+              <p className="text-sm text-muted-foreground">Sem horários livres hoje.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {free.map((f) => {
@@ -284,7 +287,7 @@ export default function DashboardPage() {
                       type="button"
                       onClick={() => open({ date: today, startTime })}
                       className={cn(
-                        'min-h-11 rounded-xl border-[1.5px] border-dashed border-[#93C5FD] bg-[#F5F9FF] px-4 text-sm font-semibold text-[#1D4ED8]',
+                        'min-h-11 rounded-xl border-[1.5px] border-dashed border-secondary-border bg-secondary px-4 text-sm font-semibold text-link',
                         FOCUS,
                       )}
                     >
@@ -297,15 +300,15 @@ export default function DashboardPage() {
           </section>
 
           <section aria-labelledby="proximos">
-            <h2 id="proximos" className="mb-2 font-display text-lg font-bold text-[#0F2D5B]">
+            <h2 id="proximos" className="mb-2 font-display text-lg font-bold text-foreground">
               Próximos atendimentos
             </h2>
             {upcoming.length === 0 ? (
-              <p className="text-sm text-[#64748B]">
+              <p className="text-sm text-muted-foreground">
                 Nenhum atendimento agendado nos próximos 14 dias.
               </p>
             ) : desktop ? (
-              <div className="overflow-x-auto rounded-[18px] border border-[#E2E8F0] bg-white">
+              <div className="overflow-x-auto rounded-[18px] border border-border bg-card">
                 <table className="w-full table-fixed text-left text-sm">
                   <colgroup>
                     <col className="w-[130px]" />
@@ -314,7 +317,7 @@ export default function DashboardPage() {
                     <col className="w-[130px]" />
                     <col className="w-[170px]" />
                   </colgroup>
-                  <thead className="bg-[#F8FAFC] text-xs text-[#64748B]">
+                  <thead className="bg-muted text-xs text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2">Quando</th>
                       <th className="px-3 py-2">Cliente</th>
@@ -329,7 +332,7 @@ export default function DashboardPage() {
                     {upcoming.map((a) => {
                       const l = instantToLocal(a.starts_at, tz);
                       return (
-                        <tr key={a.id} className="border-t border-[#E2E8F0]">
+                        <tr key={a.id} className="border-t border-border">
                           <td className="px-3 py-2 whitespace-nowrap">
                             {dayLabel(l.date, today)} · {l.time}
                           </td>
@@ -349,7 +352,7 @@ export default function DashboardPage() {
                                 aria-label={`Ver detalhes de ${a.client_name}`}
                                 onClick={() => openAppointment(a.id)}
                                 className={cn(
-                                  'min-h-11 rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
+                                  'min-h-11 rounded-lg border border-border px-3 font-semibold text-foreground',
                                   FOCUS,
                                 )}
                               >
@@ -359,7 +362,7 @@ export default function DashboardPage() {
                                 to={`/agenda/remarcar/${a.id}`}
                                 aria-label={`Remarcar ${a.client_name}`}
                                 className={cn(
-                                  'inline-flex min-h-11 items-center rounded-lg border border-[#E2E8F0] px-3 font-semibold text-[#0F2D5B]',
+                                  'inline-flex min-h-11 items-center rounded-lg border border-border px-3 font-semibold text-foreground',
                                   FOCUS,
                                 )}
                               >
@@ -383,13 +386,13 @@ export default function DashboardPage() {
                         type="button"
                         onClick={() => openAppointment(a.id)}
                         className={cn(
-                          'flex min-h-[64px] w-full items-center gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-2.5 text-left',
+                          'flex min-h-[64px] w-full items-center gap-3 rounded-[18px] border border-border bg-card p-2.5 text-left',
                           FOCUS,
                         )}
                       >
-                        <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-[#E7F1FF] text-[#0F2D5B]">
+                        <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-secondary text-foreground">
                           <b className="font-display text-[15px] font-extrabold">{l.time}</b>
-                          <span className="text-[11px] text-[#475569]">
+                          <span className="text-[11px] text-foreground-secondary">
                             {dayLabel(l.date, today)}
                           </span>
                         </span>
@@ -402,7 +405,7 @@ export default function DashboardPage() {
                           </b>
                           <span
                             title={a.service_name}
-                            className="block truncate text-[13px] text-[#64748B]"
+                            className="block truncate text-[13px] text-muted-foreground"
                           >
                             {a.service_name}
                           </span>

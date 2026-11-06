@@ -21,6 +21,9 @@ import { freeIntervals, slotStarts, type Shift } from '../domain/freeSlots';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const DAYS_AHEAD = 14;
+// Chips de dia e horário: com o preenchimento sólido do selecionado, o anel precisa ficar afastado.
+const CHIP_FOCUS =
+  'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 function addDaysStr(date: string, n: number): string {
   const d = new Date(Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10) + n));
@@ -99,7 +102,7 @@ function RescheduleLoader() {
     return (
       <Shell>
         <div className="flex flex-col items-center gap-4 p-8 text-center">
-          <p className="text-[#0F172A]">Só atendimentos agendados podem ser remarcados.</p>
+          <p className="text-foreground">Só atendimentos agendados podem ser remarcados.</p>
           <BackLink />
         </div>
       </Shell>
@@ -119,7 +122,7 @@ function BackLink() {
   return (
     <Link
       to="/agenda"
-      className="inline-flex h-11 items-center rounded-lg px-4 font-semibold text-[#2563EB] underline"
+      className="inline-flex h-11 items-center rounded-lg px-4 font-semibold text-link underline"
     >
       Voltar
     </Link>
@@ -136,11 +139,11 @@ function Shell({ children }: { children: React.ReactNode }) {
           type="button"
           aria-label="Voltar"
           onClick={() => (location.key !== 'default' ? navigate(-1) : navigate('/agenda'))}
-          className="flex size-11 items-center justify-center rounded-full text-[#0F2D5B] hover:bg-[#E7F1FF]"
+          className="flex size-11 items-center justify-center rounded-full text-foreground hover:bg-accent"
         >
           <ArrowLeft aria-hidden="true" className="size-5" />
         </button>
-        <h1 className="font-display text-xl font-bold text-[#0F2D5B]">Remarcar atendimento</h1>
+        <h1 className="font-display text-xl font-bold text-foreground">Remarcar atendimento</h1>
       </header>
       {children}
     </div>
@@ -189,7 +192,7 @@ function RescheduleBody({
   if (!day) {
     return (
       <Shell>
-        <div className="p-8 text-center text-[#0F172A]">
+        <div className="p-8 text-center text-foreground">
           Nenhum dia com expediente nos próximos dias. Revise seus horários de atendimento.
         </div>
       </Shell>
@@ -297,26 +300,26 @@ function Picker(p: PickerProps) {
 
   return (
     <Shell>
-      <section className="mx-4 rounded-2xl border border-[#E2E8F0] bg-white p-4">
+      <section className="mx-4 rounded-2xl border border-border bg-card p-4">
         <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0 truncate text-lg font-semibold text-[#0F172A]">
+          <p className="min-w-0 truncate text-lg font-semibold text-foreground">
             {appointment.client_name}
           </p>
-          <span className="shrink-0 rounded-full bg-[#E7F1FF] px-2.5 py-1 text-xs font-semibold text-[#1D4ED8]">
+          <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-link">
             Atual
           </span>
         </div>
-        <p className="truncate text-sm text-[#64748B]">
+        <p className="truncate text-sm text-muted-foreground">
           {appointment.service_name} · {durationLabel(duration)}
         </p>
-        <p className="mt-1 text-sm text-[#0F172A]">
+        <p className="mt-1 text-sm text-foreground">
           {formatDateBR(appointment.starts_at, tz)} · {formatTime(appointment.starts_at, tz)} –{' '}
           {formatTime(appointment.ends_at, tz)}
         </p>
       </section>
 
-      <h2 className="mt-5 px-4 text-sm font-semibold text-[#0F2D5B]">Escolha o dia</h2>
-      <div className="mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
+      <h2 className="mt-5 px-4 text-sm font-semibold text-foreground">Escolha o dia</h2>
+      <div className="mt-0.5 flex gap-2 overflow-x-auto px-4 pt-1.5 pb-1.5">
         {p.days.map((d) => {
           const selected = d === day;
           return (
@@ -328,9 +331,10 @@ function Picker(p: PickerProps) {
               onClick={() => p.pickDay(d)}
               className={cn(
                 'h-11 min-w-16 shrink-0 rounded-xl border px-3 text-sm font-semibold',
+                CHIP_FOCUS,
                 selected
-                  ? 'border-[#2563EB] bg-[#2563EB] text-white'
-                  : 'border-[#E2E8F0] bg-white text-[#0F172A]',
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-card text-foreground',
               )}
             >
               {`${WEEKDAYS[weekdayOf(d)]} ${d.slice(8, 10)}`}
@@ -339,7 +343,7 @@ function Picker(p: PickerProps) {
         })}
       </div>
 
-      <h2 className="mt-5 px-4 text-sm font-semibold text-[#0F2D5B]">Escolha o horário</h2>
+      <h2 className="mt-5 px-4 text-sm font-semibold text-foreground">Escolha o horário</h2>
       <div className="mt-2 px-4">
         {range.isPending ? (
           <LoadingState label="Carregando horários…" />
@@ -349,7 +353,7 @@ function Picker(p: PickerProps) {
             onRetry={() => void range.refetch()}
           />
         ) : slots.length === 0 ? (
-          <p className="py-6 text-center text-[#64748B]">Nenhum horário neste dia.</p>
+          <p className="py-6 text-center text-muted-foreground">Nenhum horário neste dia.</p>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             {slots.map((s) => {
@@ -367,10 +371,11 @@ function Picker(p: PickerProps) {
                   }}
                   className={cn(
                     'flex h-12 flex-col items-center justify-center rounded-xl border text-sm font-semibold',
+                    CHIP_FOCUS,
                     s.busy &&
-                      'border-[#E2E8F0] bg-[#F8FAFC] text-[#64748B] line-through opacity-70',
-                    !s.busy && !selected && 'border-[#E2E8F0] bg-white text-[#0F172A]',
-                    selected && 'border-[#2563EB] bg-[#2563EB] text-white',
+                      'border-border bg-muted text-muted-foreground line-through opacity-70',
+                    !s.busy && !selected && 'border-border bg-card text-foreground',
+                    selected && 'border-primary bg-primary text-primary-foreground',
                   )}
                 >
                   {s.time}
@@ -383,23 +388,23 @@ function Picker(p: PickerProps) {
       </div>
 
       {time && (
-        <p className="mx-4 mt-4 rounded-xl bg-[#E7F1FF] p-3 text-sm font-semibold text-[#0F2D5B]">
+        <p className="mx-4 mt-4 rounded-xl bg-secondary p-3 text-sm font-semibold text-foreground">
           {`${shortDate(instantToLocal(appointment.starts_at, tz).date)} às ${formatTime(appointment.starts_at, tz)} → ${shortDate(day)} às ${time}`}
         </p>
       )}
-      <p className="mt-3 px-4 text-sm text-[#64748B]">
+      <p className="mt-3 px-4 text-sm text-muted-foreground">
         Nome, telefone, serviço e observações são mantidos.
       </p>
 
       {p.error && (
-        <div role="alert" className="mx-4 mt-3 rounded-xl bg-[#FEF2F2] p-3 text-sm text-[#991B1B]">
+        <div role="alert" className="mx-4 mt-3 rounded-xl bg-error-surface p-3 text-sm text-error">
           <p>{p.error.message}</p>
           {p.error.kind === 'rede' && (
             <Button
               type="button"
               onClick={() => void submit()}
               disabled={pending}
-              className="mt-2 h-11 bg-[#2563EB] px-5 text-white hover:bg-[#1D4ED8]"
+              className="mt-2 h-11 bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
             >
               Tentar novamente
             </Button>
@@ -410,13 +415,13 @@ function Picker(p: PickerProps) {
       {/* Acima da navegação inferior no celular; à direita da barra lateral no computador. */}
       <div
         data-testid="reschedule-bar"
-        className="fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-10 border-t border-[#E2E8F0] bg-white px-4 pt-4 pb-6 lg:bottom-0 lg:left-24 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]"
+        className="fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-10 border-t border-border bg-card px-4 pt-4 pb-6 lg:bottom-0 lg:left-24 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]"
       >
         <Button
           type="button"
           disabled={!time || pending}
           onClick={() => void submit()}
-          className="mx-auto flex h-12 w-full max-w-xl bg-[#2563EB] text-base text-white hover:bg-[#1D4ED8]"
+          className="mx-auto flex h-12 w-full max-w-xl bg-primary text-base text-primary-foreground hover:bg-primary-hover"
         >
           {pending ? 'Remarcando…' : 'Confirmar remarcação'}
         </Button>

@@ -42,7 +42,7 @@ export function CancelDialog({ open, pending, onOpenChange, onConfirm }: Props) 
             maxLength={MAX}
             onChange={(e) => setReason(e.target.value)}
           />
-          <p className="text-right text-xs text-[#64748B]" aria-live="polite">
+          <p className="text-right text-xs text-muted-foreground" aria-live="polite">
             {reason.length}/{MAX}
           </p>
         </div>
@@ -57,8 +57,9 @@ export function CancelDialog({ open, pending, onOpenChange, onConfirm }: Props) 
           </Button>
           <Button
             type="button"
+            variant="destructive"
             disabled={pending}
-            className="h-11 bg-[#B91C1C] text-white hover:bg-[#991B1B]"
+            className="h-11"
             onClick={() => onConfirm(reason.trim())}
           >
             Cancelar atendimento

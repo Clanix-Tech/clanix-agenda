@@ -52,7 +52,7 @@ export function ConflictPanel({
         role={live}
         aria-live={live === 'alert' ? 'assertive' : 'polite'}
         aria-busy={checking}
-        className="flex gap-3 rounded-[14px] border border-[#FECACA] bg-[#FEF2F2] px-4 py-3.5 text-[#991B1B]"
+        className="flex gap-3 rounded-[14px] border border-warning-border bg-warning-surface px-4 py-3.5 text-warning-foreground"
       >
         <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -82,7 +82,7 @@ export function ConflictPanel({
             type="button"
             onClick={onRecheck}
             disabled={checking}
-            className="inline-flex min-h-11 items-center gap-2 self-start rounded-[10px] px-2 text-sm font-semibold text-[#991B1B] underline-offset-2 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 disabled:opacity-60"
+            className="inline-flex min-h-11 items-center gap-2 self-start rounded-[10px] px-2 text-sm font-semibold text-warning-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring disabled:opacity-60"
           >
             <RefreshCw aria-hidden="true" className={checking ? 'size-4 animate-spin' : 'size-4'} />
             Verificar de novo
@@ -93,9 +93,9 @@ export function ConflictPanel({
       {!checking && (
         <section
           aria-label={`Livres em ${dayLabel} para ${durationLabel}`}
-          className="flex flex-col gap-2 rounded-[14px] border border-[#EEF2F6] bg-[#F8FAFC] p-4"
+          className="flex flex-col gap-2 rounded-[14px] border border-border bg-muted p-4"
         >
-          <h3 className="font-display text-[15px] font-bold text-[#0F2D5B]">
+          <h3 className="font-display text-[15px] font-bold text-foreground">
             Livres em {dayLabel} para {durationLabel}
           </h3>
           {suggestions.length > 0 ? (
@@ -105,18 +105,18 @@ export function ConflictPanel({
                   key={s.start}
                   type="button"
                   onClick={() => onPick(s.start)}
-                  className="flex min-h-11 w-full items-center gap-2 rounded-[10px] border-[1.5px] border-dashed border-[#93C5FD] bg-[#F5F9FF] px-3 text-sm font-semibold text-[#1D4ED8] outline-none hover:bg-[#E7F1FF] focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+                  className="flex min-h-11 w-full items-center gap-2 rounded-[10px] border-[1.5px] border-dashed border-secondary-border bg-secondary px-3 text-sm font-semibold text-link outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring"
                 >
                   <Plus aria-hidden="true" className="size-4" />
                   {s.start} – {s.end}
                 </button>
               ))}
-              <p className="text-xs leading-normal text-[#64748B]">
+              <p className="text-xs leading-normal text-muted-foreground">
                 Mostrando só horários livres dentro do seu expediente.
               </p>
             </>
           ) : (
-            <p className="text-sm text-[#64748B]">
+            <p className="text-sm text-muted-foreground">
               Não há outro horário livre com essa duração neste dia.
             </p>
           )}

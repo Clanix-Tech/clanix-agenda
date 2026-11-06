@@ -45,12 +45,12 @@ function InfoRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-[#EEF2F6] py-2.5 text-[15px] last:border-b-0">
-      <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[#E7F1FF] text-[#1D4ED8]">
+    <div className="flex items-center gap-3 border-b border-border py-2.5 text-[15px] last:border-b-0">
+      <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-secondary text-link">
         <Icon aria-hidden="true" className="size-[18px]" />
       </span>
       <span className="min-w-0 flex-1 break-words">
-        <small className="block text-xs text-[#64748B]">{label}</small>
+        <small className="block text-xs text-muted-foreground">{label}</small>
         {children}
       </span>
     </div>
@@ -116,14 +116,14 @@ export function AppointmentSheet() {
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={a.status} />
-          {next && <span className="text-xs font-bold text-[#1D4ED8]">{next}</span>}
+          {next && <span className="text-xs font-bold text-link">{next}</span>}
         </div>
         <p
-          className={`font-display text-2xl font-extrabold break-words text-[#0F2D5B] ${a.status === 'cancelado' ? 'line-through' : ''}`}
+          className={`font-display text-2xl font-extrabold break-words text-foreground ${a.status === 'cancelado' ? 'line-through' : ''}`}
         >
           {a.client_name}
         </p>
-        <div className="rounded-[18px] border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-0.5">
+        <div className="rounded-[18px] border border-border bg-muted px-3.5 py-0.5">
           <InfoRow icon={CalendarDays} label="Data">
             {`${formatLongDate(a.starts_at, tz).split(',')[0]}, ${formatDateBR(start.date, tz)}`}
           </InfoRow>
@@ -137,7 +137,7 @@ export function AppointmentSheet() {
             <InfoRow icon={Phone} label="Telefone">
               <span className="flex items-center justify-between gap-2">
                 <span>{a.client_phone}</span>
-                <Button asChild variant="ghost" className="h-11 px-3 text-[#1D4ED8]">
+                <Button asChild variant="ghost" className="h-11 px-3 text-link">
                   <a href={`tel:${a.client_phone.replace(/[^\d+]/g, '')}`}>Ligar</a>
                 </Button>
               </span>
@@ -160,8 +160,8 @@ export function AppointmentSheet() {
             newAppointment.open({ date: start.date });
           }}
         />
-        <section className="border-t border-[#EEF2F6] pt-3.5">
-          <h3 className="mb-3 font-display text-[15px] font-bold text-[#0F2D5B]">Histórico</h3>
+        <section className="border-t border-border pt-3.5">
+          <h3 className="mb-3 font-display text-[15px] font-bold text-foreground">Histórico</h3>
           {history.isError ? (
             <ErrorState
               message={toAppError(history.error).message}

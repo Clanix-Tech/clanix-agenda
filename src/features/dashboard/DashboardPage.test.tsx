@@ -116,6 +116,7 @@ describe('DashboardPage', () => {
     const card = screen.getByRole('region', { name: 'Próximo atendimento' });
     expect(within(card).getByText('em 20 min')).toBeInTheDocument();
     expect(within(card).getByText('Carla Dias')).toBeInTheDocument();
+    expect(card.className).toMatch(/bg-gradient-brand/);
   });
 
   it('mostra os indicadores do fixture', async () => {
@@ -199,11 +200,11 @@ describe('DashboardPage', () => {
     });
     const cal = await screen.findByRole('region', { name: 'Calendário do mês' });
     const sunday = within(cal).getByRole('link', { name: '25/10' }).className;
-    expect(sunday).toMatch(/text-\[#0F2D5B\]/);
-    expect(sunday).not.toMatch(/#64748B/);
+    expect(sunday).toMatch(/text-foreground/);
+    expect(sunday).not.toMatch(/text-muted-foreground/);
     const closed = within(cal).getByRole('link', { name: '31/10' }).className; // sábado fechado
-    expect(closed).toMatch(/text-\[#64748B\]/);
-    expect(closed).not.toMatch(/text-\[#0F2D5B\]/);
+    expect(closed).toMatch(/text-muted-foreground/);
+    expect(closed).not.toMatch(/text-foreground/);
     expect(within(cal).getByRole('link', { name: '25/10' }).className).toMatch(/size-11/);
   });
 
