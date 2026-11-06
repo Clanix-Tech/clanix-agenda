@@ -19,7 +19,7 @@ export function SideRail() {
   return (
     <aside
       data-testid="side-rail"
-      className="sticky top-0 flex h-screen w-24 shrink-0 flex-col items-center gap-5 border-r border-[#E2E8F0] bg-white px-4 py-5"
+      className="sticky top-0 flex h-screen w-24 shrink-0 flex-col items-center gap-5 border-r border-border bg-card px-4 py-5"
     >
       <Logo variant="icon" size={44} />
       <nav aria-label="Navegação principal" className="flex flex-col items-center gap-5">
@@ -27,7 +27,7 @@ export function SideRail() {
           type="button"
           aria-label="Novo agendamento"
           onClick={() => open()}
-          className="grid size-[52px] place-items-center rounded-2xl bg-[#2563EB] text-white outline-none hover:bg-[#1D4ED8] focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+          className="grid size-[52px] place-items-center rounded-2xl bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <Plus aria-hidden="true" className="size-6" />
         </button>
@@ -38,8 +38,10 @@ export function SideRail() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex min-h-14 w-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 ${
-                  isActive ? 'bg-[#E7F1FF] text-[#0F2D5B]' : 'text-[#64748B] hover:bg-[#F8FAFC]'
+                `flex min-h-14 w-16 flex-col items-center justify-center gap-1 rounded-xl text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
+                  isActive
+                    ? 'bg-secondary text-secondary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`
               }
             >
@@ -53,7 +55,7 @@ export function SideRail() {
       <Link
         to="/ajustes"
         aria-label="Minha conta"
-        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-[#E7F1FF] font-display font-extrabold text-[#0F2D5B] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+        className="mt-auto grid size-11 place-items-center rounded-[14px] bg-secondary font-display font-bold text-secondary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         {initial(profile?.display_name, user?.email)}
       </Link>

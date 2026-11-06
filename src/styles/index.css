@@ -1,68 +1,244 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import '@fontsource-variable/inter';
-@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/sora';
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Tokens Clanix (fonte: clanix-brand/design-tokens/variables.css e manual de identidade).
+ * Valores claros em :root, escuros em .dark (classe aplicada em <html> por src/lib/theme.ts).
+ * Cores só entram nos componentes por estes nomes semânticos; a guarda está em cores.test.ts
+ * e o contraste WCAG AA de cada par em contraste.test.ts.
+ */
 :root {
   --radius: 0.75rem;
-  --background: #f8fafc;
-  --foreground: #0f2d5b;
+
+  --background: #f8f7ff;
+  --foreground: #0b0420;
+  --foreground-secondary: #494361;
+  --muted: #f1effa;
+  --muted-foreground: #696284;
+
   --card: #ffffff;
-  --card-foreground: #0f2d5b;
+  --card-foreground: #0b0420;
   --popover: #ffffff;
-  --popover-foreground: #0f2d5b;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #e7f1ff;
-  --secondary-foreground: #0f2d5b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #e7f1ff;
-  --accent-foreground: #0f2d5b;
+  --popover-foreground: #0b0420;
+  --overlay: rgba(11, 4, 32, 0.55);
+
+  --border: #e2dfee;
+  --input: #c8c3dc;
+  --ring: #8a2be2;
+
+  --primary: #4a00b8;
+  --primary-hover: #6b12d0;
+  --primary-active: #2e0075;
+  --primary-foreground: #f8f7ff;
+  --link: #4a00b8;
+
+  --secondary: #f0e8ff;
+  --secondary-border: #d8b4ff;
+  --secondary-foreground: #4a00b8;
+  --accent: #f0e8ff;
+  --accent-foreground: #4a00b8;
+
   --destructive: #b91c1c;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #3b82f6;
+  --destructive-foreground: #ffffff;
+
+  --error: #b91c1c;
+  --error-surface: #fef2f2;
+  --error-border: #fca5a5;
+  --success-surface: #ecfdf5;
+  --success-foreground: #065f46;
+  --success-border: #6ee7b7;
+  --warning-surface: #fffbeb;
+  --warning-foreground: #92400e;
+  --warning-border: #fcd34d;
+  --info-surface: #eff6ff;
+  --info-foreground: #1e40af;
+  --info-border: #93c5fd;
+
+  --status-agendado: #f0e8ff;
+  --status-agendado-foreground: #4a00b8;
+  --status-agendado-border: #d8b4ff;
+  --status-concluido: #ecfdf5;
+  --status-concluido-foreground: #065f46;
+  --status-concluido-border: #6ee7b7;
+  --status-nao-compareceu: #fffbeb;
+  --status-nao-compareceu-foreground: #92400e;
+  --status-nao-compareceu-border: #fcd34d;
+  --status-cancelado: #f1effa;
+  --status-cancelado-foreground: #494361;
+  --status-cancelado-border: #c8c3dc;
+
+  --agenda: #0284c7;
+
+  --hero-foreground: #f8f7ff;
+  --hero-secondary: #d8b4ff;
+
+  --gradient-brand: linear-gradient(135deg, #4a00b8 0%, #8a2be2 65%, #b980ff 100%);
+  --gradient-fab: linear-gradient(135deg, #4a00b8, #8a2be2);
+  --gradient-hero: linear-gradient(145deg, #16063e 0%, #0b0420 60%, #24075e 100%);
+
+  --cx-shadow-sm: 0 1px 3px rgba(11, 4, 32, 0.06), 0 1px 2px rgba(11, 4, 32, 0.04);
+  --cx-shadow-md: 0 4px 12px -2px rgba(11, 4, 32, 0.08), 0 2px 6px -1px rgba(74, 0, 184, 0.04);
+  --cx-shadow-lg: 0 12px 28px -4px rgba(11, 4, 32, 0.12), 0 4px 10px -2px rgba(74, 0, 184, 0.06);
+  --cx-shadow-glow: 0 8px 24px -4px rgba(138, 43, 226, 0.35);
+}
+
+.dark {
+  --background: #0b0420;
+  --foreground: #f8f7ff;
+  --foreground-secondary: #d8b4ff;
+  --muted: #11062c;
+  --muted-foreground: #9690b0;
+
+  --card: #140836;
+  --card-foreground: #f8f7ff;
+  --popover: #1d0e4a;
+  --popover-foreground: #f8f7ff;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --border: #28155a;
+  --input: #3f2385;
+  --ring: #d8b4ff;
+
+  --primary: #8a2be2;
+  /* Ajuste: #9e47f5 do pacote dá 4,22:1 com o texto; #983fef dá 4,60:1 (AA). */
+  --primary-hover: #983fef;
+  --primary-active: #6b12d0;
+  --primary-foreground: #f8f7ff;
+  --link: #d8b4ff;
+
+  --secondary: rgba(216, 180, 255, 0.1);
+  --secondary-border: rgba(216, 180, 255, 0.3);
+  --secondary-foreground: #d8b4ff;
+  --accent: rgba(216, 180, 255, 0.1);
+  --accent-foreground: #d8b4ff;
+
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  --error: #fca5a5;
+  --error-surface: rgba(239, 68, 68, 0.16);
+  --error-border: rgba(248, 113, 113, 0.35);
+  --success-surface: rgba(16, 185, 129, 0.16);
+  --success-foreground: #6ee7b7;
+  --success-border: rgba(52, 211, 153, 0.35);
+  --warning-surface: rgba(245, 158, 11, 0.16);
+  --warning-foreground: #fcd34d;
+  --warning-border: rgba(251, 191, 36, 0.35);
+  --info-surface: rgba(59, 130, 246, 0.16);
+  --info-foreground: #93c5fd;
+  --info-border: rgba(96, 165, 250, 0.35);
+
+  --status-agendado: rgba(216, 180, 255, 0.12);
+  --status-agendado-foreground: #d8b4ff;
+  --status-agendado-border: rgba(216, 180, 255, 0.3);
+  --status-concluido: rgba(16, 185, 129, 0.16);
+  --status-concluido-foreground: #6ee7b7;
+  --status-concluido-border: rgba(52, 211, 153, 0.35);
+  --status-nao-compareceu: rgba(245, 158, 11, 0.16);
+  --status-nao-compareceu-foreground: #fcd34d;
+  --status-nao-compareceu-border: rgba(251, 191, 36, 0.35);
+  --status-cancelado: #11062c;
+  --status-cancelado-foreground: #9690b0;
+  --status-cancelado-border: #3f2385;
+
+  --agenda: #38bdf8;
+
+  --hero-foreground: #f8f7ff;
+  --hero-secondary: #d8b4ff;
+
+  --gradient-fab: linear-gradient(135deg, #6b12d0, #9e47f5);
+
+  --cx-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --cx-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --cx-shadow-lg: 0 14px 32px rgba(0, 0, 0, 0.6);
+  --cx-shadow-glow: 0 8px 28px -2px rgba(138, 43, 226, 0.48);
 }
 
 @theme inline {
-  --color-navy: #0f2d5b;
-  --color-brand: #3b82f6;
-  --color-brand-strong: #2563eb;
-  --color-soft: #e7f1ff;
-  --color-line: #e2e8f0;
-  --color-canvas: #f8fafc;
-
-  --font-display: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Sora Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 
-  --radius-card: 18px;
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-field: 10px;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+  --shadow-sm: var(--cx-shadow-sm);
+  --shadow-md: var(--cx-shadow-md);
+  --shadow-lg: var(--cx-shadow-lg);
+  --shadow-glow: var(--cx-shadow-glow);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted-foreground);
-  --color-muted-surface: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
+  --color-elevated: var(--popover);
+  --color-overlay: var(--overlay);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-link: var(--link);
+  --color-secondary: var(--secondary);
+  --color-secondary-border: var(--secondary-border);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-error: var(--error);
+  --color-error-surface: var(--error-surface);
+  --color-error-border: var(--error-border);
+  --color-success-surface: var(--success-surface);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-border: var(--success-border);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-border: var(--warning-border);
+  --color-info-surface: var(--info-surface);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-border: var(--info-border);
+  --color-status-agendado: var(--status-agendado);
+  --color-status-agendado-foreground: var(--status-agendado-foreground);
+  --color-status-agendado-border: var(--status-agendado-border);
+  --color-status-concluido: var(--status-concluido);
+  --color-status-concluido-foreground: var(--status-concluido-foreground);
+  --color-status-concluido-border: var(--status-concluido-border);
+  --color-status-nao-compareceu: var(--status-nao-compareceu);
+  --color-status-nao-compareceu-foreground: var(--status-nao-compareceu-foreground);
+  --color-status-nao-compareceu-border: var(--status-nao-compareceu-border);
+  --color-status-cancelado: var(--status-cancelado);
+  --color-status-cancelado-foreground: var(--status-cancelado-foreground);
+  --color-status-cancelado-border: var(--status-cancelado-border);
+  --color-agenda: var(--agenda);
+  --color-hero-foreground: var(--hero-foreground);
+  --color-hero-secondary: var(--hero-secondary);
+}
+
+/* Gradientes institucionais: só CTA de entrada, botão "+", painel de login/hero (manual da marca). */
+@utility bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+@utility bg-gradient-fab {
+  background-image: var(--gradient-fab);
+}
+@utility bg-gradient-hero {
+  background-image: var(--gradient-hero);
 }
 
 @layer base {
@@ -76,5 +252,23 @@
   h2,
   h3 {
     font-family: var(--font-display);
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 }

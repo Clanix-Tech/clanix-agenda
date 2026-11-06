@@ -43,7 +43,7 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
           </DialogHeader>
           <DialogClose
             aria-label="Fechar"
-            className="absolute top-4 right-4 grid size-11 place-items-center rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+            className="absolute top-4 right-4 grid size-11 place-items-center rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <X aria-hidden="true" className="size-5" />
           </DialogClose>

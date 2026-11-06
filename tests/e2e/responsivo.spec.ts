@@ -90,7 +90,7 @@ test('nenhuma página rola na horizontal (com nome de 120 caracteres)', async ({
   await expectNoHorizontalScroll(page);
 });
 
-test('títulos usam a fonte da marca (Manrope), sem cair na fonte padrão', async ({
+test('títulos usam a fonte da marca (Sora), sem cair na fonte padrão', async ({
   page,
   makeUser,
 }) => {
@@ -112,7 +112,7 @@ test('títulos usam a fonte da marca (Manrope), sem cair na fonte padrão', asyn
       .locator('h1, h2, h3')
       .evaluateAll((els) => els.map((e) => [e.textContent, getComputedStyle(e).fontFamily]));
     for (const [text, family] of families) {
-      expect(family, `título "${text}" em ${path}`).toMatch(/^"?Manrope Variable"?/);
+      expect(family, `título "${text}" em ${path}`).toMatch(/^"?Sora Variable"?/);
     }
   }
 });

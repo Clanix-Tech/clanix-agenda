@@ -23,11 +23,11 @@ export function AppShell({ renderForm }: Pick<NewAppointmentProviderProps, 'rend
           e.preventDefault();
           document.getElementById('conteudo')?.focus();
         }}
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-[#0F2D5B] focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-white focus:outline-2 focus:outline-offset-2 focus:outline-[#2563EB]"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-primary-foreground focus:outline-2 focus:outline-offset-2 focus:outline-ring"
       >
         Pular para o conteúdo
       </a>
-      <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+      <div className="flex min-h-screen bg-background text-foreground">
         {desktop && <SideRail />}
         <main
           id="conteudo"

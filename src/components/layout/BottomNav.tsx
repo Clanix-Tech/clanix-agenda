@@ -9,8 +9,8 @@ function Item({ to, label, icon: Icon, end }: NavItem) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex min-h-11 flex-col items-center gap-1 pt-1 text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 ${
-          isActive ? 'text-[#1D4ED8]' : 'text-[#64748B]'
+        `flex min-h-11 flex-col items-center gap-1 pt-1 text-xs font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
+          isActive ? 'text-link' : 'text-muted-foreground'
         }`
       }
     >
@@ -28,7 +28,7 @@ export function BottomNav() {
     <nav
       aria-label="Navegação principal"
       data-testid="bottom-nav"
-      className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(84px+env(safe-area-inset-bottom))] grid-cols-5 items-start border-t border-[#E2E8F0] bg-white px-2 pt-2 pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-40 grid h-[calc(84px+env(safe-area-inset-bottom))] grid-cols-5 items-start border-t border-border bg-card px-2 pt-2 pb-[env(safe-area-inset-bottom)]"
     >
       {before.map((item) => (
         <Item key={item.to} {...item} />
@@ -38,7 +38,7 @@ export function BottomNav() {
           type="button"
           aria-label="Novo agendamento"
           onClick={() => open()}
-          className="-mt-[26px] grid size-[58px] place-items-center rounded-full border-4 border-[#F8FAFC] bg-[#2563EB] text-white outline-none hover:bg-[#1D4ED8] focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+          className="-mt-[26px] grid size-[58px] place-items-center rounded-full border-4 border-background bg-gradient-fab text-primary-foreground shadow-glow outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <Plus aria-hidden="true" className="size-[26px]" />
         </button>

@@ -8,9 +8,9 @@ import { useOnlineStatus } from '@/lib/useOnlineStatus';
 export function OfflineBanner() {
   const online = useOnlineStatus();
   return (
-    <div role="status" aria-live="polite" className="sticky top-0 z-50">
+    <div role="status" aria-live="polite" className="sticky top-0 z-50 bg-background">
       {!online && (
-        <div className="flex items-center justify-center gap-2 bg-[#FEF3C7] px-4 py-2 text-center text-sm font-medium text-[#92400E]">
+        <div className="flex items-center justify-center gap-2 border-b border-warning-border bg-warning-surface px-4 py-2 text-center text-sm font-medium text-warning-foreground">
           <WifiOff aria-hidden="true" className="size-4 shrink-0" />
           Sem conexão. Você pode ver a agenda, mas nada será salvo até a internet voltar.
         </div>
