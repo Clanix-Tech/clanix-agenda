@@ -21,7 +21,7 @@ export function SideRail() {
       data-testid="side-rail"
       className="sticky top-0 flex h-screen w-24 shrink-0 flex-col items-center gap-5 border-r border-border bg-card px-4 py-5"
     >
-      <Logo variant="icon" size={44} />
+      <Logo variant="icone" size={44} />
       <nav aria-label="Navegação principal" className="flex flex-col items-center gap-5">
         <button
           type="button"

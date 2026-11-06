@@ -24,7 +24,7 @@ export function AuthLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-canvas lg:flex-row">
       <aside className="bg-navy px-6 py-6 text-white lg:flex lg:w-[44%] lg:max-w-[640px] lg:flex-col lg:justify-between lg:px-14 lg:py-12">
-        <Logo variant="full-dark" size={44} />
+        <Logo variant="horizontal" tone="sobre-escuro" size={44} />
         <div className="mt-4 lg:mt-0">
           <p className="font-display text-xl font-extrabold lg:text-4xl lg:leading-tight">
             Tudo organizado em um só lugar.

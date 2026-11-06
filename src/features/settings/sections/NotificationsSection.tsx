@@ -60,7 +60,7 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
             </p>
           ) : (
             <div className="flex gap-2.5 rounded-[18px] border border-[#E2E8F0] bg-white/85 p-3">
-              <Logo variant="icon" size={36} />
+              <Logo variant="icone" size={36} />
               <div className="min-w-0 flex-1 text-sm leading-snug text-[#0F172A]">
                 <div className="flex justify-between text-xs text-[#64748B]">
                   <span className="font-semibold text-[#0F172A]">Clanix Agenda</span>

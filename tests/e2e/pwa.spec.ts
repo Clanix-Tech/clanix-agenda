@@ -14,8 +14,8 @@ test('manifesto tem os campos de um app instalável', async ({ request }) => {
     start_url: '/',
     scope: '/',
     display: 'standalone',
-    theme_color: '#0F2D5B',
-    background_color: '#F8FAFC',
+    theme_color: '#0B0420',
+    background_color: '#0B0420',
   });
   const icons = m.icons as Array<{ sizes: string; purpose?: string }>;
   for (const sizes of ['64x64', '192x192', '512x512']) {

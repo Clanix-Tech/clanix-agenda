@@ -38,7 +38,7 @@ export default function PrivacyPage() {
     <div className="min-h-dvh bg-[#F8FAFC] text-[#0F172A]">
       <header className="border-b border-[#E2E8F0] bg-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2">
-          <Logo variant="full" size={36} />
+          <Logo variant="horizontal" size={36} />
           <Link
             to={session ? '/' : '/entrar'}
             className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-[#2563EB] ${LINK_FOCUS}`}

@@ -24,7 +24,8 @@
     "verificar:producao": "node scripts/verificar-producao.mjs",
     "publicar:site": "node scripts/publicar-site.mjs",
     "backup:producao": "node scripts/backup-producao.mjs",
-    "dados:teste": "node scripts/dados-teste-local.mjs"
+    "dados:teste": "node scripts/dados-teste-local.mjs",
+    "marca:copiar": "node scripts/copiar-marca.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
