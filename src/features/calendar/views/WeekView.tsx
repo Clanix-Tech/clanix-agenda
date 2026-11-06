@@ -26,15 +26,17 @@ type Props = {
 };
 
 const PX_PER_HOUR = 52;
-const HATCH = 'repeating-linear-gradient(135deg,#F1F5F9 0 6px,#F8FAFC 6px 12px)';
+const HATCH = 'repeating-linear-gradient(135deg,var(--muted) 0 6px,var(--background) 6px 12px)';
 const fmt = (min: number) =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 const EVENT_COLORS: Record<AppointmentStatus, string> = {
-  agendado: 'border-[#BFDBFE] bg-[#E7F1FF] text-[#1D4ED8]',
-  concluido: 'border-[#BBF7D0] bg-[#DCFCE7] text-[#166534]',
-  nao_compareceu: 'border-[#FDE68A] bg-[#FEF3C7] text-[#92400E]',
-  cancelado: 'border-dashed border-[#94A3B8] bg-[#F1F5F9] text-[#475569]',
+  agendado: 'border-status-agendado-border bg-status-agendado text-status-agendado-foreground',
+  concluido: 'border-status-concluido-border bg-status-concluido text-status-concluido-foreground',
+  nao_compareceu:
+    'border-status-nao-compareceu-border bg-status-nao-compareceu text-status-nao-compareceu-foreground',
+  cancelado:
+    'border-dashed border-status-cancelado-border bg-status-cancelado text-status-cancelado-foreground',
 };
 
 type EventModel = { row: Row; box: LayoutBox; overlapsOther: boolean };
@@ -203,18 +205,18 @@ function WeekGridBody({
   };
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[#E2E8F0] bg-white">
+    <div className="overflow-hidden rounded-[18px] border border-border bg-card">
       <div
         className="grid"
         style={{ gridTemplateColumns: `48px repeat(${columns.length}, minmax(0, 1fr))` }}
       >
         <div>
-          <div className="h-14 border-b border-[#E2E8F0]" />
+          <div className="h-14 border-b border-border" />
           <div className="relative" style={{ height }}>
             {hourLabels.map((m) => (
               <span
                 key={m}
-                className="absolute right-1.5 text-[11px] text-[#64748B]"
+                className="absolute right-1.5 text-[11px] tabular-nums text-muted-foreground"
                 style={{ top: toTop(m) + 2 }}
               >
                 {fmt(m)}
@@ -235,18 +237,18 @@ function WeekGridBody({
               role="group"
               aria-label={label}
               aria-current={isToday ? 'date' : undefined}
-              className="min-w-0 border-l border-[#E2E8F0]"
+              className="min-w-0 border-l border-border"
             >
               <div
                 className={cn(
-                  'flex h-14 items-center justify-between gap-1 border-b border-[#E2E8F0] px-2',
-                  isToday && 'bg-[#E7F1FF]',
+                  'flex h-14 items-center justify-between gap-1 border-b border-border px-2',
+                  isToday && 'bg-primary text-primary-foreground',
                 )}
               >
                 <span
                   className={cn(
                     'text-[13px] font-bold',
-                    isToday ? 'text-[#0F2D5B]' : 'text-[#334155]',
+                    isToday ? 'text-primary-foreground' : 'text-foreground-secondary',
                   )}
                 >
                   {label}
@@ -256,7 +258,12 @@ function WeekGridBody({
                     type="button"
                     aria-label={`Novo agendamento em ${label}`}
                     onClick={() => open({ date: d })}
-                    className="grid size-11 shrink-0 place-items-center rounded-lg text-[#1D4ED8] hover:bg-white focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+                    className={cn(
+                      'grid size-11 shrink-0 place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-ring',
+                      isToday
+                        ? 'text-primary-foreground hover:bg-primary-hover'
+                        : 'text-link hover:bg-card',
+                    )}
                   >
                     <Plus aria-hidden="true" className="size-4" />
                   </button>
@@ -268,7 +275,7 @@ function WeekGridBody({
                 className="relative"
                 style={{
                   height,
-                  backgroundImage: `repeating-linear-gradient(to bottom,#EEF2F6 0 1px,transparent 1px ${PX_PER_HOUR}px)`,
+                  backgroundImage: `repeating-linear-gradient(to bottom,var(--border) 0 1px,transparent 1px ${PX_PER_HOUR}px)`,
                 }}
                 onClick={(e) => {
                   const min = slotAt(e, c);
@@ -298,7 +305,7 @@ function WeekGridBody({
                   />
                 ))}
                 {closed && (
-                  <span className="pointer-events-none absolute inset-x-0 top-2 text-center text-xs font-semibold text-[#64748B]">
+                  <span className="pointer-events-none absolute inset-x-0 top-2 text-center text-xs font-semibold text-muted-foreground">
                     Fechado
                   </span>
                 )}
@@ -306,7 +313,7 @@ function WeekGridBody({
                 {hover?.date === d && (
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-1 flex items-center justify-center gap-1 rounded-[10px] border-[1.5px] border-dashed border-[#3B82F6] bg-white text-xs font-semibold text-[#1D4ED8]"
+                    className="pointer-events-none absolute inset-x-1 flex items-center justify-center gap-1 rounded-[10px] border-[1.5px] border-dashed border-primary bg-card text-xs font-semibold text-link"
                     style={{ top: toTop(hover.min), height: (slot / 60) * PX_PER_HOUR }}
                   >
                     <Plus className="size-3.5" />
@@ -337,10 +344,11 @@ function WeekGridBody({
                       aria-label={`${a.client_name}, ${range}, ${meta.label}`}
                       onClick={() => openAppointment(a.id)}
                       className={cn(
-                        'absolute flex gap-px overflow-hidden rounded-[10px] border px-2 py-1 text-left text-xs leading-tight focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2563EB]',
+                        'absolute flex gap-px overflow-hidden rounded-[10px] border px-2 py-1 text-left text-xs leading-tight focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
                         compact ? 'flex-row items-center gap-1' : 'flex-col',
-                        EVENT_COLORS[a.status],
-                        next && 'border-[#0F2D5B] bg-[#0F2D5B] text-white',
+                        next
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : EVENT_COLORS[a.status],
                         eventPlacement(cancelled, overlapsOther),
                       )}
                       style={{ top: box.top, height: box.height }}
@@ -435,12 +443,12 @@ function WeekStrip({ date, tz, status, onDate }: Props) {
               }`}
               onClick={() => onDate(d)}
               className={cn(
-                'flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] border text-[#0F2D5B] focus-visible:outline-2 focus-visible:outline-[#2563EB]',
+                'flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] border text-foreground focus-visible:outline-2 focus-visible:outline-ring',
                 selected
-                  ? 'border-[#0F2D5B] bg-[#0F2D5B] text-white'
+                  ? 'border-primary bg-primary text-primary-foreground'
                   : d === today
-                    ? 'border-[#3B82F6] bg-[#E7F1FF]'
-                    : 'border-[#E2E8F0] bg-white',
+                    ? 'border-primary bg-secondary'
+                    : 'border-border bg-card',
               )}
             >
               <span aria-hidden="true" className="text-[11px] font-semibold">
@@ -451,7 +459,7 @@ function WeekStrip({ date, tz, status, onDate }: Props) {
               </b>
               <span aria-hidden="true" className="flex h-3 items-center gap-1 text-[11px]">
                 {n}
-                {hasFree && <span className="size-1.5 rounded-full bg-[#3B82F6]" />}
+                {hasFree && <span className="size-1.5 rounded-full bg-primary" />}
               </span>
             </button>
           );

@@ -29,7 +29,7 @@ type Props = {
 };
 
 const ib =
-  'grid size-11 shrink-0 place-items-center rounded-[14px] text-[#0F2D5B] hover:bg-[#F1F5F9] focus-visible:outline-2 focus-visible:outline-[#2563EB]';
+  'grid size-11 shrink-0 place-items-center rounded-[14px] text-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring';
 
 export function AgendaToolbar({
   view,
@@ -74,12 +74,12 @@ export function AgendaToolbar({
   const go = (dir: 1 | -1) =>
     onDate(month ? shiftMonth(date, dir) : shiftDate(date, dir * (week || list ? 7 : 1)));
   return (
-    <div className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-1.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4 lg:p-3">
+    <div className="flex flex-col gap-3 rounded-[18px] border border-border bg-card p-1.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4 lg:p-3">
       <div className="flex items-center justify-between gap-1 lg:justify-start lg:gap-2">
         <button
           type="button"
           onClick={() => onDate(today)}
-          className="h-11 rounded-[14px] bg-[#E7F1FF] px-3.5 text-sm font-bold text-[#0F2D5B] focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+          className="h-11 rounded-[14px] bg-secondary px-3.5 text-sm font-bold text-secondary-foreground focus-visible:outline-2 focus-visible:outline-ring"
         >
           Hoje
         </button>
@@ -87,8 +87,8 @@ export function AgendaToolbar({
           <ChevronLeft aria-hidden="true" className="size-5" />
         </button>
         <div className="min-w-0 flex-1 text-center lg:min-w-44 lg:flex-none">
-          <div className="text-xs font-semibold text-[#64748B]">{sub}</div>
-          <div className="font-display text-lg font-extrabold text-[#0F2D5B]">{title}</div>
+          <div className="text-xs font-semibold text-muted-foreground">{sub}</div>
+          <div className="font-display text-lg font-extrabold text-foreground">{title}</div>
         </div>
         <button type="button" aria-label={nextLabel} onClick={() => go(1)} className={ib}>
           <ChevronRight aria-hidden="true" className="size-5" />

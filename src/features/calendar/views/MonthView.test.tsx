@@ -113,10 +113,10 @@ describe('MonthView (computador)', () => {
     setup();
     const cancelled = await screen.findByRole('button', { name: /Pessoa Dois.*Cancelado/ });
     expect(within(cancelled).getByText('Pessoa Dois')).toHaveClass('line-through');
-    expect(screen.getByRole('button', { name: /Pessoa Um/ })).toHaveClass('bg-[#F1F5F9]');
+    expect(screen.getByRole('button', { name: /Pessoa Um/ })).toHaveClass('bg-status-cancelado');
     const today = screen.getByRole('group', { name: '29 de outubro' });
     expect(today).toHaveAttribute('aria-current', 'date');
-    expect(today).toHaveClass('border-[#3B82F6]');
+    expect(today).toHaveClass('border-primary');
   });
 
   it('clicar no atendimento abre os detalhes; o número do dia leva à visão Dia', async () => {

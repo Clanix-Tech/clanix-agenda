@@ -38,14 +38,14 @@ export function ListView({ date, tz, status }: Props) {
       <span className="sr-only">Buscar por cliente ou serviço</span>
       <Search
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-[#64748B]"
+        className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
       />
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar cliente ou serviço"
-        className="h-11 w-full rounded-[14px] border border-[#E2E8F0] bg-white pr-3 pl-10 text-base focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+        className="h-11 w-full rounded-[14px] border border-border bg-card pr-3 pl-10 text-base focus-visible:outline-2 focus-visible:outline-ring"
       />
     </label>
   );
@@ -84,7 +84,7 @@ export function ListView({ date, tz, status }: Props) {
           action={
             <Button
               onClick={() => open({ date })}
-              className="h-11 bg-[#2563EB] px-5 text-white hover:bg-[#1D4ED8]"
+              className="h-11 bg-primary px-5 text-primary-foreground hover:bg-primary-hover"
             >
               Novo agendamento
             </Button>
@@ -93,7 +93,7 @@ export function ListView({ date, tz, status }: Props) {
       ) : (
         [...groups.entries()].map(([day, list]) => (
           <section key={day} aria-label={heading(day, today)} className="flex flex-col gap-2">
-            <h2 className="px-1 font-display text-sm font-extrabold text-[#0F2D5B]">
+            <h2 className="px-1 font-display text-sm font-extrabold text-foreground">
               {heading(day, today)}
             </h2>
             {list.map((a) => (
@@ -101,13 +101,13 @@ export function ListView({ date, tz, status }: Props) {
                 key={a.id}
                 type="button"
                 onClick={() => openAppointment(a.id)}
-                className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+                className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border border-border bg-card p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
-                <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-[#E7F1FF] text-[#0F2D5B]">
-                  <b className="font-display text-[15px] font-extrabold">
+                <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+                  <b className="font-display text-[15px] font-extrabold tabular-nums">
                     {instantToLocal(a.starts_at, tz).time}
                   </b>
-                  <span className="text-[11px] text-[#475569]">
+                  <span className="text-[11px] tabular-nums text-foreground-secondary">
                     {instantToLocal(a.ends_at, tz).time}
                   </span>
                 </span>
@@ -116,14 +116,14 @@ export function ListView({ date, tz, status }: Props) {
                     title={a.client_name}
                     className={cn(
                       'block truncate text-[15px] font-semibold',
-                      a.status === 'cancelado' && 'text-[#475569] line-through',
+                      a.status === 'cancelado' && 'text-foreground-secondary line-through',
                     )}
                   >
                     {a.client_name}
                   </b>
                   <span
                     title={a.service_name}
-                    className="block truncate text-[13px] text-[#64748B]"
+                    className="block truncate text-[13px] text-muted-foreground"
                   >
                     {a.service_name}
                   </span>

@@ -46,41 +46,53 @@ function AppointmentCard({
       type="button"
       onClick={onOpen}
       className={cn(
-        'flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]',
+        'flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         next
-          ? 'border-[#0F2D5B] bg-[#0F2D5B] text-white'
-          : 'border-[#E2E8F0] bg-white text-[#0F172A]',
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-card text-card-foreground',
       )}
     >
       <span
         className={cn(
           'flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl',
-          next ? 'bg-white/15 text-white' : 'bg-[#E7F1FF] text-[#0F2D5B]',
+          next
+            ? 'bg-primary-foreground/15 text-primary-foreground'
+            : 'bg-secondary text-secondary-foreground',
         )}
       >
-        <b className="font-display text-[15px] font-extrabold">{start}</b>
-        <span className={cn('text-[11px]', next ? 'text-[#CBD5E1]' : 'text-[#475569]')}>{end}</span>
+        <b className="font-display text-[15px] font-extrabold tabular-nums">{start}</b>
+        <span
+          className={cn(
+            'text-[11px] tabular-nums',
+            next ? 'text-primary-foreground/80' : 'text-foreground-secondary',
+          )}
+        >
+          {end}
+        </span>
       </span>
       <span className="min-w-0 flex-1">
         <b
           title={row.client_name}
           className={cn(
             'block truncate text-[15px] font-semibold',
-            cancelled && 'text-[#475569] line-through',
+            cancelled && 'text-foreground-secondary line-through',
           )}
         >
           {row.client_name}
         </b>
         <span
           title={row.service_name}
-          className={cn('block truncate text-[13px]', next ? 'text-[#CBD5E1]' : 'text-[#64748B]')}
+          className={cn(
+            'block truncate text-[13px]',
+            next ? 'text-primary-foreground/80' : 'text-muted-foreground',
+          )}
         >
           {row.service_name}
         </span>
       </span>
       <span className="flex shrink-0 flex-col items-end gap-1">
         {next && (
-          <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-[#0F2D5B]">
+          <span className="rounded-full bg-primary-foreground px-2.5 py-1 text-xs font-semibold text-primary">
             Próximo
           </span>
         )}
@@ -103,17 +115,17 @@ function FreeCard({
     <button
       type="button"
       onClick={onPick}
-      className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-[#93C5FD] bg-[#F5F9FF] p-2.5 text-left text-[#1D4ED8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+      className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-secondary-border bg-secondary p-2.5 text-left text-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-white">
-        <b className="font-display text-[15px] font-extrabold">{interval.start}</b>
-        <span className="text-[11px]">{interval.end}</span>
+      <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-card">
+        <b className="font-display text-[15px] font-extrabold tabular-nums">{interval.start}</b>
+        <span className="text-[11px] tabular-nums">{interval.end}</span>
       </span>
       <span className="min-w-0 flex-1">
         <b className="block text-[15px] font-semibold">Horário livre</b>
         {cancelled.length > 0 ? (
           cancelled.map((c) => (
-            <span key={c.id} className="block truncate text-[13px] text-[#475569]">
+            <span key={c.id} className="block truncate text-[13px] text-foreground-secondary">
               <span title={c.client_name} className="line-through">
                 {c.client_name}
               </span>{' '}
@@ -243,11 +255,11 @@ function DayViewInner({ date, tz, status }: Props) {
         key: `lunch-${a}`,
         min: a,
         node: (
-          <div className="flex items-center gap-2.5 px-1.5 text-xs font-semibold text-[#64748B]">
+          <div className="flex items-center gap-2.5 px-1.5 text-xs font-semibold text-muted-foreground">
             <span>
               {fmt(a)} – {fmt(b)} · Almoço
             </span>
-            <span aria-hidden="true" className="h-px flex-1 bg-[#E2E8F0]" />
+            <span aria-hidden="true" className="h-px flex-1 bg-border" />
           </div>
         ),
       });
@@ -273,8 +285,8 @@ function DayViewInner({ date, tz, status }: Props) {
 
   return (
     <div className="flex flex-col gap-3.5">
-      <p className="px-1 text-sm text-[#334155]">
-        <strong className="text-[#0F2D5B]">
+      <p className="px-1 text-sm text-foreground-secondary">
+        <strong className="text-foreground">
           {n} {n === 1 ? 'atendimento' : 'atendimentos'}
         </strong>{' '}
         · {free.length} {free.length === 1 ? 'horário livre' : 'horários livres'}
@@ -286,7 +298,7 @@ function DayViewInner({ date, tz, status }: Props) {
             type="button"
             aria-expanded={expanded}
             onClick={() => setExpanded((v) => !v)}
-            className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] bg-[#EEF2F6] text-[13px] font-semibold text-[#475569] focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+            className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] bg-muted text-[13px] font-semibold text-foreground-secondary focus-visible:outline-2 focus-visible:outline-ring"
           >
             {doneLabel}
             <ChevronDown
@@ -300,7 +312,7 @@ function DayViewInner({ date, tz, status }: Props) {
       )}
 
       {items.every((i) => i.key === 'now') && done.length === 0 && (
-        <p className="p-6 text-center text-[#64748B]">Nada para este dia.</p>
+        <p className="p-6 text-center text-muted-foreground">Nada para este dia.</p>
       )}
       {items.map((it) => (
         <div key={it.key}>{it.node}</div>

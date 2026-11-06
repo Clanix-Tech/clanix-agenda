@@ -21,9 +21,9 @@ export function StatusFilter({
     onChange(next.length ? next : null);
   };
   const pill =
-    'h-11 shrink-0 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-[#2563EB]';
-  const on = 'border-[#0F2D5B] bg-[#0F2D5B] text-white';
-  const off = 'border-[#E2E8F0] bg-white text-[#475569]';
+    'h-11 shrink-0 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring';
+  const on = 'border-primary bg-primary text-primary-foreground';
+  const off = 'border-border bg-card text-foreground-secondary';
   return (
     <div role="group" aria-label="Filtrar por status" className="flex gap-2 overflow-x-auto">
       <button

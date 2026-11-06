@@ -13,8 +13,8 @@ export function NowLine({
   if (variant === 'line') {
     return (
       <div role="separator" aria-label={`Agora, ${time}`} className="flex items-center">
-        <span aria-hidden="true" className="-ml-1 size-2 shrink-0 rounded-full bg-[#2563EB]" />
-        <span aria-hidden="true" className="h-0.5 flex-1 bg-[#2563EB]" />
+        <span aria-hidden="true" className="-ml-1 size-2 shrink-0 rounded-full bg-agenda" />
+        <span aria-hidden="true" className="h-0.5 flex-1 bg-agenda" />
       </div>
     );
   }
@@ -22,11 +22,11 @@ export function NowLine({
     <div
       role="separator"
       aria-label={`Agora, ${time}`}
-      className="flex items-center gap-2 px-1.5 text-xs font-bold text-[#2563EB]"
+      className="flex items-center gap-2 px-1.5 text-xs font-bold tabular-nums text-agenda"
     >
-      <span aria-hidden="true" className="size-2 rounded-full bg-[#2563EB]" />
+      <span aria-hidden="true" className="size-2 rounded-full bg-agenda" />
       <span>Agora · {time}</span>
-      <span aria-hidden="true" className="h-0.5 flex-1 rounded bg-[#3B82F6]" />
+      <span aria-hidden="true" className="h-0.5 flex-1 rounded bg-agenda" />
     </div>
   );
 }

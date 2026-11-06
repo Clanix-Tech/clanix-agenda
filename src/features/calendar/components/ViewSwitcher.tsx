@@ -19,7 +19,7 @@ export function ViewSwitcher({
     <div
       role="group"
       aria-label="Modo de visualização"
-      className="flex gap-0.5 rounded-xl bg-[#EEF2F6] p-[3px]"
+      className="flex gap-0.5 rounded-xl bg-muted p-[3px]"
     >
       {OPTIONS.map((o) => (
         <button
@@ -28,8 +28,8 @@ export function ViewSwitcher({
           aria-pressed={view === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            'h-11 flex-1 rounded-[9px] px-3 text-[13px] font-semibold text-[#475569] focus-visible:outline-2 focus-visible:outline-[#2563EB] lg:flex-none lg:px-4',
-            view === o.value && 'bg-white text-[#0F2D5B] shadow-sm',
+            'h-11 flex-1 rounded-[9px] px-3 text-[13px] font-semibold text-foreground-secondary focus-visible:outline-2 focus-visible:outline-ring lg:flex-none lg:px-4',
+            view === o.value && 'bg-card text-foreground shadow-sm',
           )}
         >
           {o.label}

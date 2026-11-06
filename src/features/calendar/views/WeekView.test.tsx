@@ -150,14 +150,14 @@ describe('WeekView (computador)', () => {
     const next = await screen.findByRole('button', {
       name: 'Juliana Rocha, 14:00–15:00, Agendado',
     });
-    expect(next).toHaveClass('bg-[#0F2D5B]');
+    expect(next).toHaveClass('bg-primary');
     const cancelled = screen.getByRole('button', {
       name: 'Roberto Alves, 15:00–16:00, Cancelado',
     });
     expect(cancelled).toHaveClass('border-dashed');
     expect(within(cancelled).getByText('Roberto Alves')).toHaveClass('line-through');
     const done = screen.getByRole('button', { name: 'Marta Pires, 09:00–10:00, Concluído' });
-    expect(done).not.toHaveClass('bg-[#0F2D5B]');
+    expect(done).not.toHaveClass('bg-primary');
   });
 
   it('um cancelado sobreposto a um ativo não esconde nenhum dos dois', async () => {
@@ -269,7 +269,7 @@ describe('WeekView (computador) — revisão', () => {
       rows: [ap('n1', 'Nina Futura', '04', '10:00', '11:00', 'agendado', '11')],
     });
     const e = await screen.findByRole('button', { name: /Nina Futura/ });
-    expect(e).not.toHaveClass('bg-[#0F2D5B]');
+    expect(e).not.toHaveClass('bg-primary');
     expect(screen.queryByText(/Próximo/)).toBeNull();
   });
 
