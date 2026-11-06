@@ -60,6 +60,7 @@ const PENDENTES = new Set<string>([
 const PADROES: RegExp[] = [
   /#[0-9A-Fa-f]{3,8}\b/,
   /\b(bg|text|border|ring|outline|from|via|to|fill|stroke|divide|decoration|placeholder)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}\b/,
+  /\b(rgba?|hsla?)\(/,
   /\b(bg|text|border)-(white|black)\b/,
   /\b(bg|text|border)-(navy|brand|brand-strong|soft|line|canvas|muted-surface)\b/,
 ];
@@ -72,12 +73,39 @@ const fontes = import.meta.glob<string>(
 
 const arquivos = Object.keys(fontes).map((f) => f.slice(1));
 
-function reprova(arquivo: string): boolean {
-  const texto = fontes[`/${arquivo}`] ?? '';
+function reprovaTexto(texto: string): boolean {
   return PADROES.some((re) => re.test(texto));
 }
 
+function reprova(arquivo: string): boolean {
+  return reprovaTexto(fontes[`/${arquivo}`] ?? '');
+}
+
+/** Anel de foco com alfa (`focus-visible:ring-<token>/<n>`): fica abaixo de 3:1 em controles sem borda sólida. */
+const ANEL_COM_ALFA = /\bfocus(?:-visible|-within)?:ring-[\w-]+\/\d+/;
+
 describe('guarda de cores', () => {
+  it('detecta cores literais (fixtures)', () => {
+    for (const ruim of [
+      "'rgba(0,0,0,.5)'",
+      "'rgb(1 2 3)'",
+      "'hsl(10, 50%, 50%)'",
+      "'hsla(10, 50%, 50%, .5)'",
+      "'#fff'",
+      "'bg-white'",
+    ]) {
+      expect(reprovaTexto(ruim), ruim).toBe(true);
+    }
+    expect(reprovaTexto("'bg-primary text-foreground'")).toBe(false);
+  });
+
+  it('detecta anel de foco com alfa (fixtures)', () => {
+    expect(ANEL_COM_ALFA.test('focus-visible:ring-destructive/25')).toBe(true);
+    expect(ANEL_COM_ALFA.test('focus:ring-ring/50')).toBe(true);
+    expect(ANEL_COM_ALFA.test('focus-visible:ring-ring')).toBe(false);
+    expect(ANEL_COM_ALFA.test('aria-invalid:ring-destructive/20')).toBe(false);
+  });
+
   it('nenhum arquivo fora de PERMITIDOS e PENDENTES usa cor literal', () => {
     const ruins = arquivos.filter((f) => !PERMITIDOS.has(f) && !PENDENTES.has(f) && reprova(f));
     expect(ruins).toEqual([]);
@@ -88,7 +116,7 @@ describe('guarda de cores', () => {
     expect(limpos).toEqual([]);
   });
 
-  it('anel de foco opaco (ring-ring sem alfa) fora de input, select e textarea (PENDENTES migram nas suas tarefas)', () => {
+  it('anel de foco opaco (sem alfa) fora de input, select e textarea (PENDENTES migram nas suas tarefas)', () => {
     // Controles sem borda sólida precisam do anel a 3:1; só os campos usam o halo, porque a borda `border-ring` é o indicador.
     const campos = new Set([
       'src/components/ui/input.tsx',
@@ -96,7 +124,7 @@ describe('guarda de cores', () => {
       'src/components/ui/textarea.tsx',
     ]);
     const ruins = arquivos.filter(
-      (f) => !campos.has(f) && !PENDENTES.has(f) && /ring-ring\/\d+/.test(fontes[`/${f}`] ?? ''),
+      (f) => !campos.has(f) && !PENDENTES.has(f) && ANEL_COM_ALFA.test(fontes[`/${f}`] ?? ''),
     );
     expect(ruins).toEqual([]);
   });

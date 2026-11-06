@@ -59,7 +59,7 @@ describe.each(Object.entries(temas))('contraste (%s)', (_nome, t) => {
     expect(r, `${fg} sobre ${bg}: ${r.toFixed(2)}`).toBeGreaterThanOrEqual(3);
   });
 
-  it.each(['agenda', 'ring'])('%s sobre background e card >= 3', (fg) => {
+  it.each(['agenda', 'ring', 'error'])('%s sobre background e card >= 3', (fg) => {
     for (const bg of ['background', 'card']) {
       const r = contrastRatio(v(t, fg), v(t, bg));
       expect(r, `${fg} sobre ${bg}: ${r.toFixed(2)}`).toBeGreaterThanOrEqual(3);
