@@ -36,6 +36,13 @@ type Props = {
 const FULL_SCREEN =
   'data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:h-dvh data-[vaul-drawer-direction=bottom]:max-h-dvh data-[vaul-drawer-direction=bottom]:rounded-t-none data-[vaul-drawer-direction=bottom]:border-t-0 pt-[env(safe-area-inset-top)]';
 
+// No Android o `interactive-widget=resizes-content` (index.html) já encolhe a página inteira com o
+// teclado. A compensação da vaul (`repositionInputs`) então anota como "altura inicial" a altura já
+// encolhida e, quando o teclado fecha, prende a gaveta nela (formulário pela metade da tela). Lá ela
+// fica desligada; no iPhone, onde só a área visível encolhe, ela continua necessária.
+const KEYBOARD_RESIZES_PAGE =
+  typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+
 /** Gaveta (vaul) abaixo de 1024 px; janela de diálogo acima. Foco preso e Esc fecha em ambos. */
 export function ResponsiveSheet({
   open,
@@ -76,7 +83,12 @@ export function ResponsiveSheet({
   // conferir o nome digitado com o conteúdo no topo fechava tudo e perdia o que foi digitado).
   // Fechar continua possível pela alça, tocando fora da gaveta ou com Esc.
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} handleOnly>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      handleOnly
+      repositionInputs={!KEYBOARD_RESIZES_PAGE}
+    >
       <DrawerContent
         aria-describedby={undefined}
         data-full-screen={fullScreen || undefined}

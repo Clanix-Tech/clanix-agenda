@@ -54,6 +54,31 @@ test.describe('gaveta do formulário no celular', () => {
     await expect(form.getByRole('button', { name: 'Cancelar' })).toBeInViewport();
   });
 
+  test('depois que o teclado fecha, o formulário volta a ocupar a tela inteira', async ({
+    page,
+    makeUser,
+  }, testInfo) => {
+    // No Android (interactive-widget=resizes-content) a página inteira encolhe com o teclado; é o
+    // que `setViewportSize` simula. No iPhone só a área visível encolhe: lá a simulação não vale.
+    test.skip(testInfo.project.name !== 'chromium-android', 'simula o teclado do Android');
+    const user = await makeUser();
+    await login(page, user);
+    await mainNav(page).getByRole('button', { name: 'Novo agendamento' }).click();
+    const form = page.getByRole('dialog', { name: 'Novo agendamento' });
+    await page.waitForTimeout(700);
+    await form.getByLabel('Nome do cliente').focus();
+
+    const { width, height } = page.viewportSize()!;
+    await page.setViewportSize({ width, height: 360 }); // teclado abre
+    await page.waitForTimeout(400);
+    await page.setViewportSize({ width, height }); // teclado fecha (o campo continua focado)
+    await page.waitForTimeout(400);
+
+    const box = (await form.boundingBox())!;
+    expect(box.y).toBeLessThanOrEqual(1);
+    expect(box.y + box.height).toBeGreaterThanOrEqual(height - 1);
+  });
+
   test('com o teclado aberto, o campo do nome continua visível dentro da gaveta', async ({
     page,
     makeUser,
