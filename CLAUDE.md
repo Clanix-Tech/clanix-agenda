@@ -57,7 +57,10 @@ Projetos do Playwright: `chromium-desktop` (fuso Europe/Lisbon de propósito), `
 ## Convenções do produto
 
 - Texto da interface em pt-BR simples; datas `DD/MM/AAAA`, 24 h.
-- Estilo "Painel em Blocos" (telas de referência em `docs/design/telas/`); primário `#2563EB`, títulos `#0F2D5B`, erro/destrutivo `#B91C1C`.
+- Estilo "Painel em Blocos" (telas de referência em `docs/design/telas/`) na **identidade visual Clanix** (spec `docs/superpowers/specs/2026-11-06-identidade-visual-clanix-design.md`): primário `#4A00B8` no tema claro e `#8A2BE2` no escuro, títulos/texto `#0B0420`, erro/destrutivo `#B91C1C`; fontes Sora (títulos) + Inter (texto).
+- Cores e raios só por tokens semânticos de `src/styles/index.css` (`bg-card`, `text-foreground`, `bg-primary`…): nunca hex nos componentes. Guardas: `src/styles/cores.test.ts` (sem hex fora dos tokens) e `src/styles/contraste.test.ts` (contraste AA nos dois temas). Gradientes só onde a spec permite (`bg-gradient-brand` nos CTAs das telas de entrada, `bg-gradient-destaque` no card "Próximo atendimento", `bg-gradient-fab`, `bg-gradient-hero`).
+- Tema claro/escuro/automático: `public/tema.js` (script clássico no `<head>`, aplica `dark` e `theme-color` antes da primeira pintura, por causa da CSP) + `src/lib/theme.ts` (`useTheme`, chave `clanix-tema`); as duas partes seguem a mesma regra. Escolha em Ajustes › Aparência.
+- Logo e ícones oficiais em `src/assets/brand/`, copiados do guia de marca por `npm run marca:copiar` (`scripts/copiar-marca.mjs`); `npm run dados:teste` recria os dados da conta de teste local.
 - Alvos de toque ≥ 44 px; inputs ≥ 16 px no celular; foco visível; status com ícone + texto + cor.
 - Nada de botão ou funcionalidade falsa; nada de dados de clientes em `localStorage`/Cache Storage; logs só com ids e códigos (sem nome, telefone, observações ou e-mail); nada de analytics.
 - Segredos (service role/`sb_secret_*`, chave privada VAPID, `CRON_SECRET`, segredo Turnstile, URL do banco) só em `*.local`, secrets das funções ou Vault — nunca no repo ou no bundle. Não inventar valores de serviços externos: documentar o que o usuário precisa configurar.

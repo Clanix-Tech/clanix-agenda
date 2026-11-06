@@ -1,28 +1,58 @@
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { detailsSheet, expect, isDesktop, login, mainNav, test } from './support/fixtures.ts';
+import {
+  detailsSheet,
+  expect,
+  isDesktop,
+  login,
+  mainNav,
+  test,
+  type TestUser,
+  type UserOptions,
+} from './support/fixtures.ts';
 import { LONG_NAME, REALISTIC_USER, seedRealistic } from './support/seed.ts';
 
 /**
  * Capturas de tela para revisão visual (não são testes de regressão). Só rodam com
- * `E2E_CAPTURAS=1` e gravam em `.superpowers/sdd/2026-10-30-plano-02-interface/screens/`
+ * `E2E_CAPTURAS=1` e gravam em `.superpowers/sdd/2026-11-06-identidade-visual/screens/<projeto>/<tema>/`
  * (fora do controle de versão).
  */
 const ENABLED = !!process.env.E2E_CAPTURAS;
 const OUT = fileURLToPath(
-  new URL('../../.superpowers/sdd/2026-10-30-plano-02-interface/screens/', import.meta.url),
+  new URL('../../.superpowers/sdd/2026-11-06-identidade-visual/screens/', import.meta.url),
 );
 
 test.skip(!ENABLED, 'capturas só com E2E_CAPTURAS=1');
 
-test('capturas das telas com dados realistas', async ({ page, makeUser }, testInfo) => {
-  test.skip(testInfo.project.name === 'chromium-android', 'capturas só no iPhone e no computador');
-  test.setTimeout(180_000);
-  const project = testInfo.project.name;
+for (const theme of ['claro', 'escuro'] as const) {
+  test(`capturas das telas com dados realistas (${theme})`, async ({
+    page,
+    makeUser,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'chromium-android',
+      'capturas só no iPhone e no computador',
+    );
+    test.setTimeout(180_000);
+    await page.emulateMedia({ colorScheme: theme === 'escuro' ? 'dark' : 'light' });
+    await capturar(page, makeUser, testInfo.project.name, theme);
+  });
+}
+
+async function capturar(
+  page: Page,
+  makeUser: (opts?: UserOptions) => Promise<TestUser>,
+  project: string,
+  theme: string,
+) {
   // Página inteira para telas que rolam; só a janela para gavetas/diálogos e barras fixas
   // (na captura de página inteira o WebKit reposiciona elementos fixos no meio da imagem).
   const shot = (name: string, fullPage = true) =>
-    page.screenshot({ path: `${OUT}${project}/${name}.png`, fullPage, animations: 'disabled' });
+    page.screenshot({
+      path: `${OUT}${project}/${theme}/${name}.png`,
+      fullPage,
+      animations: 'disabled',
+    });
 
   const user = await makeUser(REALISTIC_USER);
   const data = await seedRealistic(user);
@@ -119,7 +149,7 @@ test('capturas das telas com dados realistas', async ({ page, makeUser }, testIn
   await page.getByRole('button', { name: /^Seg / }).click();
   await expect(page.getByRole('switch', { name: 'Atender em Segunda' })).toBeVisible();
   await shot('14b-primeiro-acesso-dia-aberto');
-});
+}
 
 async function newWithConflict(page: Page, day: string) {
   await mainNav(page).getByRole('button', { name: 'Novo agendamento' }).click();

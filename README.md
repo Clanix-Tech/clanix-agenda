@@ -2,6 +2,8 @@
 
 PWA em português do Brasil para profissionais de beleza organizarem seus atendimentos.
 Frontend em React + Vite + TypeScript; backend no Supabase.
+Identidade visual Clanix (roxo `#4A00B8`, fontes Sora e Inter) com tema claro, escuro ou automático
+(Ajustes › Aparência); detalhes em `docs/superpowers/specs/2026-11-06-identidade-visual-clanix-design.md`.
 
 ## Comandos
 
@@ -11,6 +13,8 @@ Frontend em React + Vite + TypeScript; backend no Supabase.
 - `npm run lint` — ESLint
 - `npm run format` — formata o código com Prettier
 - `npm test` — testes unitários (Vitest)
+- `npm run marca:copiar` — copia o logo e os ícones oficiais do guia de marca para `src/assets/brand/` e `public/`
+- `npm run dados:teste` — recria os dados da conta de teste local
 
 Copie `.env.example` para `.env.local` e preencha as variáveis do Supabase.
 

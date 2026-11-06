@@ -19,5 +19,13 @@ export function Logo({ variant, size = 40, tone = 'auto' }: LogoProps) {
       : tone === 'sobre-escuro' || resolved === 'dark'
         ? horizontalEscuro
         : horizontalClaro;
-  return <img src={src} alt="Clanix Agenda" height={size} className="w-auto" style={{ height: size }} />;
+  return (
+    <img
+      src={src}
+      alt="Clanix Agenda"
+      height={size}
+      className="w-auto object-contain object-left"
+      style={{ height: size }}
+    />
+  );
 }
