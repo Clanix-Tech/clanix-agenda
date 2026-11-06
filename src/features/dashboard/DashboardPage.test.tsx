@@ -116,7 +116,7 @@ describe('DashboardPage', () => {
     const card = screen.getByRole('region', { name: 'Próximo atendimento' });
     expect(within(card).getByText('em 20 min')).toBeInTheDocument();
     expect(within(card).getByText('Carla Dias')).toBeInTheDocument();
-    expect(card.className).toMatch(/bg-gradient-brand/);
+    expect(card.className).toMatch(/bg-gradient-destaque/);
   });
 
   it('mostra os indicadores do fixture', async () => {

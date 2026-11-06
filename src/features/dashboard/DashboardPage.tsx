@@ -215,7 +215,7 @@ export default function DashboardPage() {
       ) : next ? (
         <section
           aria-label="Próximo atendimento"
-          className="rounded-[22px] bg-gradient-brand p-5 text-primary-foreground"
+          className="rounded-[22px] bg-gradient-destaque p-5 text-primary-foreground"
         >
           <p className="text-xs font-semibold tracking-wide text-primary-foreground uppercase">
             Próximo atendimento

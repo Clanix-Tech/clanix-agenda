@@ -66,6 +66,15 @@ describe.each(Object.entries(temas))('contraste (%s)', (_nome, t) => {
     }
   });
 
+  it('primary-foreground sobre as duas paradas do gradiente de destaque >= 4,5', () => {
+    const paradas = v(t, 'gradient-destaque').match(/#[0-9a-fA-F]{6}/g) ?? [];
+    expect(paradas).toHaveLength(2);
+    for (const parada of paradas) {
+      const r = contrastRatio(v(t, 'primary-foreground'), parada);
+      expect(r, `primary-foreground sobre ${parada}: ${r.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it.each(HERO)('hero-foreground e hero-secondary sobre %s >= 4,5', (parada) => {
     for (const fg of ['hero-foreground', 'hero-secondary']) {
       const r = contrastRatio(v(t, fg), parada);

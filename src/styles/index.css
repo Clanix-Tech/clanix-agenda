@@ -78,6 +78,7 @@
 
   --gradient-brand: linear-gradient(135deg, #4a00b8 0%, #8a2be2 65%, #b980ff 100%);
   --gradient-fab: linear-gradient(135deg, #4a00b8, #8a2be2);
+  --gradient-destaque: linear-gradient(135deg, #4a00b8, #8a2be2);
   --gradient-hero: linear-gradient(145deg, #16063e 0%, #0b0420 60%, #24075e 100%);
 
   --cx-shadow-sm: 0 1px 3px rgba(11, 4, 32, 0.06), 0 1px 2px rgba(11, 4, 32, 0.04);
@@ -151,6 +152,7 @@
   --hero-secondary: #d8b4ff;
 
   --gradient-fab: linear-gradient(135deg, #6b12d0, #9e47f5);
+  --gradient-destaque: linear-gradient(135deg, #4a00b8, #8a2be2);
 
   --cx-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
   --cx-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
@@ -236,6 +238,10 @@
 }
 @utility bg-gradient-fab {
   background-image: var(--gradient-fab);
+}
+/* Destaque sem a ponta lilás: texto claro longo (card "Próximo atendimento") mantém 4,5:1. */
+@utility bg-gradient-destaque {
+  background-image: var(--gradient-destaque);
 }
 @utility bg-gradient-hero {
   background-image: var(--gradient-hero);
