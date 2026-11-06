@@ -117,7 +117,7 @@ function IPhoneGuide() {
           <SquarePlus className={INLINE} aria-hidden="true" />.
         </Step>
         <Step n={3}>
-          Abra o <b>Agenda em Ordem</b> pelo ícone e volte aqui para ativar.
+          Abra o <b>Clanix Agenda</b> pelo ícone e volte aqui para ativar.
         </Step>
       </ol>
       <p className="text-sm leading-snug text-[#334155]">
@@ -157,7 +157,7 @@ function AndroidGuide() {
         ) : (
           <ol className="flex flex-col gap-3.5">
             <Step n={1}>
-              Abra o Agenda em Ordem no <b>Chrome</b> e toque no menu <b>⋮</b> (canto superior
+              Abra o Clanix Agenda no <b>Chrome</b> e toque no menu <b>⋮</b> (canto superior
               direito).
             </Step>
             <Step n={2}>

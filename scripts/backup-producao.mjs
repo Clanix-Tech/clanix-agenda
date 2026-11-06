@@ -5,7 +5,7 @@
 // 2. Roda `supabase db dump` três vezes (precisa do Docker ligado): papéis, estrutura e dados.
 //    O dump de dados vem com todos os schemas de usuário, inclusive `auth` (profiles referencia
 //    auth.users) e `public`; a CLI já exclui só os schemas internos da plataforma.
-// 3. Grava em AGENDA_BACKUP_DIR (ou ~/Backups/agenda-em-ordem, sempre FORA do repositório) e apaga
+// 3. Grava em AGENDA_BACKUP_DIR (ou ~/Backups/clanix-agenda, sempre FORA do repositório) e apaga
 //    os arquivos .sql com mais de 30 dias.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -19,7 +19,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Pasta dos backups; lança se ficar dentro do repositório (os dumps têm dados de clientes). */
 export function backupDir(env, home, repoRoot) {
   const custom = env.AGENDA_BACKUP_DIR?.trim();
-  const dir = path.resolve(custom || path.join(home, 'Backups', 'agenda-em-ordem'));
+  const dir = path.resolve(custom || path.join(home, 'Backups', 'clanix-agenda'));
   const rel = path.relative(path.resolve(repoRoot), dir);
   const outside = rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel);
   if (!outside) {

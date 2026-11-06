@@ -29,7 +29,7 @@ describe('checkProductionEnv', () => {
         ...VALID,
         VITE_APK_DOWNLOAD_URL: 'https://exemplo.com/agenda.apk',
         VITE_TURNSTILE_SITE_KEY: '0x4AAAAAAA',
-        CF_PAGES_PROJECT: 'agenda-em-ordem',
+        CF_PAGES_PROJECT: 'clanix-agenda',
         PATH: '/usr/bin',
       }),
     ).toEqual([]);

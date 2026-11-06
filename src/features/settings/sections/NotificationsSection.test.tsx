@@ -140,9 +140,7 @@ describe('NotificationsSection: neste aparelho', () => {
     expect(steps).toHaveLength(3);
     expect(steps[0]).toHaveTextContent('No Safari, toque em Compartilhar na barra inferior.');
     expect(steps[1]).toHaveTextContent('Escolha Adicionar à Tela de Início.');
-    expect(steps[2]).toHaveTextContent(
-      'Abra o Agenda em Ordem pelo ícone e volte aqui para ativar.',
-    );
+    expect(steps[2]).toHaveTextContent('Abra o Clanix Agenda pelo ícone e volte aqui para ativar.');
     expect(screen.queryByRole('button', { name: /Ativar/ })).not.toBeInTheDocument();
     expect(testButton()).toBeDisabled();
   });

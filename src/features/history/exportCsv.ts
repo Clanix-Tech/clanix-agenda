@@ -91,5 +91,5 @@ export async function exportAppointmentsCsv(
   } catch (err) {
     throw toAppError(err);
   }
-  download(csv, `agenda-em-ordem-${todayInTz(tz, now)}.csv`);
+  download(csv, `clanix-agenda-${todayInTz(tz, now)}.csv`);
 }

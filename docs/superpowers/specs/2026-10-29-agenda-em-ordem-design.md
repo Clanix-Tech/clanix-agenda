@@ -1,5 +1,7 @@
 # Agenda em Ordem — Documento de Design do MVP
 
+> **06/11/2026:** o produto foi renomeado de "Agenda em Ordem" para **Clanix Agenda** (pasta e pacote `clanix-agenda`). Este documento mantém o nome antigo como registro histórico.
+
 - **Data:** 29/10/2026
 - **Status:** aprovado pelo responsável pelo produto em 29/10/2026
 - **Requisitos completos:** [`2026-10-29-agenda-em-ordem-requisitos.md`](2026-10-29-agenda-em-ordem-requisitos.md) (briefing original, seções 1–24). Este documento **não repete** os requisitos; registra as decisões tomadas depois do briefing, a arquitetura e o que fica para quem constrói. Onde houver diferença, este documento prevalece.

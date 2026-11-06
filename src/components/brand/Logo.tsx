@@ -1,4 +1,4 @@
-import { WORDMARK_AGENDA, WORDMARK_EM, WORDMARK_ORDEM, WORDMARK_WIDTH } from './wordmark-paths';
+import { WORDMARK_AGENDA, WORDMARK_CLANIX, WORDMARK_WIDTH } from './wordmark-paths';
 
 export type LogoVariant = 'icon' | 'icon-dark' | 'full' | 'full-dark' | 'mono';
 
@@ -43,23 +43,22 @@ export function Logo({ variant, size = 40 }: { variant: LogoVariant; size?: numb
     return (
       <svg
         role="img"
-        aria-label="Agenda em Ordem"
+        aria-label="Clanix Agenda"
         height={size}
         width={(size * WORDMARK_WIDTH) / 64}
         viewBox={`0 0 ${WORDMARK_WIDTH} 64`}
         xmlns="http://www.w3.org/2000/svg"
       >
         <Mark variant={variant} />
-        <path fill={text} d={WORDMARK_AGENDA} />
-        <path fill={dark ? '#93C5FD' : '#3B82F6'} d={WORDMARK_EM} />
-        <path fill={text} d={WORDMARK_ORDEM} />
+        <path fill={text} d={WORDMARK_CLANIX} />
+        <path fill={dark ? '#93C5FD' : '#3B82F6'} d={WORDMARK_AGENDA} />
       </svg>
     );
   }
   return (
     <svg
       role="img"
-      aria-label="Agenda em Ordem"
+      aria-label="Clanix Agenda"
       width={size}
       height={size}
       viewBox="0 0 64 64"

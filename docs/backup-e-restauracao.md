@@ -15,7 +15,7 @@ O plano gratuito do Supabase **não oferece backups para baixar** e **pausa o pr
    ```
 
    Se a senha tiver caracteres especiais (`@`, `/`, `:`, `#`, `%`), troque-os pelo código com `%` (ex.: `@` vira `%40`).
-4. Opcional: `AGENDA_BACKUP_DIR` define a pasta dos backups. Sem ela, vai para `Backups/agenda-em-ordem` dentro da sua pasta de usuário. O script **recusa** pastas dentro do repositório.
+4. Opcional: `AGENDA_BACKUP_DIR` define a pasta dos backups. Sem ela, vai para `Backups/clanix-agenda` dentro da sua pasta de usuário. O script **recusa** pastas dentro do repositório.
 
 ### Rodar
 

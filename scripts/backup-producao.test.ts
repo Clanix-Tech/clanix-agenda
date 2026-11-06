@@ -2,13 +2,13 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { backupDir, backupFileNames, expiredBackups, maskSecret } from './backup-producao.mjs';
 
-const repo = path.resolve('/projetos/agenda-em-ordem');
+const repo = path.resolve('/projetos/clanix-agenda');
 const home = path.resolve('/usuarios/maria');
 const DAY = 24 * 60 * 60 * 1000;
 
 describe('backupDir', () => {
   it('usa a pasta padrão fora do repositório', () => {
-    expect(backupDir({}, home, repo)).toBe(path.join(home, 'Backups', 'agenda-em-ordem'));
+    expect(backupDir({}, home, repo)).toBe(path.join(home, 'Backups', 'clanix-agenda'));
   });
 
   it('usa AGENDA_BACKUP_DIR quando informado', () => {

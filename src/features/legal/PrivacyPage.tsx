@@ -54,14 +54,14 @@ export default function PrivacyPage() {
             Política de Privacidade
           </h1>
           <p className={P}>
-            Aqui explicamos, em linguagem simples, quais dados o Agenda em Ordem guarda e o que
+            Aqui explicamos, em linguagem simples, quais dados o Clanix Agenda guarda e o que
             fazemos com eles. Atualizada em {formatPrivacyDate(PRIVACY_UPDATED_AT)}.
           </p>
         </div>
 
         <Section id="quem-somos" title="Quem somos">
           <p className={P}>
-            O Agenda em Ordem é uma agenda para profissionais de beleza. Você, profissional, decide
+            O Clanix Agenda é uma agenda para profissionais de beleza. Você, profissional, decide
             quais dados dos seus clientes colocar nela, por isso é quem responde por esses dados.
             Nós cuidamos deles em seu nome, só para o app funcionar.
           </p>

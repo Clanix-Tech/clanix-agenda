@@ -1,4 +1,4 @@
-# Publicar o Agenda em Ordem (plano gratuito)
+# Publicar o Clanix Agenda (plano gratuito)
 
 Passo a passo para quem nunca publicou um site. O serviço roda em dois lugares gratuitos: o
 **Supabase** (banco, login e funções) e o **Cloudflare Pages** (o site). Nomes de botões e menus dos

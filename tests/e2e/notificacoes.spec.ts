@@ -29,7 +29,7 @@ test('iPhone sem instalar: guia de 3 passos, sem "Ativar" e teste desabilitado',
   await expect(guide.getByRole('listitem')).toHaveText([
     /toque em Compartilhar/,
     /Adicionar à Tela de Início/,
-    /Abra o Agenda em Ordem pelo ícone e volte aqui para ativar/,
+    /Abra o Clanix Agenda pelo ícone e volte aqui para ativar/,
   ]);
   await expect(page.getByRole('button', { name: 'Ativar neste aparelho' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Enviar notificação de teste' })).toBeDisabled();

@@ -85,8 +85,8 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       manifest: {
-        name: 'Agenda em Ordem',
-        short_name: 'Agenda',
+        name: 'Clanix Agenda',
+        short_name: 'Clanix',
         lang: 'pt-BR',
         start_url: '/',
         scope: '/',

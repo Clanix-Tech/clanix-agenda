@@ -81,7 +81,7 @@ describe('send-test-notification', () => {
     expect(deps.send.mock.calls.map(([t]) => t.id)).toEqual(['cel-camila', 'note-camila']);
     for (const [, payload] of deps.send.mock.calls) {
       expect(payload).toEqual({
-        title: 'Agenda em Ordem',
+        title: 'Clanix Agenda',
         body: 'Notificações ativadas neste aparelho.',
         url: '/ajustes/notificacoes',
         tag: 'teste',

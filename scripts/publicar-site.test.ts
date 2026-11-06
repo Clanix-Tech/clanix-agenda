@@ -3,12 +3,12 @@ import { deployArgs } from './publicar-site.mjs';
 
 describe('deployArgs', () => {
   it('publica sempre no branch de produção, master por padrão', () => {
-    expect(deployArgs({ CF_PAGES_PROJECT: 'agenda-em-ordem' })).toEqual([
+    expect(deployArgs({ CF_PAGES_PROJECT: 'clanix-agenda' })).toEqual([
       'wrangler',
       'pages',
       'deploy',
       'dist',
-      '--project-name=agenda-em-ordem',
+      '--project-name=clanix-agenda',
       '--branch=master',
     ]);
   });

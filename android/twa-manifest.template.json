@@ -1,7 +1,7 @@
 {
   "host": "__DOMINIO__",
-  "name": "Agenda em Ordem",
-  "launcherName": "Agenda",
+  "name": "Clanix Agenda",
+  "launcherName": "Clanix",
   "packageId": "__PACOTE__",
   "startUrl": "/",
   "themeColor": "#0F2D5B",
@@ -15,7 +15,7 @@
   "webManifestUrl": "https://__DOMINIO__/manifest.webmanifest",
   "fullScopeUrl": "https://__DOMINIO__/",
   "signingKey": {
-    "path": "./agenda-em-ordem.keystore",
-    "alias": "agenda-em-ordem"
+    "path": "./clanix-agenda.keystore",
+    "alias": "clanix-agenda"
   }
 }

@@ -26,7 +26,7 @@ export async function configurarLembretesLocal({ apiUrl, secretKey }) {
 
   // O pg_net roda dentro do container do banco: 127.0.0.1 seria o próprio container. Pelo
   // Docker Desktop, host.docker.internal alcança a porta da API publicada no host (conferido
-  // em docs/supabase-local.md; http://supabase_kong_agenda-em-ordem:8000 também funciona).
+  // em docs/supabase-local.md; http://supabase_kong_clanix-agenda:8000 também funciona).
   const functionUrl = `http://host.docker.internal:${new URL(apiUrl).port}/functions/v1/send-reminders`;
 
   const admin = createClient(apiUrl, secretKey, {

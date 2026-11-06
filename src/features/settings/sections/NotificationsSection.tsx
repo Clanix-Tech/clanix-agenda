@@ -63,7 +63,7 @@ export function NotificationsSection({ profile }: { profile: Profile }) {
               <Logo variant="icon" size={36} />
               <div className="min-w-0 flex-1 text-sm leading-snug text-[#0F172A]">
                 <div className="flex justify-between text-xs text-[#64748B]">
-                  <span className="font-semibold text-[#0F172A]">Agenda em Ordem</span>
+                  <span className="font-semibold text-[#0F172A]">Clanix Agenda</span>
                   <span>agora</span>
                 </div>
                 <p className="font-semibold">Lembrete de atendimento</p>
@@ -167,7 +167,7 @@ function ThisDevice({ device }: { device: Device }) {
         </DeviceStatus>
         <p className="text-sm text-[#475569]">
           Para liberar, abra as configurações do navegador para este site (no iPhone: Ajustes ›
-          Notificações › Agenda em Ordem), permita as notificações e volte a esta tela.
+          Notificações › Clanix Agenda), permita as notificações e volte a esta tela.
         </p>
       </>
     );
@@ -269,7 +269,7 @@ function InstallOnIPhone() {
             3
           </span>
           <span>
-            Abra o <b>Agenda em Ordem</b> pelo ícone e volte aqui para ativar.
+            Abra o <b>Clanix Agenda</b> pelo ícone e volte aqui para ativar.
           </span>
         </li>
       </ol>

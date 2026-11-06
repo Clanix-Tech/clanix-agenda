@@ -1,5 +1,7 @@
 # Agenda em Ordem — Requisitos originais
 
+> **06/11/2026:** o produto foi renomeado de "Agenda em Ordem" para **Clanix Agenda** (pasta e pacote `clanix-agenda`). Este documento mantém o nome antigo como registro histórico.
+
 > Transcrição do briefing entregue pelo responsável pelo produto em 29/10/2026.
 > As decisões tomadas depois deste briefing (direção visual, notificações, APK, lojas)
 > estão em `2026-10-29-agenda-em-ordem-design.md` e prevalecem sobre este texto quando houver diferença.

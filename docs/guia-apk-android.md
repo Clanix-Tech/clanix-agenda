@@ -20,7 +20,7 @@ Em uma pasta de trabalho (por exemplo `android/`, onde `app/` e `build/` já sã
 bubblewrap init --manifest https://<dominio>/manifest.webmanifest
 ```
 
-O assistente lê o manifesto do app. Use `android/twa-manifest.template.json` como referência dos valores: nome "Agenda em Ordem", nome na tela inicial "Agenda", cor do tema `#0F2D5B`, fundo `#F8FAFC`, `startUrl` `/` e **notificações ligadas** (`enableNotifications: true`). Escolha o ID do pacote (por exemplo `br.com.suaempresa.agenda`) e **anote-o**: ele não muda depois.
+O assistente lê o manifesto do app. Use `android/twa-manifest.template.json` como referência dos valores: nome "Clanix Agenda", nome na tela inicial "Clanix", cor do tema `#0F2D5B`, fundo `#F8FAFC`, `startUrl` `/` e **notificações ligadas** (`enableNotifications: true`). Escolha o ID do pacote (por exemplo `br.com.suaempresa.agenda`) e **anote-o**: ele não muda depois.
 
 Se preferir, copie o modelo para `android/twa-manifest.json`, troque `__DOMINIO__` (só o domínio, sem `https://`) e `__PACOTE__`, e rode `bubblewrap init` a partir dele.
 

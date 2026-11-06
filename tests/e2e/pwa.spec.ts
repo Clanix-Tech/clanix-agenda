@@ -8,8 +8,8 @@ test('manifesto tem os campos de um app instalável', async ({ request }) => {
   expect(res.ok()).toBe(true);
   const m = await res.json();
   expect(m).toMatchObject({
-    name: 'Agenda em Ordem',
-    short_name: 'Agenda',
+    name: 'Clanix Agenda',
+    short_name: 'Clanix',
     lang: 'pt-BR',
     start_url: '/',
     scope: '/',

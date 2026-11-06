@@ -309,7 +309,7 @@ describe('HistoryPage: exportar CSV', () => {
       r.readAsArrayBuffer(b);
     });
 
-  it('baixa agenda-em-ordem-AAAA-MM-DD.csv com cabeçalho exato, BOM e fuso do perfil', async () => {
+  it('baixa clanix-agenda-AAAA-MM-DD.csv com cabeçalho exato, BOM e fuso do perfil', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     setup({
       route: '/historico?status=cancelado',
@@ -324,7 +324,7 @@ describe('HistoryPage: exportar CSV', () => {
     });
     await screen.findByText('1 resultado');
     await user.click(screen.getByRole('button', { name: 'Exportar CSV' }));
-    await waitFor(() => expect(downloads).toEqual(['agenda-em-ordem-2026-11-04.csv']));
+    await waitFor(() => expect(downloads).toEqual(['clanix-agenda-2026-11-04.csv']));
     expect(URL.revokeObjectURL).not.toHaveBeenCalled(); // revogação adiada
     const { bytes, text } = await read(blobs[0]!);
     expect([...bytes.slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);

@@ -1,4 +1,4 @@
-# Agenda em Ordem
+# Clanix Agenda
 
 PWA em português do Brasil para profissionais de beleza organizarem seus atendimentos.
 Frontend em React + Vite + TypeScript; backend no Supabase.

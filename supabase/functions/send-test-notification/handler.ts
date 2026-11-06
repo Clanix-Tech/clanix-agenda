@@ -16,7 +16,7 @@ export type SendTestDeps = {
 };
 
 export const TEST_PAYLOAD: PushPayload = {
-  title: 'Agenda em Ordem',
+  title: 'Clanix Agenda',
   body: 'Notificações ativadas neste aparelho.',
   url: '/ajustes/notificacoes',
   tag: 'teste',
