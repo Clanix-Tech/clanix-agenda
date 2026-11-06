@@ -63,7 +63,7 @@ export default function Signup() {
   if (confirmEmail) {
     return (
       <AuthLayout title="Confira seu e-mail">
-        <p role="status" className="rounded-lg bg-soft px-3 py-3 text-navy">
+        <p role="status" className="rounded-lg bg-secondary px-3 py-3 text-secondary-foreground">
           Enviamos um link de confirmação para {confirmEmail}.
         </p>
         <p className="mt-6 text-center text-sm">
@@ -104,7 +104,7 @@ export default function Signup() {
         <Button
           type="submit"
           disabled={isSubmitting || (captcha.required && !captcha.token)}
-          className="h-12 w-full rounded-xl text-base font-semibold"
+          className="h-12 w-full rounded-xl bg-gradient-brand text-base font-semibold text-primary-foreground"
         >
           {isSubmitting ? 'Criando conta…' : 'Criar conta'}
         </Button>

@@ -22,8 +22,8 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas lg:flex-row">
-      <aside className="bg-navy px-6 py-6 text-white lg:flex lg:w-[44%] lg:max-w-[640px] lg:flex-col lg:justify-between lg:px-14 lg:py-12">
+    <div className="flex min-h-dvh flex-col bg-background lg:flex-row">
+      <aside className="bg-gradient-hero px-6 py-6 text-hero-foreground lg:flex lg:w-[44%] lg:max-w-[640px] lg:flex-col lg:justify-between lg:px-14 lg:py-12">
         <Logo variant="horizontal" tone="sobre-escuro" size={44} />
         <div className="mt-4 lg:mt-0">
           <p className="font-display text-xl font-extrabold lg:text-4xl lg:leading-tight">
@@ -33,9 +33,9 @@ export function AuthLayout({
             {BENEFITS.map(({ icon: Icon, text }) => (
               <li
                 key={text}
-                className="flex items-start gap-3.5 text-base leading-snug text-slate-200"
+                className="flex items-start gap-3.5 text-base leading-snug text-hero-secondary"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 text-blue-300">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-hero-foreground/10 text-hero-secondary">
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <span className="pt-2">{text}</span>
@@ -46,7 +46,7 @@ export function AuthLayout({
       </aside>
       <main className="flex flex-1 items-center justify-center px-4 py-8 lg:px-12">
         <div className="w-full max-w-sm">
-          <h1 className="font-display text-3xl font-extrabold text-navy">{title}</h1>
+          <h1 className="font-display text-3xl font-extrabold text-foreground">{title}</h1>
           {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </div>
@@ -57,7 +57,7 @@ export function AuthLayout({
 
 export function FormError({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-destructive">
+    <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">
       {children}
     </p>
   );
@@ -80,12 +80,12 @@ export function TextField({
   const errId = `${id}-erro`;
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-sm font-semibold text-slate-700">
+      <Label htmlFor={id} className="text-sm font-semibold text-foreground-secondary">
         {label}
       </Label>
       {children({ id, 'aria-invalid': !!error, 'aria-describedby': error ? errId : undefined })}
       {error && (
-        <p id={errId} className="text-sm text-destructive">
+        <p id={errId} className="text-sm text-error">
           {error.message}
         </p>
       )}
@@ -93,7 +93,7 @@ export function TextField({
   );
 }
 
-const inputClass = 'h-12 rounded-xl border-slate-300 px-3.5 text-base md:text-base';
+const inputClass = 'h-12 rounded-xl px-3.5 text-base md:text-base';
 
 export function AuthInput(props: React.ComponentProps<'input'>) {
   return <Input {...props} className={inputClass} />;
@@ -108,7 +108,7 @@ export function PasswordInput(props: React.ComponentProps<'input'>) {
         type="button"
         onClick={() => setShown((s) => !s)}
         aria-label={shown ? 'Ocultar senha' : 'Mostrar senha'}
-        className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-muted-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-muted-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
       >
         {shown ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
       </button>
@@ -118,7 +118,7 @@ export function PasswordInput(props: React.ComponentProps<'input'>) {
 
 export function AuthLink({ to, children }: { to: string; children: ReactNode }) {
   return (
-    <Link to={to} className="font-semibold text-blue-700 underline-offset-4 hover:underline">
+    <Link to={to} className="font-semibold text-link underline-offset-4 hover:underline">
       {children}
     </Link>
   );

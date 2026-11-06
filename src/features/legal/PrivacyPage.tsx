@@ -7,12 +7,12 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { formatPrivacyDate, PRIVACY_UPDATED_AT } from './privacyInfo';
 
 const LINK_FOCUS =
-  'outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 focus-visible:ring-offset-2';
-const TEXT_LINK = `rounded-sm font-semibold text-[#2563EB] underline underline-offset-2 ${LINK_FOCUS}`;
-const CARD = 'flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4';
-const H2 = 'font-display text-lg leading-tight font-extrabold text-[#0F2D5B]';
-const P = 'text-[15px] leading-relaxed text-[#475569]';
-const UL = 'flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-relaxed text-[#475569]';
+  'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2';
+const TEXT_LINK = `rounded-sm font-semibold text-link underline underline-offset-2 ${LINK_FOCUS}`;
+const CARD = 'flex flex-col gap-3 rounded-[18px] border border-border bg-card p-4';
+const H2 = 'font-display text-lg leading-tight font-extrabold text-foreground';
+const P = 'text-[15px] leading-relaxed text-foreground-secondary';
+const UL = 'flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-relaxed text-foreground-secondary';
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -35,13 +35,13 @@ export default function PrivacyPage() {
     </a>
   ) : null;
   return (
-    <div className="min-h-dvh bg-[#F8FAFC] text-[#0F172A]">
-      <header className="border-b border-[#E2E8F0] bg-white">
+    <div className="min-h-dvh bg-background text-foreground">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2">
           <Logo variant="horizontal" size={36} />
           <Link
             to={session ? '/' : '/entrar'}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-[#2563EB] ${LINK_FOCUS}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-link ${LINK_FOCUS}`}
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
             Voltar
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
       </header>
       <main className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-6">
         <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">
+          <h1 className="font-display text-2xl font-extrabold text-foreground">
             Política de Privacidade
           </h1>
           <p className={P}>

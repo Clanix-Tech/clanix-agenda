@@ -3,6 +3,7 @@ export type TurnstileRenderOptions = {
   sitekey: string;
   action?: string;
   language?: string;
+  theme?: 'light' | 'dark' | 'auto';
   callback?: (token: string) => void;
   'expired-callback'?: () => void;
   'error-callback'?: () => void;

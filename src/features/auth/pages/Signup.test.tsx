@@ -46,6 +46,11 @@ const authError = (code: string, status = 422) => ({
 });
 
 describe('Signup', () => {
+  it('botão Criar conta em gradiente da marca', () => {
+    renderWithProviders(null, { routes, route: '/cadastro' });
+    expect(screen.getByRole('button', { name: 'Criar conta' })).toHaveClass('bg-gradient-brand');
+  });
+
   it('avisa que criar a conta vale como concordar com a Política de Privacidade', () => {
     renderWithProviders(null, { routes, route: '/cadastro' });
     const link = screen.getByRole('link', { name: 'Política de Privacidade' });

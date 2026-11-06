@@ -15,27 +15,27 @@ const TABS = [
   { value: 'computador', label: 'Computador' },
 ] as const;
 
-const STEP = 'flex items-start gap-3 text-[15px] leading-snug text-[#0F172A]';
+const STEP = 'flex items-start gap-3 text-[15px] leading-snug text-foreground';
 const BADGE =
-  'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-[#0F2D5B] text-sm font-extrabold text-white';
-const INLINE = 'ml-1 inline size-4 align-[-3px] text-[#1D4ED8]';
-const CARD = 'flex flex-col gap-4 rounded-[18px] border border-[#E2E8F0] bg-white p-4';
-const CARD_TITLE = 'font-display text-base leading-tight font-extrabold text-[#0F2D5B]';
+  'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-extrabold text-primary-foreground';
+const INLINE = 'ml-1 inline size-4 align-[-3px] text-link';
+const CARD = 'flex flex-col gap-4 rounded-[18px] border border-border bg-card p-4';
+const CARD_TITLE = 'font-display text-base leading-tight font-extrabold text-foreground';
 const LINK_FOCUS =
-  'outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 focus-visible:ring-offset-2';
+  'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /** Guia público de instalação: abre na seção do aparelho em uso. Funciona com ou sem login. */
 export default function InstallPage() {
   const { session } = useAuth();
   const [tab, setTab] = useState<string>(devicePlatform);
   return (
-    <div className="min-h-dvh bg-[#F8FAFC] text-[#0F172A]">
-      <header className="border-b border-[#E2E8F0] bg-white">
+    <div className="min-h-dvh bg-background text-foreground">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2">
           <Logo variant="horizontal" size={36} />
           <Link
             to={session ? '/' : '/entrar'}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-[#1D4ED8] ${LINK_FOCUS}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-link ${LINK_FOCUS}`}
           >
             <ArrowLeft aria-hidden="true" className="size-4" />
             Voltar
@@ -44,21 +44,21 @@ export default function InstallPage() {
       </header>
       <main className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-6">
         <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-2xl font-extrabold text-[#0F2D5B]">Instalar o app</h1>
-          <p className="text-[15px] text-[#475569]">
+          <h1 className="font-display text-2xl font-extrabold text-foreground">Instalar o app</h1>
+          <p className="text-[15px] text-foreground-secondary">
             Com o app instalado, a agenda abre pelo ícone e os lembretes chegam no seu aparelho.
           </p>
         </div>
         <TabsPrimitive.Root value={tab} onValueChange={setTab} className="flex flex-col gap-4">
           <TabsPrimitive.List
             aria-label="Aparelho"
-            className="grid grid-cols-3 gap-1 rounded-[14px] bg-[#E2E8F0] p-1"
+            className="grid grid-cols-3 gap-1 rounded-[14px] bg-muted p-1"
           >
             {TABS.map(({ value, label }) => (
               <TabsPrimitive.Trigger
                 key={value}
                 value={value}
-                className="min-h-11 rounded-[10px] px-2 text-sm font-semibold text-[#334155] outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50 data-[state=active]:bg-white data-[state=active]:text-[#0F2D5B] data-[state=active]:shadow-sm"
+                className="min-h-11 rounded-[10px] px-2 text-sm font-semibold text-foreground-secondary outline-none focus-visible:ring-[3px] focus-visible:ring-ring data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
               >
                 {label}
               </TabsPrimitive.Trigger>
@@ -77,7 +77,7 @@ export default function InstallPage() {
         <p className="text-center text-sm">
           <Link
             to="/privacidade"
-            className={`inline-flex min-h-11 items-center rounded-xl px-2 font-semibold text-[#2563EB] underline underline-offset-2 ${LINK_FOCUS}`}
+            className={`inline-flex min-h-11 items-center rounded-xl px-2 font-semibold text-link underline underline-offset-2 ${LINK_FOCUS}`}
           >
             Política de Privacidade
           </Link>
@@ -102,7 +102,7 @@ function IPhoneGuide() {
   return (
     <section
       aria-labelledby="guia-iphone"
-      className="flex flex-col gap-4 rounded-[18px] border border-[#BFDBFE] bg-[#E7F1FF] p-4"
+      className="flex flex-col gap-4 rounded-[18px] border border-secondary-border bg-secondary p-4"
     >
       <h2 id="guia-iphone" className={CARD_TITLE}>
         No iPhone, instale o app para receber lembretes
@@ -120,7 +120,7 @@ function IPhoneGuide() {
           Abra o <b>Clanix Agenda</b> pelo ícone e volte aqui para ativar.
         </Step>
       </ol>
-      <p className="text-sm leading-snug text-[#334155]">
+      <p className="text-sm leading-snug text-foreground-secondary">
         Depois de instalar, é preciso entrar de novo na sua conta: o app instalado não usa o login
         do Safari.
       </p>
@@ -149,7 +149,7 @@ function AndroidGuide() {
           <Button
             type="button"
             onClick={() => void install()}
-            className="h-12 self-start rounded-[14px] bg-[#2563EB] px-6 text-[15px] font-bold text-white hover:bg-[#1D4ED8]"
+            className="h-12 self-start rounded-[14px] px-6 text-[15px] font-bold"
           >
             <Download aria-hidden="true" />
             Instalar app
@@ -174,7 +174,7 @@ function AndroidGuide() {
           </h2>
           <a
             href={apkUrl}
-            className={`inline-flex min-h-12 items-center gap-2 self-start rounded-[14px] border border-[#E2E8F0] px-5 text-[15px] font-bold text-[#0F2D5B] ${LINK_FOCUS}`}
+            className={`inline-flex min-h-12 items-center gap-2 self-start rounded-[14px] border border-border px-5 text-[15px] font-bold text-foreground ${LINK_FOCUS}`}
           >
             <Download aria-hidden="true" className="size-5" />
             Baixar o APK

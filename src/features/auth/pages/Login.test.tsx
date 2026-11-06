@@ -39,6 +39,12 @@ async function fill(email = 'ana@example.com', senha = 'segredo123') {
 }
 
 describe('Login', () => {
+  it('painel lateral em gradiente hero e botão Entrar em gradiente da marca', () => {
+    const { container } = renderWithProviders(null, { routes, route: '/entrar' });
+    expect(container.querySelector('aside')).toHaveClass('bg-gradient-hero');
+    expect(screen.getByRole('button', { name: 'Entrar' })).toHaveClass('bg-gradient-brand');
+  });
+
   it('campos têm label associado e atributos de autocompletar', () => {
     renderWithProviders(null, { routes, route: '/entrar' });
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('autocomplete', 'email');

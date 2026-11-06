@@ -36,7 +36,7 @@ function summary(shifts: Shift[]) {
     .join(' · ');
 }
 
-const TIME_CLASS = 'h-11 rounded-lg border border-[#E2E8F0] bg-white px-3 text-base text-[#0F172A]';
+const TIME_CLASS = 'h-11 rounded-lg border border-input bg-card px-3 text-base text-foreground';
 
 /**
  * Switch dentro de uma caixa própria de 44x44 px (label): o toque na caixa aciona o switch e a
@@ -97,7 +97,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
                   onChange={(e) => patch(index, { start_time: e.target.value })}
                   className={TIME_CLASS}
                 />
-                <span aria-hidden="true" className="text-[#64748B]">
+                <span aria-hidden="true" className="text-muted-foreground">
                   –
                 </span>
                 <input
@@ -114,13 +114,13 @@ export function HoursEditor({ value, onChange, variant }: Props) {
                   type="button"
                   aria-label={`Remover turno ${n + 1} de ${day.long}`}
                   onClick={() => onChange(value.filter((_, i) => i !== index))}
-                  className="inline-flex size-11 items-center justify-center rounded-lg text-xl text-[#64748B] hover:bg-[#F1F5F9]"
+                  className="inline-flex size-11 items-center justify-center rounded-lg text-xl text-muted-foreground hover:bg-accent"
                 >
                   <span aria-hidden="true">×</span>
                 </button>
               </div>
               {error && (
-                <p role="alert" className="text-sm text-[#B91C1C]">
+                <p role="alert" className="text-sm text-error">
                   {error}
                 </p>
               )}
@@ -133,7 +133,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
             disabled={atMax}
             aria-label={`+ Turno em ${day.long}`}
             onClick={() => addShift(day.weekday)}
-            className="inline-flex h-11 w-fit items-center rounded-lg px-3 text-sm font-semibold text-[#1D4ED8] hover:bg-[#E7F1FF] disabled:opacity-50"
+            className="inline-flex h-11 w-fit items-center rounded-lg px-3 text-sm font-semibold text-link hover:bg-secondary disabled:opacity-50"
           >
             + Turno
           </button>
@@ -143,7 +143,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
   };
 
   const globalMessage = global && (
-    <p role="status" className="text-sm text-[#64748B]">
+    <p role="status" className="text-sm text-muted-foreground">
       {global}
     </p>
   );
@@ -157,7 +157,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
             <div
               key={day.weekday}
               data-day={day.weekday}
-              className="flex flex-col gap-3 rounded-xl border border-[#E2E8F0] bg-white p-4 sm:flex-row sm:items-start"
+              className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-start"
             >
               <div className="flex w-44 items-center gap-3">
                 <DaySwitch
@@ -166,9 +166,9 @@ export function HoursEditor({ value, onChange, variant }: Props) {
                   onCheckedChange={(on) => toggleDay(day.weekday, on)}
                   aria-label={`Atender em ${day.long}`}
                 />
-                <span className="font-semibold text-[#0F2D5B]">{day.long}</span>
+                <span className="font-semibold text-foreground">{day.long}</span>
               </div>
-              {has ? dayControls(day) : <span className="py-2 text-[#64748B]">Fechado</span>}
+              {has ? dayControls(day) : <span className="py-2 text-muted-foreground">Fechado</span>}
             </div>
           );
         })}
@@ -191,7 +191,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
           <div
             key={day.weekday}
             data-day={day.weekday}
-            className="rounded-xl border border-[#E2E8F0] bg-white"
+            className="rounded-xl border border-border bg-card"
           >
             <button
               type="button"
@@ -200,23 +200,23 @@ export function HoursEditor({ value, onChange, variant }: Props) {
               onClick={() => setOpen(expanded ? null : day.weekday)}
               className="flex min-h-12 w-full items-center gap-4 px-4 py-2 text-left"
             >
-              <span className={`w-10 font-bold ${closed ? 'text-[#64748B]' : 'text-[#0F2D5B]'}`}>
+              <span className={`w-10 font-bold ${closed ? 'text-muted-foreground' : 'text-foreground'}`}>
                 {day.short}
               </span>
-              <span className={closed ? 'text-[#64748B]' : 'text-[#0F172A]'}>
+              <span className={closed ? 'text-muted-foreground' : 'text-foreground'}>
                 {closed ? 'Fechado' : summary(dayShifts)}
               </span>
               {dayError && !expanded && (
                 <span
                   id={`day-error-${day.weekday}`}
-                  className="ml-auto text-sm font-medium text-[#B91C1C]"
+                  className="ml-auto text-sm font-medium text-error"
                 >
                   {dayError}
                 </span>
               )}
             </button>
             {expanded && (
-              <div className="flex flex-col gap-3 border-t border-[#E2E8F0] p-4">
+              <div className="flex flex-col gap-3 border-t border-border p-4">
                 <div className="flex items-center gap-3">
                   <DaySwitch
                     checked={!closed}
@@ -224,7 +224,7 @@ export function HoursEditor({ value, onChange, variant }: Props) {
                     onCheckedChange={(on) => toggleDay(day.weekday, on)}
                     aria-label={`Atender em ${day.long}`}
                   />
-                  <span className="text-sm text-[#475569]">Atender em {day.long}</span>
+                  <span className="text-sm text-foreground-secondary">Atender em {day.long}</span>
                 </div>
                 {!closed && dayControls(day)}
               </div>

@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { TurnstileApi, TurnstileRenderOptions } from './turnstile';
 import { useCaptcha } from './useCaptcha';
+import { resetThemeForTests, setThemePreference } from '@/lib/theme';
 
 const env = vi.hoisted(() => ({ key: null as string | null }));
 vi.mock('@/lib/env', () => ({ getEnv: () => ({ turnstileSiteKey: env.key }) }));
@@ -45,6 +46,7 @@ function ConditionalProbe({ show }: { show: boolean }) {
 }
 
 beforeEach(() => {
+  resetThemeForTests();
   env.key = null;
   loader.load.mockReset();
 });
@@ -79,6 +81,19 @@ describe('useCaptcha', () => {
     act(() => last().reset());
     expect(api.reset).toHaveBeenCalledWith('w1');
     expect(last().token).toBeNull();
+  });
+
+  it.each([
+    ['escuro', 'dark'],
+    ['claro', 'light'],
+  ] as const)('tema %s: o widget recebe theme %s', async (pref, theme) => {
+    env.key = 'site-key';
+    setThemePreference(pref);
+    const { api, opts } = fakeApi();
+    loader.load.mockResolvedValue(api);
+    render(<Probe />);
+    await vi.waitFor(() => expect(api.render).toHaveBeenCalledTimes(1));
+    expect(opts[0]).toMatchObject({ theme });
   });
 
   it('error-callback mostra o erro', async () => {

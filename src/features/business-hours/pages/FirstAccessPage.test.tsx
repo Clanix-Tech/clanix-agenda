@@ -44,6 +44,12 @@ function setup(rpc?: FakeSupabaseOptions['rpc'], rows: Record<string, unknown>[]
 }
 
 describe('FirstAccessPage', () => {
+  it('botão principal em gradiente da marca', async () => {
+    setup();
+    const btn = await screen.findByRole('button', { name: 'Confirmar e começar' });
+    expect(btn).toHaveClass('bg-gradient-brand');
+  });
+
   it('inicia com Seg–Sex preenchidos e fim de semana Fechado', async () => {
     setup();
     expect(await screen.findByRole('heading', { name: 'Quando você atende?' })).toBeInTheDocument();

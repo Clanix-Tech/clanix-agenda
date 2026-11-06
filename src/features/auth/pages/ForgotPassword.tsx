@@ -56,7 +56,7 @@ export default function ForgotPassword() {
     <AuthLayout title="Recuperar senha" subtitle="Informe seu e-mail para receber um link.">
       {sent ? (
         <>
-          <p role="status" className="rounded-lg bg-soft px-3 py-3 text-navy">
+          <p role="status" className="rounded-lg bg-secondary px-3 py-3 text-secondary-foreground">
             Se houver uma conta com esse e-mail, você vai receber um link.
           </p>
           <p className="mt-6 text-center text-sm">

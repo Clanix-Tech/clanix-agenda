@@ -34,7 +34,7 @@ export default function ResetPassword() {
   if (!session) {
     return (
       <AuthLayout title="Redefinir senha">
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-3 text-destructive">
+        <p role="alert" className="rounded-lg bg-error-surface px-3 py-3 text-error">
           Este link expirou ou já foi usado. Peça um novo.
         </p>
         <p className="mt-6 text-center text-sm">

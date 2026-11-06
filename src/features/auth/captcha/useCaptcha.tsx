@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { getEnv } from '@/lib/env';
+import { useTheme } from '@/lib/theme';
 import { loadTurnstile, type TurnstileApi } from './turnstile';
 
 export type CaptchaAction = 'login' | 'cadastro' | 'recuperar' | 'excluir-conta';
@@ -19,6 +20,12 @@ export type Captcha = {
 
 export function useCaptcha(action: CaptchaAction): Captcha {
   const siteKey = getEnv().turnstileSiteKey;
+  // O tema vale no momento em que o widget é renderizado; trocar de tema depois não o recria.
+  const { resolved } = useTheme();
+  const themeRef = useRef(resolved);
+  useEffect(() => {
+    themeRef.current = resolved;
+  }, [resolved]);
   // Ref de callback guardada em estado: o widget é renderizado quando o contêiner aparece
   // (mesmo que apareça depois, como num diálogo que abre) e removido quando ele some.
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -37,6 +44,7 @@ export function useCaptcha(action: CaptchaAction): Captcha {
           sitekey: siteKey,
           action,
           language: 'pt-br',
+          theme: themeRef.current,
           callback: (t) => {
             setError(null);
             setToken(t);
@@ -82,12 +90,12 @@ export function useCaptcha(action: CaptchaAction): Captcha {
     <div>
       <div ref={setContainer} className="flex min-h-[65px] justify-center" />
       {error && (
-        <div role="alert" className="mt-2 space-y-2 text-sm text-[#B91C1C]">
+        <div role="alert" className="mt-2 space-y-2 text-sm text-error">
           <p>{error}</p>
           <button
             type="button"
             onClick={retry}
-            className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            className="inline-flex min-h-11 items-center font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
           >
             Tentar de novo
           </button>

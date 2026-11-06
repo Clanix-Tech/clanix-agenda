@@ -69,7 +69,7 @@ export default function Login() {
     <AuthLayout title="Entrar" subtitle="Acesse sua agenda com e-mail e senha.">
       <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate className="space-y-4">
         {deleted && (
-          <p role="status" className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+          <p role="status" className="rounded-lg bg-success-surface px-3 py-2 text-sm text-success-foreground">
             Sua conta e todos os seus dados foram excluídos.
           </p>
         )}
@@ -101,7 +101,7 @@ export default function Login() {
         <Button
           type="submit"
           disabled={isSubmitting || (captcha.required && !captcha.token)}
-          className="h-12 w-full rounded-xl text-base font-semibold"
+          className="h-12 w-full rounded-xl bg-gradient-brand text-base font-semibold text-primary-foreground"
         >
           {isSubmitting ? 'Entrando…' : 'Entrar'}
         </Button>
@@ -112,7 +112,7 @@ export default function Login() {
       <p className="mt-1 text-center text-sm">
         <Link
           to="/instalar"
-          className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="inline-flex min-h-11 items-center font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           Como instalar o app
         </Link>
@@ -120,7 +120,7 @@ export default function Login() {
       <p className="text-center text-sm">
         <Link
           to="/privacidade"
-          className="inline-flex min-h-11 items-center font-semibold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="inline-flex min-h-11 items-center font-semibold text-link underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           Política de Privacidade
         </Link>

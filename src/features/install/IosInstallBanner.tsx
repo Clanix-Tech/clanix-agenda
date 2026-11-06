@@ -39,14 +39,14 @@ export function IosInstallBanner() {
   return (
     <aside
       aria-label="Instalar o app"
-      className="flex items-center gap-2 border-b border-[#BFDBFE] bg-[#E7F1FF] py-1 pr-1 pl-4 text-sm text-[#0F2D5B]"
+      className="flex items-center gap-2 border-b border-secondary-border bg-secondary py-1 pr-1 pl-4 text-sm text-secondary-foreground"
     >
-      <Smartphone aria-hidden="true" className="size-5 shrink-0 text-[#1D4ED8]" />
+      <Smartphone aria-hidden="true" className="size-5 shrink-0 text-secondary-foreground" />
       <p className="min-w-0 flex-1 leading-snug">
         <span className="font-semibold">Instale o app para receber lembretes</span>{' '}
         <Link
           to="/instalar"
-          className="inline-flex min-h-11 items-center font-semibold text-[#1D4ED8] underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+          className="inline-flex min-h-11 items-center font-semibold text-secondary-foreground underline underline-offset-4 outline-none focus-visible:ring-[3px] focus-visible:ring-ring"
         >
           Ver como
         </Link>
@@ -55,7 +55,7 @@ export function IosInstallBanner() {
         type="button"
         aria-label="Fechar aviso"
         onClick={close}
-        className="grid size-11 shrink-0 place-items-center rounded-xl text-[#475569] outline-none hover:bg-white/60 focus-visible:ring-[3px] focus-visible:ring-[#3B82F6]/50"
+        className="grid size-11 shrink-0 place-items-center rounded-xl text-secondary-foreground outline-none hover:bg-card/60 focus-visible:ring-[3px] focus-visible:ring-ring"
       >
         <X aria-hidden="true" className="size-5" />
       </button>
