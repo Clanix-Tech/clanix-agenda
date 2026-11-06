@@ -22,7 +22,7 @@ export function NowLine({
     <div
       role="separator"
       aria-label={`Agora, ${time}`}
-      className="flex items-center gap-2 px-1.5 text-xs font-bold tabular-nums text-agenda"
+      className="flex items-center gap-2 px-1.5 text-xs font-bold tabular-nums text-foreground"
     >
       <span aria-hidden="true" className="size-2 rounded-full bg-agenda" />
       <span>Agora · {time}</span>

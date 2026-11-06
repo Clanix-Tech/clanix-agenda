@@ -182,6 +182,16 @@ describe('WeekView (computador)', () => {
     expect(screen.queryByText(/Agora/)).not.toBeInTheDocument();
   });
 
+  it('cabeçalho de hoje é sólido e o "+" dele usa foco em primary-foreground', async () => {
+    setup();
+    const plus = await screen.findByRole('button', { name: 'Novo agendamento em Qui 29' });
+    expect(plus.parentElement).toHaveClass('bg-primary');
+    expect(plus).toHaveClass('focus-visible:outline-primary-foreground');
+    const other = screen.getByRole('button', { name: 'Novo agendamento em Sex 30' });
+    expect(other.parentElement).not.toHaveClass('bg-primary');
+    expect(other).not.toHaveClass('focus-visible:outline-primary-foreground');
+  });
+
   it('o "+" do cabeçalho de cada dia tem alvo de toque de 44 px', async () => {
     setup();
     const plus = await screen.findByRole('button', { name: 'Novo agendamento em Sex 30' });

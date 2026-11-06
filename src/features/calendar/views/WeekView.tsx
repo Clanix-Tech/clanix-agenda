@@ -261,7 +261,7 @@ function WeekGridBody({
                     className={cn(
                       'grid size-11 shrink-0 place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-ring',
                       isToday
-                        ? 'text-primary-foreground hover:bg-primary-hover'
+                        ? 'text-primary-foreground hover:bg-primary-hover focus-visible:outline-primary-foreground'
                         : 'text-link hover:bg-card',
                     )}
                   >
@@ -443,7 +443,7 @@ function WeekStrip({ date, tz, status, onDate }: Props) {
               }`}
               onClick={() => onDate(d)}
               className={cn(
-                'flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] border text-foreground focus-visible:outline-2 focus-visible:outline-ring',
+                'flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[14px] border text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
                 selected
                   ? 'border-primary bg-primary text-primary-foreground'
                   : d === today

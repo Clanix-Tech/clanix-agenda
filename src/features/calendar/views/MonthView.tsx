@@ -151,7 +151,8 @@ export function MonthView({ date, tz, status }: Props) {
                   aria-label={`Ver dia ${dayAndMonth(d)}`}
                   className={cn(
                     'grid h-7 min-w-7 place-items-center rounded-full px-1 text-[13px] font-bold text-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring',
-                    isToday && 'bg-primary text-primary-foreground hover:bg-primary-hover',
+                    isToday &&
+                      'bg-primary text-primary-foreground hover:bg-primary-hover focus-visible:outline-offset-2',
                   )}
                 >
                   {Number(d.slice(8, 10))}

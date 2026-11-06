@@ -21,7 +21,7 @@ export function StatusFilter({
     onChange(next.length ? next : null);
   };
   const pill =
-    'h-11 shrink-0 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-ring';
+    'h-11 shrink-0 rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
   const on = 'border-primary bg-primary text-primary-foreground';
   const off = 'border-border bg-card text-foreground-secondary';
   return (
