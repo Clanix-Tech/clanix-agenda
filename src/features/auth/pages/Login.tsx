@@ -69,7 +69,10 @@ export default function Login() {
     <AuthLayout title="Entrar" subtitle="Acesse sua agenda com e-mail e senha.">
       <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate className="space-y-4">
         {deleted && (
-          <p role="status" className="rounded-lg bg-success-surface px-3 py-2 text-sm text-success-foreground">
+          <p
+            role="status"
+            className="rounded-lg bg-success-surface px-3 py-2 text-sm text-success-foreground"
+          >
             Sua conta e todos os seus dados foram excluídos.
           </p>
         )}

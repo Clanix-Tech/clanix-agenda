@@ -200,7 +200,9 @@ export function HoursEditor({ value, onChange, variant }: Props) {
               onClick={() => setOpen(expanded ? null : day.weekday)}
               className="flex min-h-12 w-full items-center gap-4 px-4 py-2 text-left"
             >
-              <span className={`w-10 font-bold ${closed ? 'text-muted-foreground' : 'text-foreground'}`}>
+              <span
+                className={`w-10 font-bold ${closed ? 'text-muted-foreground' : 'text-foreground'}`}
+              >
                 {day.short}
               </span>
               <span className={closed ? 'text-muted-foreground' : 'text-foreground'}>

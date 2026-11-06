@@ -25,8 +25,7 @@ import {
 } from './useHistorySearch';
 import { useRecentChanges } from './useRecentChanges';
 
-const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 const FIELD =
   'min-h-11 w-full rounded-xl border border-border bg-card px-3 text-base text-foreground';
 const DEBOUNCE_MS = 300;
@@ -313,7 +312,9 @@ export default function HistoryPage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 pt-5 pb-6 lg:px-8 lg:pt-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-foreground">Histórico e busca</h1>
+          <h1 className="font-display text-2xl font-extrabold text-foreground">
+            Histórico e busca
+          </h1>
           <p className="text-sm text-muted-foreground">
             Encontre atendimentos por cliente, data, serviço ou status.
           </p>
@@ -441,7 +442,9 @@ export default function HistoryPage() {
           ) : recent.isError ? (
             <p className="text-sm text-muted-foreground">Não foi possível carregar.</p>
           ) : recent.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma remarcação ou cancelamento ainda.</p>
+            <p className="text-sm text-muted-foreground">
+              Nenhuma remarcação ou cancelamento ainda.
+            </p>
           ) : (
             <ul className="flex flex-col gap-1">
               {recent.data.map((c) => (
@@ -458,7 +461,10 @@ export default function HistoryPage() {
                       {c.action === 'cancelado' ? 'Cancelado' : 'Remarcado'} ·{' '}
                       <span className="font-normal">{formatDateBR(c.at, tz)}</span>
                     </span>
-                    <span className="truncate text-sm text-foreground-secondary" title={c.clientName}>
+                    <span
+                      className="truncate text-sm text-foreground-secondary"
+                      title={c.clientName}
+                    >
                       {c.clientName}
                     </span>
                   </button>

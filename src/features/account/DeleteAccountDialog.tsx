@@ -136,12 +136,7 @@ function DeleteAccountForm({
         >
           Cancelar
         </Button>
-        <Button
-          type="submit"
-          variant="destructive"
-          disabled={pending || blocked}
-          className="h-11"
-        >
+        <Button type="submit" variant="destructive" disabled={pending || blocked} className="h-11">
           {pending ? 'Excluindo…' : 'Excluir para sempre'}
         </Button>
       </DialogFooter>

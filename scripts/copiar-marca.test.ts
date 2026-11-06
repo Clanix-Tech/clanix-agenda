@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { semFundo } from './copiar-marca.mjs';
 
-const MIOLO = '<defs><linearGradient id="a"/></defs><rect x="204" y="30" width="2.2" height="140" rx="1.1" fill="#8A2BE2"/><path d="M0 0"/>\n';
-const abre = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" width="1240" height="400">\n';
+const MIOLO =
+  '<defs><linearGradient id="a"/></defs><rect x="204" y="30" width="2.2" height="140" rx="1.1" fill="#8A2BE2"/><path d="M0 0"/>\n';
+const abre =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" width="1240" height="400">\n';
 
 describe('semFundo', () => {
   it('remove só o retângulo de fundo e mantém o resto byte a byte', () => {

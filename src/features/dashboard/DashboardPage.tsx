@@ -26,8 +26,7 @@ import { computeIndicators } from './domain/indicators';
 import { dayLabel, greetingAt, whenLabel } from './domain/labels';
 
 const NOW_PLUS_DAYS = 14;
-const FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const FOCUS = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 // Sobre o card em gradiente o anel precisa do tom claro, que contrasta com o roxo.
 const FOCUS_ON_BRAND =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground';
@@ -253,7 +252,9 @@ export default function DashboardPage() {
         </section>
       ) : (
         <div className="flex flex-col items-center gap-3 rounded-card border border-border bg-card p-6 text-center">
-          <p className="text-foreground-secondary">Nenhum atendimento agendado nos próximos 14 dias.</p>
+          <p className="text-foreground-secondary">
+            Nenhum atendimento agendado nos próximos 14 dias.
+          </p>
           {newBtn}
         </div>
       )}

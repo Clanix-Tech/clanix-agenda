@@ -12,7 +12,8 @@ const TEXT_LINK = `rounded-sm font-semibold text-link underline underline-offset
 const CARD = 'flex flex-col gap-3 rounded-card border border-border bg-card p-4';
 const H2 = 'font-display text-lg leading-tight font-extrabold text-foreground';
 const P = 'text-[15px] leading-relaxed text-foreground-secondary';
-const UL = 'flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-relaxed text-foreground-secondary';
+const UL =
+  'flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-relaxed text-foreground-secondary';
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (

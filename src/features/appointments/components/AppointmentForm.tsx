@@ -542,7 +542,12 @@ function FormBody(props: BodyProps) {
                     className={cn(chipCls, on && SELECTED)}
                   >
                     {f.name}{' '}
-                    <span className={cn('font-medium', on ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                    <span
+                      className={cn(
+                        'font-medium',
+                        on ? 'text-primary-foreground' : 'text-muted-foreground',
+                      )}
+                    >
                       {durationShort(f.duration_minutes)}
                     </span>
                   </button>

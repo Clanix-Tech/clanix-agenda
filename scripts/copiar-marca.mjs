@@ -34,8 +34,16 @@ export function semFundo(svg) {
 }
 
 const COPIAS = [
-  ['logo-clanix-agenda-horizontal-light.svg', 'src/assets/brand/clanix-agenda-horizontal-claro.svg', true],
-  ['logo-clanix-agenda-horizontal-dark.svg', 'src/assets/brand/clanix-agenda-horizontal-escuro.svg', true],
+  [
+    'logo-clanix-agenda-horizontal-light.svg',
+    'src/assets/brand/clanix-agenda-horizontal-claro.svg',
+    true,
+  ],
+  [
+    'logo-clanix-agenda-horizontal-dark.svg',
+    'src/assets/brand/clanix-agenda-horizontal-escuro.svg',
+    true,
+  ],
   ['icon-clanix-agenda.svg', 'src/assets/brand/clanix-agenda-icone.svg', false],
   ['icon-clanix-agenda.svg', 'public/favicon.svg', false],
 ];
@@ -43,11 +51,14 @@ const COPIAS = [
 export function copiarMarca(raiz) {
   const pacote = join(raiz, 'clanix-brand', 'products', 'clanix-agenda');
   if (!existsSync(join(raiz, 'clanix-brand'))) {
-    throw new Error('Pasta clanix-brand/ não encontrada na raiz do repositório. Copie o pacote oficial de marca para lá e rode de novo.');
+    throw new Error(
+      'Pasta clanix-brand/ não encontrada na raiz do repositório. Copie o pacote oficial de marca para lá e rode de novo.',
+    );
   }
   for (const [origem, destino, tirarFundo] of COPIAS) {
     const de = join(pacote, origem);
-    if (!existsSync(de)) throw new Error(`Arquivo ausente no pacote: products/clanix-agenda/${origem}`);
+    if (!existsSync(de))
+      throw new Error(`Arquivo ausente no pacote: products/clanix-agenda/${origem}`);
     const para = join(raiz, destino);
     mkdirSync(dirname(para), { recursive: true });
     if (tirarFundo) writeFileSync(para, semFundo(readFileSync(de, 'utf8')));
