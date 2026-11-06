@@ -70,7 +70,7 @@ export function AppointmentForm(props: AppointmentFormProps) {
 
   const failed = profile.isError || hours.isError;
   return (
-    <ResponsiveSheet open onOpenChange={(o) => !o && props.onDone()} title={title}>
+    <ResponsiveSheet open onOpenChange={(o) => !o && props.onDone()} title={title} fullScreen>
       {failed ? (
         <ErrorState
           message={toAppError(profile.error ?? hours.error).message}
@@ -493,7 +493,13 @@ function FormBody(props: BodyProps) {
   );
 
   return (
-    <ResponsiveSheet open onOpenChange={(o) => !o && onDone()} title={title} footer={footer}>
+    <ResponsiveSheet
+      open
+      onOpenChange={(o) => !o && onDone()}
+      title={title}
+      footer={footer}
+      fullScreen
+    >
       <form id={formId} noValidate onSubmit={onSubmit} className="flex flex-col gap-4 pt-1">
         <div className="grid gap-4 lg:grid-cols-2 lg:gap-3">
           <Field id={`${ids}-name`} label="Nome do cliente" error={errors.clientName} errId={errId}>

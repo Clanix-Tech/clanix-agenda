@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders, setViewportWidth } from '@/test/render';
 import { ResponsiveSheet } from './ResponsiveSheet';
 
-function Harness() {
+function Harness({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [open, setOpen] = useState(true);
   return (
     <ResponsiveSheet
@@ -12,6 +12,7 @@ function Harness() {
       onOpenChange={setOpen}
       title="Novo agendamento"
       footer={<p>rodapé</p>}
+      fullScreen={fullScreen}
     >
       <p>conteúdo</p>
     </ResponsiveSheet>
@@ -33,6 +34,28 @@ describe('ResponsiveSheet', () => {
     renderWithProviders(<Harness />);
     expect(screen.getByRole('dialog', { name: 'Novo agendamento' })).toBeInTheDocument();
     expect(screen.getByText('conteúdo')).toBeInTheDocument();
+  });
+
+  it('no celular, com fullScreen, a gaveta ocupa a tela inteira; sem ele, não', () => {
+    setViewportWidth(390);
+    const { unmount } = renderWithProviders(<Harness fullScreen />);
+    expect(screen.getByRole('dialog', { name: 'Novo agendamento' })).toHaveAttribute(
+      'data-full-screen',
+      'true',
+    );
+    unmount();
+    renderWithProviders(<Harness />);
+    expect(screen.getByRole('dialog', { name: 'Novo agendamento' })).not.toHaveAttribute(
+      'data-full-screen',
+    );
+  });
+
+  it('no computador, fullScreen não muda a janela de diálogo', () => {
+    setViewportWidth(1280);
+    renderWithProviders(<Harness fullScreen />);
+    expect(screen.getByRole('dialog', { name: 'Novo agendamento' })).not.toHaveAttribute(
+      'data-full-screen',
+    );
   });
 
   it.each([1280, 390])('em %i px o título é anunciado uma vez (sem descrição repetida)', (w) => {

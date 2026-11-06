@@ -35,6 +35,25 @@ test.describe('gaveta do formulário no celular', () => {
     await expect(name).toHaveValue('Joana Prado');
   });
 
+  test('o formulário de agendamento ocupa a tela inteira e o botão Salvar fica visível', async ({
+    page,
+    makeUser,
+  }) => {
+    const user = await makeUser();
+    await login(page, user);
+    await mainNav(page).getByRole('button', { name: 'Novo agendamento' }).click();
+    const form = page.getByRole('dialog', { name: 'Novo agendamento' });
+    await expect(form).toBeVisible();
+    await page.waitForTimeout(700); // animação de abertura
+
+    const { height } = page.viewportSize()!;
+    const box = (await form.boundingBox())!;
+    expect(box.y).toBeLessThanOrEqual(1);
+    expect(box.y + box.height).toBeGreaterThanOrEqual(height - 1);
+    await expect(form.getByRole('button', { name: 'Salvar agendamento' })).toBeInViewport();
+    await expect(form.getByRole('button', { name: 'Cancelar' })).toBeInViewport();
+  });
+
   test('com o teclado aberto, o campo do nome continua visível dentro da gaveta', async ({
     page,
     makeUser,
