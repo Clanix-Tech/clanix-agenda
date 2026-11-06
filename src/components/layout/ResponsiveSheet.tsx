@@ -54,8 +54,11 @@ export function ResponsiveSheet({ open, onOpenChange, title, children, footer }:
     );
   }
 
+  // `handleOnly`: arrastar o conteúdo para baixo rola o formulário em vez de fechar a gaveta (antes,
+  // conferir o nome digitado com o conteúdo no topo fechava tudo e perdia o que foi digitado).
+  // Fechar continua possível pela alça, tocando fora da gaveta ou com Esc.
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} handleOnly>
       <DrawerContent aria-describedby={undefined}>
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
