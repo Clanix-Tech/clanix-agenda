@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;padding:0;background:#F8F7FF;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;color:#0B0420;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F7FF;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border:1px solid #E2DFEE;border-radius:16px;padding:32px 28px;">
+            <tr>
+              <td>
+                <p style="margin:0 0 4px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#4A00B8;">Clanix Agenda</p>
+                <h1 style="margin:0 0 16px;font-size:24px;line-height:32px;font-weight:700;color:#0B0420;">Criar uma nova senha</h1>
+                <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#494361;">
+                  Recebemos um pedido para trocar a senha da sua conta. Toque no botão abaixo para escolher uma senha nova.
+                </p>
+                <p style="margin:0 0 24px;">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#4A00B8;color:#F8F7FF;text-decoration:none;font-size:16px;font-weight:600;padding:12px 24px;border-radius:12px;">Criar nova senha</a>
+                </p>
+                <p style="margin:0 0 8px;font-size:14px;line-height:20px;color:#696284;">
+                  Se o botão não funcionar, copie e cole este endereço no navegador:
+                </p>
+                <p style="margin:0 0 24px;font-size:13px;line-height:20px;word-break:break-all;color:#4A00B8;">{{ .ConfirmationURL }}</p>
+                <p style="margin:0;font-size:13px;line-height:20px;color:#696284;">
+                  Se você não pediu para trocar a senha, ignore este e-mail: sua senha atual continua valendo.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
