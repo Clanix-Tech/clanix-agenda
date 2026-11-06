@@ -19,7 +19,7 @@ const STEP = 'flex items-start gap-3 text-[15px] leading-snug text-foreground';
 const BADGE =
   'font-display grid size-7 shrink-0 place-items-center rounded-[9px] bg-primary text-sm font-extrabold text-primary-foreground';
 const INLINE = 'ml-1 inline size-4 align-[-3px] text-link';
-const CARD = 'flex flex-col gap-4 rounded-[18px] border border-border bg-card p-4';
+const CARD = 'flex flex-col gap-4 rounded-card border border-border bg-card p-4';
 const CARD_TITLE = 'font-display text-base leading-tight font-extrabold text-foreground';
 const LINK_FOCUS =
   'outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
@@ -102,7 +102,7 @@ function IPhoneGuide() {
   return (
     <section
       aria-labelledby="guia-iphone"
-      className="flex flex-col gap-4 rounded-[18px] border border-secondary-border bg-secondary p-4"
+      className="flex flex-col gap-4 rounded-card border border-secondary-border bg-secondary p-4"
     >
       <h2 id="guia-iphone" className={CARD_TITLE}>
         No iPhone, instale o app para receber lembretes

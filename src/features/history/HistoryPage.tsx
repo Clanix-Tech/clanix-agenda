@@ -339,7 +339,7 @@ export default function HistoryPage() {
 
       <section
         aria-label="Filtros"
-        className="flex flex-col gap-4 rounded-[18px] border border-border bg-card p-4"
+        className="flex flex-col gap-4 rounded-card border border-border bg-card p-4"
       >
         <label className="flex flex-col gap-1 text-sm font-semibold text-foreground-secondary">
           Buscar por nome do cliente
@@ -405,7 +405,7 @@ export default function HistoryPage() {
       <div className={cn('grid gap-5', desktop && 'grid-cols-[1fr_300px] items-start')}>
         <section
           aria-label="Resultados"
-          className="min-w-0 rounded-[18px] border border-border bg-card"
+          className="min-w-0 rounded-card border border-border bg-card"
         >
           {search.data && (
             <p
@@ -431,7 +431,7 @@ export default function HistoryPage() {
 
         <section
           aria-labelledby="remarcacoes"
-          className="rounded-[18px] border border-border bg-card p-4"
+          className="rounded-card border border-border bg-card p-4"
         >
           <h2 id="remarcacoes" className="mb-2 font-display text-lg font-bold text-foreground">
             Remarcações e cancelamentos

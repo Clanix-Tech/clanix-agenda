@@ -123,7 +123,7 @@ export function AppointmentSheet() {
         >
           {a.client_name}
         </p>
-        <div className="rounded-[18px] border border-border bg-muted px-3.5 py-0.5">
+        <div className="rounded-card border border-border bg-muted px-3.5 py-0.5">
           <InfoRow icon={CalendarDays} label="Data">
             {`${formatLongDate(a.starts_at, tz).split(',')[0]}, ${formatDateBR(start.date, tz)}`}
           </InfoRow>

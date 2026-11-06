@@ -101,7 +101,7 @@ export function ListView({ date, tz, status }: Props) {
                 key={a.id}
                 type="button"
                 onClick={() => openAppointment(a.id)}
-                className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border border-border bg-card p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="flex min-h-[68px] w-full items-center gap-3 rounded-card border border-border bg-card p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
                   <b className="font-display text-[15px] font-extrabold tabular-nums">

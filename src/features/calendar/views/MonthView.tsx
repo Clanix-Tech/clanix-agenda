@@ -116,7 +116,7 @@ export function MonthView({ date, tz, status }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-border bg-card">
+    <div className="overflow-hidden rounded-card border border-border bg-card">
       <div className="grid grid-cols-7 border-b border-border bg-muted">
         {weeks[0]!.map((d) => (
           <div key={d} className="px-3 py-2 text-xs font-bold text-muted-foreground">

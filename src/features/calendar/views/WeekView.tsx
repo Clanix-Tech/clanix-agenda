@@ -205,7 +205,7 @@ function WeekGridBody({
   };
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-border bg-card">
+    <div className="overflow-hidden rounded-card border border-border bg-card">
       <div
         className="grid"
         style={{ gridTemplateColumns: `48px repeat(${columns.length}, minmax(0, 1fr))` }}

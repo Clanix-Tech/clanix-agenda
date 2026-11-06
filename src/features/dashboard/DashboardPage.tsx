@@ -34,7 +34,7 @@ const FOCUS_ON_BRAND =
 
 function Kpi({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
-    <div className="rounded-[18px] border border-border bg-card p-3.5">
+    <div className="rounded-card border border-border bg-card p-3.5">
       <p className="text-xs font-semibold text-muted-foreground">{label}</p>
       <p className="font-display text-[28px] leading-tight font-extrabold text-foreground">
         {value}
@@ -60,7 +60,7 @@ function MiniCalendar({
   return (
     <section
       aria-label="Calendário do mês"
-      className="rounded-[18px] border border-border bg-card p-4"
+      className="rounded-card border border-border bg-card p-4"
     >
       <div
         aria-hidden="true"
@@ -206,7 +206,7 @@ export default function DashboardPage() {
       </header>
 
       {rows.length === 0 ? (
-        <div className="rounded-[18px] border border-border bg-card">
+        <div className="rounded-card border border-border bg-card">
           <EmptyState
             title="Sua agenda está livre. Que tal marcar o primeiro atendimento?"
             action={newBtn}
@@ -215,7 +215,7 @@ export default function DashboardPage() {
       ) : next ? (
         <section
           aria-label="Próximo atendimento"
-          className="rounded-[22px] bg-gradient-destaque p-5 text-primary-foreground"
+          className="rounded-card bg-gradient-destaque p-5 text-primary-foreground"
         >
           <p className="text-xs font-semibold tracking-wide text-primary-foreground uppercase">
             Próximo atendimento
@@ -252,7 +252,7 @@ export default function DashboardPage() {
           </div>
         </section>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-[18px] border border-border bg-card p-6 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-card border border-border bg-card p-6 text-center">
           <p className="text-foreground-secondary">Nenhum atendimento agendado nos próximos 14 dias.</p>
           {newBtn}
         </div>
@@ -308,7 +308,7 @@ export default function DashboardPage() {
                 Nenhum atendimento agendado nos próximos 14 dias.
               </p>
             ) : desktop ? (
-              <div className="overflow-x-auto rounded-[18px] border border-border bg-card">
+              <div className="overflow-x-auto rounded-card border border-border bg-card">
                 <table className="w-full table-fixed text-left text-sm">
                   <colgroup>
                     <col className="w-[130px]" />
@@ -386,7 +386,7 @@ export default function DashboardPage() {
                         type="button"
                         onClick={() => openAppointment(a.id)}
                         className={cn(
-                          'flex min-h-[64px] w-full items-center gap-3 rounded-[18px] border border-border bg-card p-2.5 text-left',
+                          'flex min-h-[64px] w-full items-center gap-3 rounded-card border border-border bg-card p-2.5 text-left',
                           FOCUS,
                         )}
                       >

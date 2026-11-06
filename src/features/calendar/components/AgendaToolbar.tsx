@@ -74,7 +74,7 @@ export function AgendaToolbar({
   const go = (dir: 1 | -1) =>
     onDate(month ? shiftMonth(date, dir) : shiftDate(date, dir * (week || list ? 7 : 1)));
   return (
-    <div className="flex flex-col gap-3 rounded-[18px] border border-border bg-card p-1.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4 lg:p-3">
+    <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-1.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-4 lg:p-3">
       <div className="flex items-center justify-between gap-1 lg:justify-start lg:gap-2">
         <button
           type="button"

@@ -46,7 +46,7 @@ function AppointmentCard({
       type="button"
       onClick={onOpen}
       className={cn(
-        'flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        'flex min-h-[68px] w-full items-center gap-3 rounded-card border p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         next
           ? 'border-primary bg-primary text-primary-foreground'
           : 'border-border bg-card text-card-foreground',
@@ -115,7 +115,7 @@ function FreeCard({
     <button
       type="button"
       onClick={onPick}
-      className="flex min-h-[68px] w-full items-center gap-3 rounded-[18px] border-[1.5px] border-dashed border-secondary-border bg-secondary p-2.5 text-left text-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="flex min-h-[68px] w-full items-center gap-3 rounded-card border-[1.5px] border-dashed border-secondary-border bg-secondary p-2.5 text-left text-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <span className="flex h-12 w-[62px] shrink-0 flex-col items-center justify-center rounded-xl bg-card">
         <b className="font-display text-[15px] font-extrabold tabular-nums">{interval.start}</b>

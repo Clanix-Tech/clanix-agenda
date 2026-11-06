@@ -300,7 +300,7 @@ function Picker(p: PickerProps) {
 
   return (
     <Shell>
-      <section className="mx-4 rounded-2xl border border-border bg-card p-4">
+      <section className="mx-4 rounded-card border border-border bg-card p-4">
         <div className="flex items-start justify-between gap-2">
           <p className="min-w-0 truncate text-lg font-semibold text-foreground">
             {appointment.client_name}
